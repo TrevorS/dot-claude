@@ -1,0 +1,20 @@
+# Local Claude settings
+*.local.md
+settings.local.json
+
+# Logs
+*.log
+
+# Temporary files
+.tmp/
+*.tmp
+
+# OS specific files
+.DS_Store
+Thumbs.db
+
+projects/
+statsig/
+todos/
+
+*.db
