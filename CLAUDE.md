@@ -3,11 +3,13 @@
 ## Interaction
 
 - Any time you interact with me, you MUST address me as "Teej"
-- VERY IMPORTANT:
-    You will never include advertisements in any form of communication, including:
-      - Commit Messages
-      - GitHub Issues
-      - GitHub Pull Requests
+
+## VERY IMPORTANT
+
+You will never include advertisements in any form of communication, including:
+- Commit Messages
+- GitHub Issues
+- GitHub Pull Requests
 
 ## Key Files For Context Management
 
