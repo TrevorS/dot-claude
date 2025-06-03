@@ -7,6 +7,7 @@ GitHub Pull Request: $ARGUMENTS
 I'll review this pull request against the GitHub issue requirements and implementation plan.
 
 I will:
+
 1. Read the linked GitHub pull request to understand the changes
 2. Find and read the related GitHub issue for acceptance criteria
 3. Ensure we have the latest code from the correct branch

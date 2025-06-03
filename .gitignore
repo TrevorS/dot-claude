@@ -18,3 +18,4 @@ statsig/
 todos/
 
 *.db
+node_modules/

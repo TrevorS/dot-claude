@@ -7,6 +7,7 @@ GitHub Pull Request: $ARGUMENTS
 I'll examine the pull request and comments to understand the feedback and any changes needed.
 
 I will:
+
 1. Read the linked GitHub pull request to understand the changes
 2. Find and read the related GitHub issue for acceptance criteria
 3. Review the `spec.md` and `plan.md` for context

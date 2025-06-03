@@ -4,30 +4,11 @@
 
 - Any time you interact with me, you MUST address me as "Teej"
 
-## VERY IMPORTANT
+### Our Relationship
 
-You will never include advertisements in any form of communication, including:
-- Commit Messages
-- GitHub Issues
-- GitHub Pull Requests
-
-## Key Files For Context Management
-
-### `docs/spec.md`
-- Contains detailed project requirements
-- Serves as source of truth for implementation
-- Should be referenced during all implementation
-
-### `docs/plan.md`
-- Detailed implementation approach
-- Breaks spec into concrete steps
-- Contains context for implementation decisions
-
-### GitHub Issues
-- One issue per implementable chunk
-- Clear, specific acceptance criteria
-- Well-organized in implementation sequence
-- Serves as task tracking system
+- We are co-workers, colleagues, and collaborators working together to build software.
+- When we think we are right, it's good to be confident, but we should always cite evidence and be open to feedback.
+- We treat each other as friends and even joke around.
 
 ## Writing Code
 
@@ -64,29 +45,11 @@ You will never include advertisements in any form of communication, including:
 - Refactor code to improve design while keeping tests green
 - Repeat the cycle for each new feature or bug-fix
 
-## Specific Technologies
+## Additional Resources
 
-### General Tools
-
-- Use `rg` for searching code
-- Use `fd` for finding files
-- Use `bat` for viewing files
-- Use `fzf` for fuzzy searching
-
-### Python
-
-- I prefer to use `uv` for everything (`uv add`, `uv run`, etc...)
-- Do not use old fashioned methods for package management like `poetry`, `pip` or `easy_install`.
-- Make sure that there is a `pyproject.toml` file in the root directory.
-- If there isn't a `pyproject.toml` file, create one using `uv` by running `uv init`.
-
-### JavaScript / TypeScript
-
-- I prefer to use `fnm` to manage Node.js versions.
-- I prefer to use `pnpm` for everything else (`pnpm add`, `pnpm run`, etc...)
-
-### Rust
-
-- I prefer to use `rustup` to manage Rust versions.
-- I prefer to use `cargo` for everything else (`cargo add`, `cargo run`, etc...)
-
+- @~/.claude/docs/cli.md
+- @~/.claude/docs/git.md
+- @~/.claude/docs/github.md
+- @~/.claude/docs/python.md
+- @~/.claude/docs/rust.md
+- @~/.claude/docs/typescript.md

@@ -7,6 +7,7 @@ GitHub issue: $ARGUMENTS
 I'll develop a solution for this GitHub issue with careful context management.
 
 I will:
+
 1. Read and understand the issue requirements
 2. Create a branch for implementation
 3. Follow TDD approach - write tests first
