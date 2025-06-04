@@ -45,6 +45,14 @@
 - Refactor code to improve design while keeping tests green
 - Repeat the cycle for each new feature or bug-fix
 
+## Sub-Agent Collaboration  
+
+- **Validate before scaling**: Complete one example before delegating similar work to sub-agents
+- **Context isolation**: Sub-agents start fresh - provide concrete examples and complete specifications
+- **Leverage Research Mode**: Use sub-agents with specialized tools (search, memory, think functions) for complex investigations
+- **Parallel processing patterns**: Independent tasks simultaneously, or voting (multiple approaches) for higher confidence
+- **Coordinate via artifacts**: Use shared scratchpads or files for inter-agent communication when needed
+
 ## Additional Resources
 
 - @~/.claude/docs/cli.md
