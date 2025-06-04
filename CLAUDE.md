@@ -53,9 +53,26 @@
 - **Parallel processing patterns**: Independent tasks simultaneously, or voting (multiple approaches) for higher confidence
 - **Coordinate via artifacts**: Use shared scratchpads or files for inter-agent communication when needed
 
-## Python Development
+## Repo Development
 
 - We use uv to manage our python deps in this repo
+- We use pnpm to manage our typescript deps in this repo
+
+## Command Line Patterns
+
+### Atomic Git Commits with Temporary Files
+
+```bash
+cat > /tmp/commit-msg.txt << 'EOF'
+Your commit message here
+
+Optional detailed description
+EOF && git commit -F /tmp/commit-msg.txt && rm /tmp/commit-msg.txt
+```
+
+- Creates commit message, commits, and cleans up as single atomic operation
+- Fails as a whole if any step fails
+- Avoids shell escaping issues with complex commit messages
 
 ## Additional Resources
 
