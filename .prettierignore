@@ -1,0 +1,28 @@
+# ABOUTME: Prettier ignore patterns to exclude auto-generated and dependency files
+# ABOUTME: Prevents formatting checks on files that shouldn't be modified
+
+# Python virtual environment
+.venv/
+__pycache__/
+
+# Node.js dependencies
+node_modules/
+.pnpm-store/
+
+# Git directory
+.git/
+
+# Build outputs
+dist/
+build/
+*.min.js
+*.min.css
+
+# Lock files
+package-lock.json
+pnpm-lock.yaml
+uv.lock
+
+# Generated files
+*.log
+.DS_Store
