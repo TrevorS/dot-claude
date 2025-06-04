@@ -1,0 +1,8 @@
+[project]
+name = "dot-claude"
+version = "0.1.0"
+description = "Add your description here"
+requires-python = ">=3.13"
+dependencies = [
+    "pre-commit>=4.2.0",
+]

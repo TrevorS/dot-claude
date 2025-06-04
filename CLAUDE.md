@@ -53,6 +53,10 @@
 - **Parallel processing patterns**: Independent tasks simultaneously, or voting (multiple approaches) for higher confidence
 - **Coordinate via artifacts**: Use shared scratchpads or files for inter-agent communication when needed
 
+## Python Development
+
+- We use uv to manage our python deps in this repo
+
 ## Additional Resources
 
 - @~/.claude/docs/cli.md

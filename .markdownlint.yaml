@@ -1,0 +1,20 @@
+# Markdownlint configuration
+default: true
+
+# Disable line length for prose documents
+MD013: false
+
+# Allow multiple headings with the same content
+MD024: false
+
+# Allow inline HTML (useful for GitHub-flavored markdown)
+MD033: false
+
+# Allow dollar signs in text (common in code examples)
+MD014: false
+
+# Allow trailing punctuation in headings (for FAQ style)
+MD026: false
+
+# Allow first line to not be a top-level heading (for command templates)
+MD041: false
