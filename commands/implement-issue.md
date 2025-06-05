@@ -4,7 +4,7 @@ GitHub issue: $ARGUMENTS
 
 ## Task
 
-I'll develop a solution for this GitHub issue with careful context management.
+I'll **ultrathink** in order to develop a solution for this GitHub issue with careful context management.
 
 I will:
 

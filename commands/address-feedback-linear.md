@@ -39,6 +39,9 @@ gh api repos/<owner>/<repo>/issues/<number>/comments
 # Combined comprehensive command to get most PR information at once
 gh pr view <number> --json title,body,author,commits,files,comments,reviews
 
+# View all issues
+linear-cli issues
+
 # View the issue linked to the PR
 linear-cli issue <issue-id>
 ```

@@ -4,7 +4,7 @@ Linear issue: $ARGUMENTS
 
 ## Task
 
-I'll develop a solution for this Linear issue with careful context management.
+I'll **ultrathink** in order to develop a solution for this Linear issue with careful context management.
 
 I will:
 

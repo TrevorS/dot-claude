@@ -4,7 +4,7 @@ GitHub Pull Request: $ARGUMENTS
 
 ## Task
 
-I'll review this pull request against the GitHub issue requirements and implementation plan.
+I'll **ultrathink** in order to review this pull request against the GitHub issue requirements and implementation plan.
 
 I will:
 
@@ -36,4 +36,10 @@ gh pr view <number> --json title,body,author,commits,files,comments
 
 # List all pull requests in the repository
 gh pr list --state all --json title,author,createdAt,updatedAt
+
+# View all issues
+linear-cli issues
+
+# View a specific issue with detailed information
+linear-cli issue <issue-id>
 ```
