@@ -81,4 +81,5 @@ EOF && git commit -F /tmp/commit-msg.txt && rm /tmp/commit-msg.txt
 - @~/.claude/docs/github.md
 - @~/.claude/docs/python.md
 - @~/.claude/docs/rust.md
+- @~/.claude/docs/sub-agents.md
 - @~/.claude/docs/typescript.md

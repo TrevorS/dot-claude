@@ -24,4 +24,12 @@ I will:
 - Tests: Include tests that cover the new functionality
 - Documentation: Update any relevant documentation
 
-**NEVER** include an advertisement or unrelated content in the pull request description.
+## Command Reference
+
+```bash
+# View all issues
+linear-cli issues
+
+# View a specific issue with detailed information
+linear-cli issue <issue-id>
+```
