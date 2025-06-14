@@ -53,6 +53,46 @@
 - **Parallel processing patterns**: Independent tasks simultaneously, or voting (multiple approaches) for higher confidence
 - **Coordinate via artifacts**: Use shared scratchpads or files for inter-agent communication when needed
 
+## Async Code Review Pattern
+
+After implementing significant code changes, spawn **reviewer sub-agents** with isolated context to catch issues you might miss.
+
+### When to Review
+
+- **Always**: Security/auth code, payments, API endpoints, data validation
+- **Often**: Complex logic, performance-critical code, error handling
+- **Consider**: Refactored code, non-trivial bug fixes
+
+### Review Process
+
+**1. Implement normally** with full context and constraints
+
+**2. Spawn isolated reviewer** using Task tool:
+
+```text
+Task: "Security review of src/auth.py - evaluate JWT implementation, password
+handling, and input validation for vulnerabilities. No implementation context."
+```
+
+**3. Reviewer gets**: File content + purpose only (NO implementation history)
+
+**4. Integrate feedback**: Fix critical issues immediately, add others to todos
+
+### Review Types
+
+**Security**: Focus on vulnerabilities, input validation, crypto misuse
+**Performance**: Identify bottlenecks, memory issues, algorithmic inefficiencies
+**API Design**: Evaluate interfaces, error handling, consistency
+**General**: Correctness, maintainability, adherence to conventions
+
+### Anti-Patterns
+
+- ❌ Giving reviewer implementation context or constraints
+- ❌ Justifying decisions instead of addressing feedback
+- ❌ Reviewing trivial changes
+
+The goal: leverage fresh perspective to catch real issues while maintaining velocity.
+
 ## Repo Development
 
 - We use uv to manage our python deps in this repo
@@ -74,8 +114,13 @@ EOF && git commit -F /tmp/commit-msg.txt && rm /tmp/commit-msg.txt
 - Fails as a whole if any step fails
 - Avoids shell escaping issues with complex commit messages
 
+### Pull Request Reviews
+
+- When reviewing self-authored PRs, leave a comment instead of a review.
+
 ## Additional Resources
 
+- @~/.claude/docs/async-code-review.md
 - @~/.claude/docs/cli.md
 - @~/.claude/docs/git.md
 - @~/.claude/docs/github.md

@@ -11,19 +11,22 @@ I will:
 1. **Check local CLAUDE.md first** for existing tool configuration information to avoid redundant detection
 
 2. **Auto-detect project characteristics** (if not in CLAUDE.md) by checking for:
+
    - `package.json` → Node.js/TypeScript project
-   - `pyproject.toml` → Python project  
+   - `pyproject.toml` → Python project
    - `Cargo.toml` → Rust project
    - `Makefile` → Make-based project
    - `.pre-commit-config.yaml` → Pre-commit enabled
 
 3. **Identify available tooling** by examining:
+
    - Package.json scripts section
    - Makefile targets
    - Pre-commit hook configurations
    - Tool-specific config files
 
 4. **Execute validation steps in order**:
+
    - **Format**: Run formatters (prettier, black, rustfmt, etc.)
    - **Lint**: Run linters (eslint, ruff, clippy, markdownlint, etc.)
    - **Type Check**: Run type checkers if applicable (tsc, mypy)
@@ -44,6 +47,7 @@ I will:
 ### Check Local CLAUDE.md First
 
 Before auto-detection, check if `./CLAUDE.md` exists and contains a "Project Validation Tools" section with:
+
 - Project type (Python/Node.js/Rust/etc.)
 - Preferred commands for format/lint/typecheck/test
 - Package manager (pnpm/npm/yarn/uv)
@@ -59,18 +63,22 @@ After successful validation run, update/create `./CLAUDE.md` with a "Project Val
 # Project Validation Tools
 
 ## Project Type
+
 [Python|Node.js/TypeScript|Rust|Other]
 
 ## Package Manager
+
 [uv|pnpm|npm|yarn|cargo]
 
 ## Validation Commands
+
 - **Format**: [command]
-- **Lint**: [command] 
+- **Lint**: [command]
 - **Type Check**: [command]
 - **Test**: [command]
 
 ## Last Updated
+
 [current date]
 ```
 
@@ -81,26 +89,29 @@ This ensures future runs are faster and more consistent.
 1. **Check local CLAUDE.md first** - if validation tools are documented, use them
 
 2. **Check for Makefile** - if targets exist, use them:
+
    - `make format` → `make lint` → `make test`
 
 3. **Fall back to tool-specific commands** based on project type:
 
    **Python projects** (pyproject.toml exists):
+
    ```bash
    uv run ruff format .          # Format
-   uv run ruff check .           # Lint  
+   uv run ruff check .           # Lint
    uv run mypy .                 # Type check (if mypy configured)
    uv run pytest                 # Test
    ```
 
    **Node.js/TypeScript projects** (package.json exists):
+
    ```bash
    # Auto-detect package manager:
    # - pnpm-lock.yaml exists → use pnpm
-   # - yarn.lock exists → use yarn  
+   # - yarn.lock exists → use yarn
    # - package-lock.json exists → use npm
    # - packageManager field in package.json → use specified manager
-   
+
    <pkg-manager> prettier --write .      # Format
    <pkg-manager> eslint .                # Lint (if configured)
    <pkg-manager> tsc --noEmit            # Type check (if TypeScript)
@@ -108,6 +119,7 @@ This ensures future runs are faster and more consistent.
    ```
 
    **Rust projects** (Cargo.toml exists):
+
    ```bash
    cargo fmt                    # Format
    cargo clippy                 # Lint
@@ -116,6 +128,7 @@ This ensures future runs are faster and more consistent.
    ```
 
 4. **Use pre-commit when available**:
+
    ```bash
    uv run pre-commit run --all-files
    ```
@@ -123,6 +136,7 @@ This ensures future runs are faster and more consistent.
 ## Output Requirements
 
 For each step, I will:
+
 - Clearly indicate what tool is being run and why
 - Show the command being executed
 - Report success/failure status
