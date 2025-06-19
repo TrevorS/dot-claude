@@ -55,6 +55,7 @@ git push origin HEAD
 ## Error Handling
 
 If any step fails:
+
 - **Merge conflicts**: Guide through resolution process
 - **Push failures**: Handle authentication, network, or branch protection issues
 - **Staging issues**: Skip problematic files and report them separately
