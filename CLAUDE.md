@@ -42,26 +42,14 @@
 - **Context isolation**: Sub-agents start fresh - provide concrete examples and complete specifications
 - **Leverage Research Mode**: Use sub-agents with specialized tools (search, memory, think functions) for complex investigations
 
-## Repo Development
+## Claude dotfiles Repo Development
 
-- We use uv to manage our python deps in this repo
-- We use pnpm to manage our typescript deps in this repo
-
-## Command Line Patterns
-
-### Git Commits
-
-```bash
-# test precommit
-make precommit
-
-# then call git
-git commit -m "..."
-```
+- We use `uv` to manage our **Python** dependencies in this repository.
+- We use `pnpm` to manage our **TypeScript** dependencies in this repository.
 
 ### Pull Request Reviews
 
-- When reviewing self-authored PRs, leave a comment instead of a review.
+- When reviewing self-authored pull requests, leave a comment instead of a review.
 
 ## Additional Resources
 

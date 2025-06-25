@@ -1,8 +1,8 @@
 {
+  "includeCoAuthoredBy": false,
+  "model": "sonnet",
   "disableBugCommand": true,
   "disableCostWarnings": true,
   "disableErrorReporting": true,
-  "disableTelemetry": true,
-  "includeCoAuthoredBy": false,
-  "model": "sonnet"
+  "disableTelemetry": true
 }
