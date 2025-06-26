@@ -42,9 +42,7 @@ git status --porcelain
 git add .
 
 # Create commit with temporary file for message
-cat > /tmp/commit-msg.txt << 'EOF'
-[Generated commit message]
-EOF
+echo "[Generated commit message]" > /tmp/commit-msg.txt
 git commit -F /tmp/commit-msg.txt
 rm /tmp/commit-msg.txt
 

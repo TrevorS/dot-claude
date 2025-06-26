@@ -8,28 +8,13 @@
 
 ```bash
 # Create temporary file with commit message
-cat > /tmp/commit-msg.txt << 'EOF'
-Add feature: implement user authentication
-
-- Add login/logout functionality
-- Implement JWT token handling
-- Add user session management
-EOF
-
-# Use the file for commit, then clean up
-git commit -F /tmp/commit-msg.txt
-rm /tmp/commit-msg.txt
-```
-
-Alternative using echo:
-
-```bash
 echo "Add feature: implement user authentication
 
 - Add login/logout functionality
 - Implement JWT token handling
 - Add user session management" > /tmp/commit-msg.txt
 
+# Use the file for commit, then clean up
 git commit -F /tmp/commit-msg.txt
 rm /tmp/commit-msg.txt
 ```
@@ -38,16 +23,14 @@ rm /tmp/commit-msg.txt
 
 ```bash
 # Create temporary file with PR body
-cat > /tmp/pr-body.md << 'EOF'
-## Summary
+echo "## Summary
 - Implement user authentication system
 - Add comprehensive test coverage for auth flow
 
 ## Test Plan
 - [x] Unit tests for authentication logic
 - [x] Integration tests with mocked responses
-- [x] Manual testing of login/logout flow
-EOF
+- [x] Manual testing of login/logout flow" > /tmp/pr-body.md
 
 # Create PR using the file, then clean up
 gh pr create --title "Add user authentication" --body-file /tmp/pr-body.md
@@ -58,15 +41,13 @@ rm /tmp/pr-body.md
 
 ```bash
 # Create temporary file with issue content
-cat > /tmp/issue-body.md << 'EOF'
-## Description
+echo "## Description
 Implement user authentication system with JWT tokens.
 
 ## Acceptance Criteria
 - [ ] Users can log in with email/password
 - [ ] JWT tokens are properly managed
-- [ ] Session state is maintained across requests
-EOF
+- [ ] Session state is maintained across requests" > /tmp/issue-body.md
 
 # Create/update issue using the file, then clean up
 gh issue create --title "Feature: User authentication" --body-file /tmp/issue-body.md

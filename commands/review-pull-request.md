@@ -4,7 +4,7 @@ GitHub Pull Request: $ARGUMENTS
 
 ## Task
 
-I'll **ultrathink** in order to review this pull request against the GitHub issue requirements and implementation plan.
+I'll **ultrathink** in order to review this pull request against the GitHub issue requirements and execution approach.
 
 I will:
 
@@ -27,7 +27,7 @@ I will:
 - Context management review
 - Implementation approach evaluation
 
-This ensures the review aligns with our specification-to-implementation workflow.
+This ensures the review aligns with our requirements-first implementation workflow.
 
 ## Command Reference
 

@@ -51,6 +51,28 @@
 
 - When reviewing self-authored pull requests, leave a comment instead of a review.
 
+## Project Validation Tools
+
+### Project Type
+
+Mixed Python/Node.js project with markdown documentation
+
+### Package Managers
+
+- **Python**: uv
+- **Node.js**: pnpm
+
+### Validation Commands
+
+- **Format**: `make format`
+- **Lint**: `make lint`
+- **Type Check**: Not configured
+- **Test**: `make test` (no tests configured yet)
+
+### Last Updated
+
+2025-06-26
+
 ## Additional Resources
 
 - @~/.claude/docs/cli.md

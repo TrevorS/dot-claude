@@ -10,7 +10,7 @@ I will:
 
 1. Read the linked GitHub pull request to understand the changes
 2. Find and read the related GitHub issue for acceptance criteria
-3. Review the `spec.md` and `plan.md` for context
+3. Review the `spec.md` and `requirements.md` for context
 4. Ensure we have the latest code from the correct branch
 5. Create a plan for addressing the feedback
 6. Make appropriate and necessary changes to resolve the feedback
