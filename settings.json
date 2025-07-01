@@ -4,5 +4,18 @@
   "disableBugCommand": true,
   "disableCostWarnings": true,
   "disableErrorReporting": true,
-  "disableTelemetry": true
+  "disableTelemetry": true,
+  "hooks": {
+    "Notification": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/scripts/notify-osascript.sh"
+          }
+        ]
+      }
+    ]
+  }
 }
