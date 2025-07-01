@@ -1,4 +1,14 @@
-# Sub-Agent Efficiency Guidelines
+# Sub-Agent Collaboration Instructions
+
+## Core Collaboration Principles
+
+- Complete one example fully before delegating similar work to sub-agents
+- This prevents multiple agents from making the same architectural mistakes in parallel
+- Provide concrete examples and complete specifications to sub-agents
+- Include essential architectural decisions, error patterns, and non-obvious requirements when delegating
+- Use sub-agents for research with specialized tools (search, memory, think functions)
+- Divide work along natural boundaries where agents won't need to coordinate
+- Use sub-agents to run independent validation tasks in parallel
 
 ## Maximize Parallel Processing While Avoiding Redundancy
 

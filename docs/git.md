@@ -1,4 +1,12 @@
-# Git Workflow Best Practices
+# Git and Version Control Instructions
+
+## Basic Git Workflow
+
+- Use temporary files for commit messages and PR bodies to avoid shell escaping issues
+- Write commit messages that focus on "why" rather than "what"
+- Follow existing commit message style by checking recent git log
+- Never update git config without explicit permission
+- Do not push to remote repository unless explicitly asked
 
 ## Commit Messages and Pull Request Bodies
 
@@ -61,3 +69,13 @@ rm /tmp/issue-body.md
 - Makes content easier to review and edit
 - Cleaner command history
 - More reliable automation
+
+## Code Review Practices
+
+- Review all staged changes before committing
+- Check git status and git diff to understand what will be committed
+- Analyze commit history to follow repository's commit message style
+- Look for sensitive information that shouldn't be committed
+- Ensure commits accurately reflect changes and their purpose
+- Run lint and typecheck commands before finalizing code changes
+- When reviewing self-authored pull requests, leave comments instead of reviews
