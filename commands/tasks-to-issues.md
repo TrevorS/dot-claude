@@ -1,6 +1,4 @@
-# ABOUTME: Converts task breakdowns into GitHub issues without timeline artifacts
-
-## ABOUTME: Focuses on clear deliverables and dependencies rather than project scheduling
+# Convert task breakdowns into GitHub issues
 
 Convert tasks to GitHub issues: $ARGUMENTS
 

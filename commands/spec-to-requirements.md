@@ -1,6 +1,4 @@
-# ABOUTME: Extracts functional and non-functional requirements from specification files
-
-## ABOUTME: Focuses on what needs to be built without timeline or phase creation
+# Extract requirements from specifications file
 
 Extract requirements from specification: $ARGUMENTS
 

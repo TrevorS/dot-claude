@@ -1,6 +1,4 @@
-# ABOUTME: Breaks requirements into implementable tasks without timeline artifacts
-
-## ABOUTME: Focuses on technical decomposition and clear deliverables
+# Breaks requirements into implementable tasks
 
 Convert requirements to implementation tasks: $ARGUMENTS
 
