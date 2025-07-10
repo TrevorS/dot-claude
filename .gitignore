@@ -20,3 +20,4 @@ todos/
 *.db
 node_modules/
 ide/
+shell-snapshots/

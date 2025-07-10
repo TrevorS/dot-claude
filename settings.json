@@ -7,7 +7,18 @@
         "hooks": [
           {
             "type": "command",
-            "command": "~/.claude/scripts/notify-osascript.sh"
+            "command": "~/.claude/hooks/notify-osascript.sh"
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/command_blocker.sh"
           }
         ]
       }
