@@ -8,7 +8,7 @@ I'll **think hard** to safely commit and push your work with proper validation a
 
 I will:
 
-1. **Check git status** and identify files that need staging
+1. **Check git status** and identify files that need staging, check if you are on the correct branch
 2. **Auto-stage relevant files** (modified, new files that make sense to include)
 3. **Analyze changes** to understand the scope and nature of modifications
 4. **Generate clear commit message** following repository conventions and your git workflow
@@ -27,6 +27,7 @@ I will:
 
 ## Safety Checks
 
+- If it's not obvious which branch to be on, prompt for confirmation
 - Check for merge conflicts or other git issues
 - Ensure we're on the correct branch for pushing
 - Handle cases where remote branch doesn't exist yet
