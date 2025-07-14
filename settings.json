@@ -24,9 +24,11 @@
       }
     ]
   },
-  "disableBugCommand": true,
-  "disableCostWarnings": true,
-  "disableErrorReporting": true,
-  "disableTelemetry": true,
+  "env": {
+    "DISABLE_BUG_COMMAND": true,
+    "DISABLE_COST_WARNINGS": true,
+    "DISABLE_ERROR_REPORTING": true,
+    "DISABLE_TELEMETRY": true
+  },
   "model": "sonnet"
 }
