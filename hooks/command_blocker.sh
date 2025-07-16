@@ -21,8 +21,8 @@ if [[ -f pyproject.toml ]]; then
     rules+=(
         # Block direct Python tool usage (python, pytest, pip, etc.)
         "^(python|pytest|pip|mypy|black|isort|flake8|ruff)([[:space:]]|\$)~Use 'uv run' prefix for Python commands"
-        # Block direct .py file execution
-        "^[^/]*\.py([[:space:]]|\$)~Use 'uv run python script.py' instead of direct execution"
+        # Block direct .py file execution (but not python script.py)
+        "^[^[:space:]]*\.py([[:space:]]|\$)~Use 'uv run python script.py' instead of direct execution"
     )
 fi
 
