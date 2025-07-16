@@ -11,6 +11,7 @@ I will:
 3. Structure issues with clear acceptance criteria and implementation approach
 4. Map task dependencies as issue relationships (not timeline phases)
 5. Apply descriptive labels based on task type and components
+6. Ensure each necessary label, tag, or project is created before issue creation
 
 ## Issue Structure
 

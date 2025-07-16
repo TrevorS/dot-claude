@@ -8,13 +8,15 @@ I'll **think hard** to safely commit and push your work with proper validation a
 
 I will:
 
-1. **Check git status** and identify files that need staging, check if you are on the correct branch
-2. **Auto-stage relevant files** (modified, new files that make sense to include)
-3. **Analyze changes** to understand the scope and nature of modifications
-4. **Generate clear commit message** following repository conventions and your git workflow
-5. **Create commit** using temporary file approach for clean message handling
-6. **Push to origin** with appropriate branch tracking
-7. **Provide summary** of all completed actions
+1. **Check current branch status** - ensure we're not committing to main/master/dev
+2. **Prompt for feature branch creation** if on protected branch
+3. **Check git status** and identify files that need staging
+4. **Auto-stage relevant files** (modified, new files that make sense to include)
+5. **Analyze changes** to understand the scope and nature of modifications
+6. **Generate clear commit message** following repository conventions and your git workflow
+7. **Create commit** using temporary file approach for clean message handling
+8. **Push to origin** with upstream tracking (-u flag) for new branches
+9. **Provide summary** of all completed actions
 
 ## Commit Message Strategy
 
@@ -25,30 +27,46 @@ I will:
 - Keep first line under 50 characters when possible
 - Add detailed description if changes warrant explanation
 
+## Branch Safety Protocol
+
+**MANDATORY FIRST STEP**: Check if we're on a protected branch
+
+- If on `main`, `master`, or `dev`: **STOP** and offer to create feature branch
+- Suggest branch name based on current work or ask for user input
+- Use format: `feature/description` or `fix/description`
+
 ## Safety Checks
 
-- If it's not obvious which branch to be on, prompt for confirmation
-- Check for merge conflicts or other git issues
-- Ensure we're on the correct branch for pushing
-- Handle cases where remote branch doesn't exist yet
-- Stop and report if any validation step fails
+- **Protected Branch Check**: Never commit directly to main/master/dev without explicit confirmation
+- **Branch Status**: Check if current branch tracks a remote branch
+- **Merge Conflicts**: Check for merge conflicts or other git issues
+- **Remote Tracking**: Handle cases where remote branch doesn't exist (use `-u` flag)
+- **Validation**: Stop and report if any validation step fails
+- **Uncommitted Changes**: Warn about any files that won't be staged
 
 ## Command Reference
 
 ```bash
-# Check current git status
+# Check current branch
+git branch --show-current
+
+# Check git status
 git status --porcelain
 
-# Stage all relevant changes
+# Stage changes
 git add .
 
-# Create commit with temporary file for message
-echo "[Generated commit message]" > /tmp/commit-msg.txt
+# Create commit with message file
 git commit -F /tmp/commit-msg.txt
-rm /tmp/commit-msg.txt
 
-# Push to remote
+# Push with upstream (new branches)
+git push -u origin HEAD
+
+# Push without upstream (existing)
 git push origin HEAD
+
+# Check upstream tracking
+git rev-parse --abbrev-ref --symbolic-full-name @{upstream}
 ```
 
 ## Error Handling

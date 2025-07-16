@@ -21,3 +21,4 @@ todos/
 node_modules/
 ide/
 shell-snapshots/
+claude_files_*/

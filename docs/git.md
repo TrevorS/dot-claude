@@ -70,6 +70,29 @@ rm /tmp/issue-body.md
 - Cleaner command history
 - More reliable automation
 
+## Feature Branch Workflow
+
+### Claude Commands with Branch Safety
+
+- **/implement-issue**: Automatically creates feature branches and enforces proper workflow
+- **/commit-and-push**: Checks for protected branches and ensures upstream tracking
+- **/create-feature-branch**: Creates properly named feature branches with GitHub integration
+- **/switch-to-feature**: Moves work from protected branches to feature branches safely
+
+### Branch Protection
+
+- **Automatic Detection**: Claude detects when you're on main/master/dev
+- **Branch Naming**: Uses conventional format (feature/, fix/, chore/)
+- **GitHub Integration**: Fetches issue details for proper branch naming
+- **Safety Hooks**: Warns before committing to protected branches
+
+### Workflow Pattern
+
+1. Start work: `/create-feature-branch description` or `/implement-issue <number>`
+2. Develop with proper TDD and testing
+3. Commit and push: `/commit-and-push`
+4. Create PR: Commands handle upstream tracking automatically
+
 ## Code Review Practices
 
 - Review all staged changes before committing

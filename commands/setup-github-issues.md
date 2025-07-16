@@ -6,14 +6,15 @@ I'll analyze the provided `issues.md` file and create complete GitHub project in
 
 I will:
 
-1. **Parse and analyze the issues file** using Claude's analysis capabilities
-2. **Extract project structure** including labels, milestones, and issue relationships
-3. **Create GitHub labels** with appropriate colors and descriptions
-4. **Set up milestones** with calculated due dates based on project phases
-5. **Create GitHub project board** with custom fields for tracking
-6. **Generate all issues** with proper labels, milestones, and descriptions
-7. **Link issue dependencies** through comments and references
-8. **Provide comprehensive summary** of created resources
+1. **Auto-configure permissions** by running `/auto-permissions` to ensure appropriate GitHub and project management access
+2. **Parse and analyze the issues file** using Claude's analysis capabilities
+3. **Extract project structure** including labels, milestones, and issue relationships
+4. **Create GitHub labels** with appropriate colors and descriptions
+5. **Set up milestones** with calculated due dates based on project phases
+6. **Create GitHub project board** with custom fields for tracking
+7. **Generate all issues** with proper labels, milestones, and descriptions
+8. **Link issue dependencies** through comments and references
+9. **Provide comprehensive summary** of created resources
 
 ## Prerequisites
 
