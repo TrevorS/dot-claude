@@ -93,6 +93,18 @@ rm /tmp/issue-body.md
 3. Commit and push: `/commit-and-push`
 4. Create PR: Commands handle upstream tracking automatically
 
+## Pre-commit Hook Handling
+
+### Pre-commit Hook Behavior
+
+Pre-commit hooks modify files during commit. This is normal. When this happens:
+
+1. Re-stage changes: `git add .`
+2. Retry commit once: `git commit -F /tmp/commit-msg.txt`
+3. If still failing: stop and investigate the actual error
+
+Don't get stuck in loops trying to "fix" normal hook behavior.
+
 ## Code Review Practices
 
 - Review all staged changes before committing
@@ -101,4 +113,5 @@ rm /tmp/issue-body.md
 - Look for sensitive information that shouldn't be committed
 - Ensure commits accurately reflect changes and their purpose
 - Run lint and typecheck commands before finalizing code changes
+- Accept that pre-commit hooks may modify files during commit - this is expected
 - When reviewing self-authored pull requests, leave comments instead of reviews

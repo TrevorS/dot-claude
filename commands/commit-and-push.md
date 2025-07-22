@@ -14,7 +14,7 @@ I will:
 4. **Auto-stage relevant files** (modified, new files that make sense to include)
 5. **Analyze changes** to understand the scope and nature of modifications
 6. **Generate clear commit message** following repository conventions and your git workflow
-7. **Create commit** using temporary file approach for clean message handling
+7. **Create commit** using temporary file approach and pre-commit hook handling
 8. **Push to origin** with upstream tracking (-u flag) for new branches
 9. **Provide summary** of all completed actions
 
@@ -59,6 +59,9 @@ git add .
 # Create commit with message file
 git commit -F /tmp/commit-msg.txt
 
+# If commit fails due to pre-commit hooks: re-stage and retry once
+git add . && git commit -F /tmp/commit-msg.txt
+
 # Push with upstream (new branches)
 git push -u origin HEAD
 
@@ -73,6 +76,7 @@ git rev-parse --abbrev-ref --symbolic-full-name @{upstream}
 
 If any step fails:
 
+- **Pre-commit hook failures**: Re-stage changes and retry once only before stepping back
 - **Merge conflicts**: Guide through resolution process
 - **Push failures**: Handle authentication, network, or branch protection issues
 - **Staging issues**: Skip problematic files and report them separately
