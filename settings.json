@@ -1,5 +1,12 @@
 {
+  "env": {
+    "DISABLE_BUG_COMMAND": "true",
+    "DISABLE_COST_WARNINGS": "true",
+    "DISABLE_ERROR_REPORTING": "true",
+    "DISABLE_TELEMETRY": "true"
+  },
   "includeCoAuthoredBy": false,
+  "model": "sonnet",
   "hooks": {
     "Notification": [
       {
@@ -19,16 +26,13 @@
           {
             "type": "command",
             "command": "~/.claude/hooks/command_blocker.sh"
+          },
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/branch_protection.sh"
           }
         ]
       }
     ]
-  },
-  "env": {
-    "DISABLE_BUG_COMMAND": true,
-    "DISABLE_COST_WARNINGS": true,
-    "DISABLE_ERROR_REPORTING": true,
-    "DISABLE_TELEMETRY": true
-  },
-  "model": "sonnet"
+  }
 }
