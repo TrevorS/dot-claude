@@ -15,12 +15,16 @@
 ### For commit messages
 
 ```bash
-# Create temporary file with commit message
+# Method 1: Use echo for simple messages (PREFERRED for basic content)
 echo "Add feature: implement user authentication
 
 - Add login/logout functionality
 - Implement JWT token handling
 - Add user session management" > /tmp/commit-msg.txt
+
+# Method 2: Use Write tool for complex messages with special characters
+# Use Write tool when content contains backticks, quotes, or complex formatting
+# Example: Write file_path="/tmp/commit-msg.txt" content="your message here"
 
 # Use the file for commit, then clean up
 git commit -F /tmp/commit-msg.txt
@@ -30,7 +34,14 @@ rm /tmp/commit-msg.txt
 ### For pull request bodies
 
 ```bash
-# Create temporary file with PR body
+# Method 1: Use Write tool for complex PR descriptions (PREFERRED)
+# Use Write tool when content contains:
+# - Code blocks with backticks
+# - Complex markdown formatting
+# - Template literals or special characters
+# - Multi-line content with quotes
+
+# Method 2: Use echo for simple PR bodies only
 echo "## Summary
 - Implement user authentication system
 - Add comprehensive test coverage for auth flow
@@ -69,6 +80,30 @@ rm /tmp/issue-body.md
 - Makes content easier to review and edit
 - Cleaner command history
 - More reliable automation
+
+### Tool Selection Guidelines
+
+**Use Write tool when content contains:**
+
+- Code blocks with backticks (\`\`\`typescript, \`\`\`bash, etc.)
+- Template literals with ${} expressions
+- Complex markdown formatting (tables, nested lists)
+- Multiple quotes or special characters
+- Large multi-paragraph descriptions
+- Any content that failed with echo due to escaping
+
+**Use echo when content is:**
+
+- Simple text without special characters
+- Basic bullet points or numbered lists
+- Short commit messages
+- Content without code blocks or complex formatting
+
+**Always test approach:**
+
+- If echo fails with escaping errors, switch to Write tool
+- Write tool provides guaranteed content fidelity
+- Temporary files eliminate all shell parsing issues
 
 ## Feature Branch Workflow
 
