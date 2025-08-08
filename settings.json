@@ -8,6 +8,10 @@
   },
   "includeCoAuthoredBy": false,
   "model": "sonnet",
+  "statusLine": {
+    "type": "command",
+    "command": "~/.claude/hooks/status.sh"
+  },
   "hooks": {
     "Notification": [
       {
