@@ -110,7 +110,31 @@ Mixed Python/Node.js project with markdown documentation
 
 ### Last Updated
 
-2025-07-29
+2025-08-09
+
+## Project Permissions
+
+### Project Type
+
+Personal dotfiles project
+
+### Branch Protection Status
+
+- **Main Branch Protection**: enhanced (hook-based warnings)
+- **Protected Branches**: master, main, dev
+- **Direct Commits Allowed**: discouraged via warnings
+- **Auto-fix on Protected Branch**: allowed with warnings
+- **Branch Protection Hook**: `/Users/trevor/.claude/hooks/branch_protection.sh`
+
+### Validation Behavior
+
+- **Format changes on protected branch**: Warns user to consider feature branch
+- **Commit operations on protected branch**: Issues warning but allows operation
+- **Recommended workflow**: Create feature branches for formatting fixes
+
+### Last Checked
+
+2025-08-09
 
 ## Additional Resources
 
