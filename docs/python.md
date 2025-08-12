@@ -2,7 +2,9 @@
 
 ## Package Management
 
-- Use `uv` for everything (`uv add`, `uv run`, etc...)
+- Use `uv` for everything (`uv add`, `uv remove`, `uv run`, etc...)
+- Always use `uv add` and `uv remove` commands to manage dependencies
+- Never edit `pyproject.toml` directly for dependency management - let `uv` handle it
 - Do not use old fashioned methods for package management like `poetry`, `pip` or `easy_install`
 - Ensure there is a `pyproject.toml` file in the root directory
 - If there isn't a `pyproject.toml` file, create one using `uv` by running `uv init`
