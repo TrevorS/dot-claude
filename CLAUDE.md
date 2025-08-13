@@ -85,6 +85,17 @@
 - Consider maintainability cost when making performance optimizations
 - Prefer simple solutions that are "fast enough" over complex optimizations
 
+## Planning and Task Management
+
+- **Avoid time estimates** - LLMs are consistently inaccurate at estimating duration or effort
+- **Avoid complexity assessments** - Focus on concrete tasks rather than abstract complexity ratings
+- **Avoid phasing and scheduling** - Break work into immediate, actionable items instead of phases
+- **Avoid dates and deadlines** - Stick to sequence and dependencies only, never specific timelines
+- **Focus on concrete actions** - Each todo should be a specific, testable action you can complete now
+- **Prefer immediate execution** - Plan the next 1-3 concrete steps, not entire project roadmaps
+- **Use simple task lists** - Avoid elaborate planning frameworks, methodologies, or estimation techniques
+- **Keep planning lightweight** - Spend more time doing and less time planning abstract concepts
+
 ## Claude dotfiles Repo Development
 
 - Use `uv` to manage Python dependencies in this repository
