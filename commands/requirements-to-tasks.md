@@ -1,5 +1,9 @@
 # Breaks requirements into implementable tasks
 
+<!-- ABOUTME: Converts requirements.md files into specific, implementable development tasks -->
+
+<!-- ABOUTME: Breaks down high-level requirements into actionable development steps -->
+
 Convert requirements to implementation tasks: $ARGUMENTS
 
 I'll take a `requirements.md` file and break it down into specific, implementable tasks.

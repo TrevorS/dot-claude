@@ -1,5 +1,9 @@
 # Create Feature Branch
 
+<!-- ABOUTME: Creates properly named feature branches with GitHub issue integration -->
+
+<!-- ABOUTME: Auto-detects branch type and follows conventional naming patterns -->
+
 Create a properly named feature branch from the current state, with optional GitHub issue integration.
 
 Usage: `/create-feature-branch [description-or-issue-number]`

@@ -1,15 +1,22 @@
 # Commit and Push Changes
 
+<!-- ABOUTME: Auto-stages, validates, commits with clear message, and pushes changes to remote -->
+
+<!-- ABOUTME: Handles branch safety, validation pipeline, and upstream tracking automatically -->
+
 Auto-stage, validate, commit with a clear message, and push changes to the remote repository.
 
 ## Task
 
+I'll **ultrathink** to determine the optimal validation, commit, and push workflow for this project.
+
 I will:
 
-1. Check project permissions in `./CLAUDE.md`
-2. Use project-validator agent for code quality
-3. Use git-message-crafter agent for commit message and branch safety
-4. Auto-stage files, commit changes, and push to remote
+1. **Check project permissions** in `./CLAUDE.md` for branch protection and push policies
+2. **Run comprehensive validation** - auto-detect and execute formatters, linters, type checkers
+3. **Generate meaningful commit message** using git history and staged change analysis
+4. **Handle branch safety** - verify not pushing directly to protected branches inappropriately
+5. **Auto-stage, commit, and push** with upstream tracking and proper error handling
 
 ## Branch Safety Protocol
 
@@ -36,15 +43,18 @@ git push -u origin HEAD
 
 - Ask user about unknown project permissions
 - Stop on protected branch violations
-- Handle push permission denials
-- Use agents to fix code quality issues
+- Handle push permission denials gracefully
+- Auto-fix code quality issues using detected formatters/linters
 - Re-stage once if pre-commit hooks fail
+- Provide clear guidance for manual fixes when auto-fix isn't possible
 
-## Agent Integration
+## Modern Validation and Git Flow
 
-- **project-validator agent**: Runs formatters, linters, type checkers
-- **git-message-crafter agent**: Handles branch safety, commit messages, and push operations
-- Caches project permissions in CLAUDE.md for future runs
+- **Auto-detect project type**: Scan for `pyproject.toml`, `package.json`, `Cargo.toml`, `Makefile`
+- **Run validation pipeline**: Execute format → lint → typecheck → test based on detected tools
+- **Generate commit messages**: Analyze staged changes and recent commit history for context
+- **Handle upstream tracking**: Set up remote tracking automatically for new branches
+- **Cache project information**: Update CLAUDE.md with validation tools and branch policies
 
 Example CLAUDE.md section:
 

@@ -1,5 +1,9 @@
 # Sets up complete GitHub project infrastructure from any `issues.md` file
 
+<!-- ABOUTME: Creates complete GitHub project infrastructure from issues.md files -->
+
+<!-- ABOUTME: Sets up labels, milestones, project boards, and issues with proper relationships -->
+
 Set up GitHub project from issues file: $ARGUMENTS
 
 I'll analyze the provided `issues.md` file and create complete GitHub project infrastructure including labels, milestones, project board, and all issues with proper relationships.

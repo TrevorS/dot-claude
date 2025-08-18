@@ -1,42 +1,92 @@
-Deep‑research pipeline (planner → orchestrator → summarizer)
+# Deep Research
 
-Input
-• $ARGUMENTS – the user's research question
+<!-- ABOUTME: Conducts comprehensive research using multiple tools and sources -->
 
-Required flow
+<!-- ABOUTME: Provides detailed analysis and findings for complex research questions -->
 
-1. **Invoke the agent named `@search-planner`** on "$ARGUMENTS".
-   → Expect pure‑YAML output of the form
+Research question: $ARGUMENTS
 
-   ```yaml
-   queries:
-     - q: …
-       reason: …
-       source_hint: …
-       freshness: …
-   ```
+## Task
 
-2. **Pass that YAML unchanged to the agent named `@search-orchestrator`.**
-   → Expect pure‑YAML output of the form
+I'll **ultrathink** to design and execute a comprehensive research strategy for this question using modern web search and analysis techniques.
 
-   ```yaml
-   results:
-     - query: …
-       url: …
-       snippets: […]
-   ```
+I will:
 
-3. **Pass the orchestrator's YAML unchanged to the agent named `@search-synthesizer`.**
-   – Unless the user included a flag like `as:faq` or `as:table`,
-   also pass the key `output_format: "markdown report"`.
-   → The synthesizer returns the final answer text.
+1. **Analyze the research question** - Break down into searchable components and identify key information needs
+2. **Plan search strategy** - Determine optimal search queries, sources, and freshness requirements
+3. **Execute parallel searches** - Use WebSearch tool with varied query approaches for comprehensive coverage
+4. **Fetch detailed sources** - Use WebFetch tool to extract full content from most relevant results
+5. **Synthesize findings** - Combine information from multiple sources into coherent analysis
+6. **Format final report** - Structure findings based on requested output format
 
-Output
-• Show the synthesizer's text exactly as returned.
-• Do not display intermediate YAML or any tooling logs.
+## Research Strategy
 
-Rules
-• Do not invoke any agents other than the three listed above.
-• All inter‑agent payloads must remain YAML.
-• The command itself performs no WebSearch, WebFetch, or Bash calls—those are handled by the sub‑agents.
-• If the user supplies an `as:<format>` hint, forward it only to the synthesizer.
+### **Query Planning**
+
+- **Primary queries**: Direct keyword searches for main topic
+- **Alternative angles**: Related concepts, different terminology, opposing viewpoints
+- **Specific sources**: Target authoritative sites, recent publications, official documentation
+- **Freshness targeting**: Balance recent information with established knowledge
+
+### **Source Diversification**
+
+- **Official sources**: Documentation, government sites, academic institutions
+- **Current discussions**: Recent blog posts, forums, social media trends
+- **Technical depth**: Stack Overflow, GitHub, technical documentation
+- **Multiple perspectives**: Different viewpoints and potential biases
+
+### **Information Synthesis**
+
+- **Cross-reference facts** across multiple sources
+- **Identify consensus** vs conflicting information
+- **Note recency** and relevance of different sources
+- **Highlight gaps** where information is limited or uncertain
+
+## Output Formats
+
+The research adapts to different output needs:
+
+### **Default: Comprehensive Report**
+
+- Executive summary of key findings
+- Detailed analysis with source citations
+- Multiple perspectives on controversial topics
+- Actionable insights and recommendations
+
+### **Custom Formats** (using `as:format` syntax)
+
+- `as:faq` - Question and answer format
+- `as:table` - Structured comparison table
+- `as:summary` - Condensed key points only
+- `as:technical` - Focus on implementation details
+- `as:beginner` - Accessible explanations for newcomers
+
+## Research Quality Standards
+
+**Source Verification:**
+
+- Cross-check facts across multiple reputable sources
+- Note publication dates and potential staleness
+- Identify potential bias or conflicts of interest
+- Verify technical accuracy where possible
+
+**Comprehensiveness:**
+
+- Cover multiple angles of the research question
+- Include both benefits and limitations/risks
+- Address common misconceptions
+- Provide context for findings
+
+**Actionability:**
+
+- Focus on practically useful information
+- Include specific examples and use cases
+- Provide next steps or resources for deeper learning
+- Balance depth with accessibility
+
+## Research Tools Used
+
+- **WebSearch**: Initial discovery and broad coverage
+- **WebFetch**: Deep analysis of specific high-value sources
+- **Multiple query strategies**: Keyword variations, phrase searches, site-specific searches
+- **Cross-validation**: Verify claims across independent sources

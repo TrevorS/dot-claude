@@ -1,5 +1,9 @@
 # Convert task breakdowns into GitHub issues
 
+<!-- ABOUTME: Converts tasks.md files into properly structured GitHub issues -->
+
+<!-- ABOUTME: Creates implementable GitHub issues from task breakdowns with labels and milestones -->
+
 Convert tasks to GitHub issues: $ARGUMENTS
 
 I'll take a `tasks.md` file and create GitHub issues for each implementable task.

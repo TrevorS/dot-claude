@@ -1,5 +1,9 @@
 # Auto-Configure Permissions
 
+<!-- ABOUTME: Analyzes project context and configures optimal Claude Code permissions -->
+
+<!-- ABOUTME: Sets repository permissions based on project type and intended workflow -->
+
 Automatically analyze project context and configure optimal permissions for Claude Code based on repository state, project type, and intended workflow.
 
 ## Task

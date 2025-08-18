@@ -1,15 +1,22 @@
 # Commit Changes
 
+<!-- ABOUTME: Auto-stages, validates, and commits changes with clear messages -->
+
+<!-- ABOUTME: Supports incremental development workflow without pushing to remote -->
+
 Auto-stage, validate, and commit changes with a clear message for incremental development workflow.
 
 ## Task
 
+I'll **ultrathink** to determine the optimal validation and commit approach for this project context.
+
 I will:
 
-1. Check project permissions in `./CLAUDE.md`
-2. Use project-validator agent for code quality
-3. Use git-message-crafter agent for commit message and branch safety
-4. Auto-stage files and commit changes (no push)
+1. **Check project permissions** in `./CLAUDE.md` for branch protection and validation requirements
+2. **Run project validation** - auto-detect and execute formatters, linters, type checkers
+3. **Generate meaningful commit message** using git history and change analysis
+4. **Handle branch safety** - verify not committing directly to protected branches
+5. **Auto-stage and commit** changes with proper error handling
 
 ## Branch Safety Protocol
 
@@ -34,14 +41,16 @@ git add . && git commit -F /tmp/commit-msg.txt
 
 - Ask user about unknown project permissions
 - Stop on protected branch violations
-- Use agents to fix code quality issues
+- Auto-fix code quality issues using detected formatters/linters
 - Re-stage once if pre-commit hooks fail
+- Provide clear guidance for manual fixes when auto-fix isn't possible
 
-## Agent Integration
+## Modern Validation Flow
 
-- **project-validator agent**: Runs formatters, linters, type checkers
-- **git-message-crafter agent**: Handles branch safety and commit messages
-- Caches project permissions in CLAUDE.md for future runs
+- **Auto-detect project type**: Scan for `pyproject.toml`, `package.json`, `Cargo.toml`, `Makefile`
+- **Run validation commands**: Execute format → lint → typecheck → test based on detected tools
+- **Generate commit messages**: Analyze staged changes and recent commit history for context
+- **Cache project information**: Update CLAUDE.md with validation tools and branch policies
 
 Example CLAUDE.md section:
 
