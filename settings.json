@@ -7,11 +7,7 @@
     "DISABLE_TELEMETRY": "true"
   },
   "includeCoAuthoredBy": false,
-  "model": "sonnet",
-  "statusLine": {
-    "type": "command",
-    "command": "~/.claude/hooks/status.sh"
-  },
+  "model": "opusplan",
   "hooks": {
     "Notification": [
       {
@@ -39,6 +35,10 @@
         ]
       }
     ]
+  },
+  "statusLine": {
+    "type": "command",
+    "command": "~/.claude/hooks/status.sh"
   },
   "feedbackSurveyState": {
     "lastShownTime": 1754086151370
