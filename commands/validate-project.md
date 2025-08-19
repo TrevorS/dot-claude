@@ -2,13 +2,13 @@
 
 <!-- ABOUTME: Auto-detects and runs formatter, linter, type checker, and tests -->
 
-<!-- ABOUTME: Validates project using detected tools and provides comprehensive feedback -->
+<!-- ABOUTME: Validates project using detected tools and provides complete feedback -->
 
 Auto-detect and run formatter, linter, type checker, and tests for the current project.
 
 ## Task
 
-I'll **ultrathink** to determine the optimal validation approach and systematically validate this project.
+I'll figure out the best validation approach and systematically validate this project.
 
 I will:
 
@@ -17,7 +17,7 @@ I will:
 3. **Execute validation pipeline** - Run steps in proper order (format → lint → typecheck → test)
 4. **Handle validation failures** - Provide clear guidance for fixing issues
 5. **Update project metadata** - Cache discovered tool information in local CLAUDE.md
-6. **Report comprehensive results** - Show what passed/failed and next steps
+6. **Report complete results** - Show what passed/failed and next steps
 
 ## Validation Pipeline
 

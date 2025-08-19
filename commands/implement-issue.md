@@ -2,13 +2,13 @@
 
 <!-- ABOUTME: Creates feature branch and implements GitHub/Linear issues with TDD workflow -->
 
-<!-- ABOUTME: Auto-detects issue system, creates PR, and follows comprehensive implementation standards -->
+<!-- ABOUTME: Auto-detects issue system, creates PR, and follows good implementation standards -->
 
 Issue: $ARGUMENTS
 
 ## Task
 
-I'll **ultrathink** to develop a comprehensive solution for this issue with careful context management and optimal workflow execution.
+I'll work through this issue carefully and figure out the best workflow.
 
 I will:
 
@@ -17,12 +17,12 @@ I will:
 3. **Create feature branch** with proper naming convention based on issue details
 4. **Read and understand issue requirements** using appropriate CLI tool
 5. **Review project context** - check `spec.md`, `requirements.md`, `CLAUDE.md` for standards
-6. **Follow TDD approach** - write comprehensive tests first
+6. **Follow TDD approach** - write complete tests first
 7. **Implement minimal code** to pass tests
 8. **Refactor incrementally** while maintaining test coverage
 9. **Document key architectural decisions** in code comments
 10. **Push with upstream tracking** and create pull request
-11. **Generate comprehensive PR description** with test plan
+11. **Write complete PR description** with test plan
 12. **Keep PR open** for review and iterate based on feedback
 
 ## Auto-Detection Logic

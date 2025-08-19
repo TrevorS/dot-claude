@@ -7,7 +7,7 @@ Pull Request: $ARGUMENTS
 
 ## Task
 
-I'll **ultrathink** to understand the feedback context and develop the optimal approach for addressing pull request feedback.
+I'll understand the feedback context and figure out the best approach for addressing pull request feedback.
 
 I will:
 
@@ -22,7 +22,7 @@ I will:
 9. **Test changes thoroughly** - ensure fixes don't break existing functionality
 10. **Update PR with explanations** - document changes made and reasoning
 
-This ensures comprehensive feedback resolution that meets requirements and maintains code quality.
+This ensures complete feedback resolution that meets requirements and maintains code quality.
 
 ## Auto-Detection Logic
 
@@ -36,7 +36,7 @@ The command automatically detects the issue tracking system:
 ### GitHub Flow
 
 ```bash
-# View PR with comprehensive details
+# View PR with full details
 gh pr view <number> --json title,body,author,commits,files,comments,reviews
 
 # Get formal reviews with review comments

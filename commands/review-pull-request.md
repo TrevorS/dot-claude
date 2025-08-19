@@ -1,6 +1,6 @@
 # Review Pull Request
 
-<!-- ABOUTME: Conducts comprehensive PR reviews against issue requirements and best practices -->
+<!-- ABOUTME: Conducts complete PR reviews against issue requirements and best practices -->
 
 <!-- ABOUTME: Analyzes code quality, tests, documentation, and implementation standards -->
 
@@ -8,7 +8,7 @@ Pull Request: $ARGUMENTS
 
 ## Task
 
-I'll **ultrathink** to conduct a comprehensive review of this pull request against issue requirements and implementation best practices.
+I'll carefully review this pull request against issue requirements and good coding practices.
 
 I will:
 
@@ -18,7 +18,7 @@ I will:
 4. **Ensure latest code context** - pull changes and verify working directory state
 5. **Review project documentation** - check `docs/`, `spec.md`, `requirements.md`, `CLAUDE.md` for standards
 6. **Analyze implementation quality** - code structure, patterns, maintainability
-7. **Verify test coverage** - ensure comprehensive testing of new functionality
+7. **Verify test coverage** - ensure complete testing of new functionality
 8. **Check style compliance** - validate against project guidelines from `CLAUDE.md`
 9. **Assess scope adherence** - confirm changes are minimal and focused on requirements
 10. **Determine review action** - check if self-authored (comment) vs external (formal review)
@@ -94,7 +94,7 @@ The command automatically detects the issue tracking context:
 ### GitHub Flow
 
 ```bash
-# View PR with comprehensive details
+# View PR with full details
 gh pr view <number> --json title,body,author,commits,files,comments,reviews
 
 # Get diff and file changes

@@ -8,13 +8,13 @@ Auto-stage, validate, commit with a clear message, and push changes to the remot
 
 ## Task
 
-I'll **ultrathink** to determine the optimal validation, commit, and push workflow for this project.
+I'll figure out the best validation, commit, and push workflow for this project.
 
 I will:
 
 1. **Check project permissions** in `./CLAUDE.md` for branch protection and push policies
-2. **Run comprehensive validation** - auto-detect and execute formatters, linters, type checkers
-3. **Generate meaningful commit message** using git history and staged change analysis
+2. **Run full validation** - auto-detect and execute formatters, linters, type checkers
+3. **Write clear commit message** using git history and staged change analysis
 4. **Handle branch safety** - verify not pushing directly to protected branches inappropriately
 5. **Auto-stage, commit, and push** with upstream tracking and proper error handling
 
@@ -52,7 +52,7 @@ git push -u origin HEAD
 
 - **Auto-detect project type**: Scan for `pyproject.toml`, `package.json`, `Cargo.toml`, `Makefile`
 - **Run validation pipeline**: Execute format → lint → typecheck → test based on detected tools
-- **Generate commit messages**: Analyze staged changes and recent commit history for context
+- **Write commit messages**: Look at staged changes and recent commit history for context
 - **Handle upstream tracking**: Set up remote tracking automatically for new branches
 - **Cache project information**: Update CLAUDE.md with validation tools and branch policies
 

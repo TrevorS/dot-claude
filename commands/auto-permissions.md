@@ -1,14 +1,14 @@
 # Auto-Configure Permissions
 
-<!-- ABOUTME: Analyzes project context and configures optimal Claude Code permissions -->
+<!-- ABOUTME: Analyzes project context and configures good Claude Code permissions -->
 
 <!-- ABOUTME: Sets repository permissions based on project type and intended workflow -->
 
-Automatically analyze project context and configure optimal permissions for Claude Code based on repository state, project type, and intended workflow.
+Automatically analyze project context and configure good permissions for Claude Code based on repository state, project type, and intended workflow.
 
 ## Task
 
-I'll **ultrathink** to intelligently detect the project context and automatically configure appropriate permissions without requiring user input.
+I'll detect the project context and automatically set up the right permissions.
 
 I will:
 

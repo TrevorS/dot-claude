@@ -1,6 +1,6 @@
 # Deep Research
 
-<!-- ABOUTME: Conducts comprehensive research using multiple tools and sources -->
+<!-- ABOUTME: Conducts thorough research using multiple tools and sources -->
 
 <!-- ABOUTME: Provides detailed analysis and findings for complex research questions -->
 
@@ -8,13 +8,13 @@ Research question: $ARGUMENTS
 
 ## Task
 
-I'll **ultrathink** to design and execute a comprehensive research strategy for this question using modern web search and analysis techniques.
+I'll plan and execute a solid research strategy for this question using web search and analysis.
 
 I will:
 
 1. **Analyze the research question** - Break down into searchable components and identify key information needs
-2. **Plan search strategy** - Determine optimal search queries, sources, and freshness requirements
-3. **Execute parallel searches** - Use WebSearch tool with varied query approaches for comprehensive coverage
+2. **Plan search strategy** - Figure out the best search queries, sources, and freshness requirements
+3. **Execute parallel searches** - Use WebSearch tool with varied query approaches for complete coverage
 4. **Fetch detailed sources** - Use WebFetch tool to extract full content from most relevant results
 5. **Synthesize findings** - Combine information from multiple sources into coherent analysis
 6. **Format final report** - Structure findings based on requested output format

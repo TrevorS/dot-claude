@@ -18,7 +18,7 @@ I will:
 6. **Create GitHub project board** with custom fields for tracking
 7. **Generate all issues** with proper labels, milestones, and descriptions
 8. **Link issue dependencies** through comments and references
-9. **Provide comprehensive summary** of created resources
+9. **Provide complete summary** of created resources
 
 ## Prerequisites
 
@@ -54,7 +54,7 @@ I will:
 
 - Add all issues to the project board
 - Configure project board fields and statuses
-- Generate comprehensive setup summary
+- Write complete setup summary
 - Validate all created resources
 
 ## Label Color Scheme
