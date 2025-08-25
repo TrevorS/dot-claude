@@ -4,8 +4,7 @@
     "DISABLE_BUG_COMMAND": "true",
     "DISABLE_COST_WARNINGS": "true",
     "DISABLE_ERROR_REPORTING": "true",
-    "DISABLE_TELEMETRY": "true",
-    "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC": "true"
+    "DISABLE_TELEMETRY": "true"
   },
   "includeCoAuthoredBy": false,
   "model": "opusplan",
@@ -13,9 +12,6 @@
     "deny": [
       "Read(./.env)",
       "Read(./.env.*)",
-      "Read(./secrets/**)",
-      "Read(./config/credentials.json)",
-      "Read(./config/database.yml)",
       "Read(./.aws/credentials)",
       "Read(./.aws/config)",
       "Read(./.ssh/**)",
@@ -23,16 +19,7 @@
       "Read(./.netrc)",
       "Read(./id_rsa*)",
       "Read(./id_ed25519*)",
-      "Read(./*.pem)",
-      "Read(./*.key)",
-      "Read(./*.p12)",
-      "Read(./*.pfx)",
-      "Read(./docker-compose.override.yml)",
-      "Read(./terraform.tfvars)",
-      "Read(./.terraform/**)",
-      "Read(./.vault/**)",
-      "Read(./keyring/**)",
-      "Read(./.password-store/**)"
+      "Read(./*.pem)"
     ]
   },
   "hooks": {
