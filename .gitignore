@@ -16,6 +16,7 @@ Thumbs.db
 projects/
 statsig/
 todos/
+plugins/
 
 *.db
 node_modules/
