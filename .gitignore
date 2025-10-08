@@ -23,3 +23,6 @@ node_modules/
 ide/
 shell-snapshots/
 claude_files_*/
+debug/
+file-history/
+*.jsonl
