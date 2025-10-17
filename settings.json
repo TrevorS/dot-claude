@@ -56,5 +56,6 @@
   "alwaysThinkingEnabled": true,
   "feedbackSurveyState": {
     "lastShownTime": 1754086151370
-  }
+  },
+  "model": "haiku"
 }
