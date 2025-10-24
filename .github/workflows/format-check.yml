@@ -41,7 +41,4 @@ jobs:
         run: make install
 
       - name: Run pre-commit checks
-        run: make lint
-
-      - name: Check formatting (fallback)
-        run: make format-check
+        run: make validate
