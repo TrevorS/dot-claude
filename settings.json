@@ -21,6 +21,7 @@
       "Read(./*.pem)"
     ]
   },
+  "model": "haiku",
   "hooks": {
     "Notification": [
       {
@@ -53,7 +54,7 @@
     "type": "command",
     "command": "~/.claude/hooks/status.sh"
   },
-  "alwaysThinkingEnabled": true,
+  "alwaysThinkingEnabled": false,
   "feedbackSurveyState": {
     "lastShownTime": 1754086151370
   },

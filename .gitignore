@@ -26,3 +26,4 @@ claude_files_*/
 debug/
 file-history/
 *.jsonl
+__pycache__/

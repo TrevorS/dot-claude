@@ -5,4 +5,10 @@ description = "Add your description here"
 requires-python = ">=3.13"
 dependencies = [
     "pre-commit>=4.2.0",
+    "pyperclip>=1.11.0",
+    "rich>=14.2.0",
+    "textual>=6.3.0",
 ]
+
+[tool.uv]
+package = false
