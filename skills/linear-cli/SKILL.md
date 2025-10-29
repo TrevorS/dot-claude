@@ -24,7 +24,7 @@ linear-cli update <issue-id> --status "In Progress"
 
 # Search across issues
 linear-cli search "keyword"
-```
+```text
 
 ## Quick Examples
 
@@ -32,20 +32,20 @@ linear-cli search "keyword"
 
 ```bash
 linear-cli my-work
-```
+```text
 
 **Create an urgent issue:**
 
 ```bash
 linear-cli create --title "Production bug" --priority 1 --team-key ENG --description "Database failing"
-```
+```text
 
 **Mark issue done with context:**
 
 ```bash
 linear-cli update ENG-456 --status "Done"
 linear-cli comment ENG-456 --message "Shipped in v2.1.0"
-```
+```text
 
 ## Key Flags
 
@@ -65,4 +65,4 @@ See REFERENCE.md for complete flag documentation, advanced examples, and workflo
 linear-cli login    # OAuth login (stores credentials)
 linear-cli logout   # Clear stored credentials
 linear-cli status   # Verify connection
-```
+```text

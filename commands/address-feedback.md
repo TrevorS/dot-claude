@@ -47,7 +47,7 @@ gh api repos/<owner>/<repo>/pulls/<number>/comments
 
 # View related GitHub issue
 gh issue view <number> --json title,body,labels
-```
+```text
 
 ### Linear Flow
 
@@ -60,7 +60,7 @@ linear-cli issue <issue-id>
 
 # Search for issue by PR reference
 linear-cli issues --filter "identifier:<issue-id>"
-```
+```text
 
 ## Safety Protocol
 

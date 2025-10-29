@@ -87,7 +87,7 @@ NavigationSplitView {
         Text("Select an item")
     }
 }
-```
+```text
 
 ### Async/Await
 
@@ -97,7 +97,7 @@ NavigationSplitView {
 .task {
     await loadData()  // Auto-cancels on disappear
 }
-```
+```text
 
 ### macOS 26 Tahoe: Liquid Glass
 
@@ -107,7 +107,7 @@ VStack {
 }
 .padding()
 .background(.ultraThinMaterial)  // Adapts to background
-```
+```text
 
 ## Workflow for Each Mode
 

@@ -51,7 +51,7 @@ linear-cli issues --status "In Progress"
 
 # Comments on an issue
 linear-cli comments ENG-456
-```
+```text
 
 ### Create Issues
 
@@ -69,7 +69,7 @@ linear-cli create \
   --description "Add dark mode support" \
   --priority 2 \
   --assignee "john@example.com"
-```
+```text
 
 ### Update Issues
 
@@ -87,7 +87,7 @@ linear-cli update ENG-456 --priority 1
 
 # Multiple changes at once
 linear-cli update ENG-456 --status "In Progress" --assignee "you" --priority 2
-```
+```text
 
 ### Comments
 
@@ -97,7 +97,7 @@ linear-cli comment ENG-456 --message "Fixed in PR #789"
 
 # View all comments
 linear-cli comments ENG-456
-```
+```text
 
 ### Convenience Commands
 
@@ -105,7 +105,7 @@ linear-cli comments ENG-456
 # Quick close/reopen
 linear-cli close ENG-456
 linear-cli reopen ENG-456
-```
+```text
 
 ### Search
 
@@ -118,7 +118,7 @@ linear-cli search "database connection"
 
 # Pipe results for filtering
 linear-cli search "bug" | grep "priority: 1"
-```
+```text
 
 ### Lists & Info
 
@@ -131,7 +131,7 @@ linear-cli teams
 
 # Verify connection (useful for debugging)
 linear-cli status
-```
+```text
 
 ## All Flags
 
@@ -177,7 +177,7 @@ linear-cli issues --team-key ENG | grep "status:" | sort | uniq -c
 
 # List all your assignments
 linear-cli my-work | grep "assigned"
-```
+```text
 
 ### Creating Multiple Issues
 
@@ -186,7 +186,7 @@ linear-cli my-work | grep "assigned"
 for title in "Fix login" "Add docs" "Refactor API"; do
   linear-cli create --title "$title" --team-key ENG --priority 2
 done
-```
+```text
 
 ### Workflow: Sprint Kickoff
 
@@ -197,7 +197,7 @@ linear-cli issues --team-key ENG --status "Backlog"
 # Assign to team members and set to "In Progress"
 linear-cli update ENG-100 --assignee "alice" --status "In Progress"
 linear-cli update ENG-101 --assignee "bob" --status "In Progress"
-```
+```text
 
 ### Search-Based Workflows
 
@@ -208,7 +208,7 @@ linear-cli search "database"
 # Find and view details on first result
 linear-cli issue ENG-200
 linear-cli comments ENG-200
-```
+```text
 
 ### Integration: Script to Update All Done Issues
 
@@ -219,7 +219,7 @@ for issue_id in $(linear-cli issues --status "Ready for Review" | grep "ENG-" | 
   linear-cli update "$issue_id" --status "In Review"
   echo "Updated $issue_id"
 done
-```
+```text
 
 ## Workflow Patterns
 
@@ -232,7 +232,7 @@ linear-cli my-work
 # Dig into any blockers
 linear-cli issue ENG-456
 linear-cli comments ENG-456
-```
+```text
 
 ### Starting a Task
 
@@ -242,7 +242,7 @@ linear-cli create --title "New feature" --team-key ENG
 
 # Get the issue ID from output, then:
 linear-cli update ENG-789 --status "In Progress" --assignee "you"
-```
+```text
 
 ### Closing Work
 
@@ -253,7 +253,7 @@ linear-cli update ENG-456 --status "Done"
 # Add context about the fix
 linear-cli comment ENG-456 --message "Shipped in v2.1.0"
 linear-cli comment ENG-456 --message "Fixed by PR #1234"
-```
+```text
 
 ### Triaging Bugs
 
@@ -267,7 +267,7 @@ linear-cli issue ENG-112
 
 # Assign and prioritize
 linear-cli update ENG-111 --assignee "alice" --priority 1 --status "In Progress"
-```
+```text
 
 ### Sprint Cleanup
 
@@ -277,7 +277,7 @@ linear-cli issues --team-key ENG --status "Done"
 
 # Archive or close as needed
 linear-cli close ENG-500
-```
+```text
 
 ## Tips & Troubleshooting
 
@@ -285,7 +285,7 @@ linear-cli close ENG-500
 
 ```bash
 linear-cli status
-```
+```text
 
 Confirms you're authenticated and connected to Linear.
 
@@ -294,13 +294,13 @@ Confirms you're authenticated and connected to Linear.
 ```bash
 linear-cli --help              # All commands
 linear-cli <command> --help    # Specific command
-```
+```text
 
 ### Shell Completions
 
 ```bash
 linear-cli completions
-```
+```text
 
 Generate shell completions for bash, zsh, or fish to enable auto-completion.
 
@@ -315,7 +315,7 @@ linear-cli my-work | grep "assigned"
 
 # Search results and filter
 linear-cli search "api" | grep "ENG-"
-```
+```text
 
 ### Debugging Issues
 
@@ -325,7 +325,7 @@ linear-cli my-work -v
 
 # Helps diagnose authentication or connection issues
 linear-cli status -v
-```
+```text
 
 ### Re-authenticate
 
@@ -333,7 +333,7 @@ linear-cli status -v
 # If credentials seem stale
 linear-cli logout
 linear-cli login
-```
+```text
 
 ### Combining Commands
 
@@ -344,7 +344,7 @@ linear-cli create --title "Bug fix" --team-key ENG
 linear-cli issue ENG-789
 linear-cli comment ENG-789 --message "Working on it now"
 linear-cli update ENG-789 --status "In Progress"
-```
+```text
 
 ### Status Values
 

@@ -108,7 +108,7 @@ gh pr list --state all --json number,title,author,createdAt,updatedAt
 
 # Submit review (if not self-authored)
 gh pr review <number> --approve|--request-changes|--comment
-```
+```text
 
 ### Linear Integration
 
@@ -121,7 +121,7 @@ linear-cli issue <team-id>
 
 # Search for issues referenced in PR
 linear-cli issues --filter "description contains '<pr-reference>'"
-```
+```text
 
 ## Review Quality Standards
 

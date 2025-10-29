@@ -68,7 +68,7 @@ fi
 # Tool availability detection
 # Check package.json scripts, pyproject.toml tools, Makefile targets
 # Verify CLI tools are actually installed before attempting to run
-```
+```text
 
 ## CLAUDE.md Integration
 
@@ -96,7 +96,7 @@ Mixed Python/Node.js project with markdown documentation
 ### Last Updated
 
 2025-08-13
-```
+```text
 
 ## Error Handling
 

@@ -51,7 +51,7 @@ I will:
 3. Cargo.toml exists → Rust project (add Rust permissions)
 4. Makefile exists → Make-based project (add Make permissions)
 5. Multiple indicators → Mixed project (combine appropriate permissions)
-```
+```text
 
 ### Workflow Context Analysis
 
@@ -67,7 +67,7 @@ I will:
 - CLAUDE.md project validation tools
 - Recent file modification patterns
 - Test failure indicators in logs
-```
+```text
 
 ### Permission Risk Assessment
 
@@ -98,7 +98,7 @@ I will:
     "defaultMode": "acceptEdits"
   }
 }
-```
+```text
 
 ### Research Profile
 
@@ -117,7 +117,7 @@ I will:
     "defaultMode": "plan"
   }
 }
-```
+```text
 
 ### Setup Profile
 
@@ -137,7 +137,7 @@ I will:
     "defaultMode": "bypassPermissions"
   }
 }
-```
+```text
 
 ## Integration with Existing Commands
 

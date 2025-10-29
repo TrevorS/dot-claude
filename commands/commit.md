@@ -1,10 +1,12 @@
 # Commit Changes
 
-<!-- ABOUTME: Auto-stages, validates, and commits changes with clear messages -->
+<!-- ABOUTME: Auto-stages, validates, commits, and optionally pushes changes with clear messages -->
 
-<!-- ABOUTME: Supports incremental development workflow without pushing to remote -->
+<!-- ABOUTME: Unified commit workflow supporting both local commits and push with branch safety -->
 
-Auto-stage, validate, and commit changes with a clear message for incremental development workflow.
+Auto-stage, validate, and commit changes with a clear message. Optional push to remote.
+
+Usage: `/commit [--push] [--validate]`
 
 ## Task
 
@@ -13,10 +15,17 @@ I'll figure out the best validation and commit approach for this project.
 I will:
 
 1. **Check project permissions** in `./CLAUDE.md` for branch protection and validation requirements
-2. **Run project validation** - auto-detect and execute formatters, linters, type checkers
+2. **Run project validation** (if `--validate` flag) - auto-detect and execute formatters, linters, type checkers
 3. **Write clear commit message** using git history and change analysis
 4. **Handle branch safety** - verify not committing directly to protected branches
 5. **Auto-stage and commit** changes with proper error handling
+6. **Push to remote** (if `--push` flag) with upstream tracking and safety checks
+
+## Flags
+
+- `--validate`: Run validation (format, lint, typecheck) before committing (default: true)
+- `--push`: Push to remote after commit with upstream tracking (default: false)
+- `--no-validate`: Skip validation and commit directly (use with caution)
 
 ## Branch Safety Protocol
 
@@ -25,17 +34,26 @@ Check `./CLAUDE.md` for project permissions. If on protected branch without perm
 ## Safety Checks
 
 - Check branch protection via CLAUDE.md
-- Run code quality validation
+- Verify push permissions (if `--push`)
+- Run code quality validation (if `--validate`)
 - Handle pre-commit hooks and conflicts
-- Stop on validation failures
+- Stop on validation failures (unless `--no-validate`)
 
 ## Commands Used
 
 ```bash
+# Check permissions
 grep "## Project Permissions" ./CLAUDE.md
-git branch --show-current
+
+# Validate code
+make validate  # or auto-detect formatters/linters
+
+# Commit
 git add . && git commit -F /tmp/commit-msg.txt
-```
+
+# Push (if --push)
+git push -u origin HEAD
+```text
 
 ## Error Handling
 
@@ -48,7 +66,7 @@ git add . && git commit -F /tmp/commit-msg.txt
 ## Modern Validation Flow
 
 - **Auto-detect project type**: Scan for `pyproject.toml`, `package.json`, `Cargo.toml`, `Makefile`
-- **Run validation commands**: Execute format → lint → typecheck → test based on detected tools
+- **Run validation pipeline**: Execute format → lint → typecheck → test based on detected tools
 - **Write commit messages**: Look at staged changes and recent commit history for context
 - **Cache project information**: Update CLAUDE.md with validation tools and branch policies
 
@@ -59,5 +77,22 @@ Example CLAUDE.md section:
 
 - **Project Type**: personal|work
 - **Direct Commits Allowed**: yes|no
+- **Push to Main Allowed**: yes|no
 - **Last Checked**: 2024-08-09
-```
+```text
+
+## Examples
+
+```bash
+# Commit with validation (default)
+/commit
+
+# Commit and push to remote
+/commit --push
+
+# Commit without validation
+/commit --no-validate
+
+# Commit and push without running validation
+/commit --push --no-validate
+```text

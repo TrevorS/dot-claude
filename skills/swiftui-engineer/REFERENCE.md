@@ -25,7 +25,7 @@ Complete reference for SwiftUI patterns, anti-patterns, debugging techniques, an
 class DataManager {
     @State var items: [Item] = [] // Wrong!
 }
-```
+```text
 
 ✅ **CORRECT**: Use `@Published` in ObservableObject
 
@@ -34,7 +34,7 @@ class DataManager {
 class DataManager: ObservableObject {
     @Published var items: [Item] = []
 }
-```
+```text
 
 **Why**: `@State` is for View structs only. Reference types use `@Published`.
 
@@ -51,7 +51,7 @@ struct ContentView: View {
         }
     }
 }
-```
+```text
 
 ✅ **CORRECT**: Logic in ViewModel
 
@@ -73,7 +73,7 @@ struct ContentView: View {
             }
     }
 }
-```
+```text
 
 **Why**: Separates concerns - makes code testable and maintainable.
 
@@ -90,7 +90,7 @@ class ViewModel: ObservableObject {
         self.items = items // Warning: Publishing changes from background thread!
     }
 }
-```
+```text
 
 ✅ **CORRECT**: Use @MainActor
 
@@ -104,7 +104,7 @@ class ViewModel: ObservableObject {
         self.items = items // Safe: executes on MainActor
     }
 }
-```
+```text
 
 **Why**: Compile-time guarantee for thread safety on main thread.
 
@@ -119,7 +119,7 @@ class ViewModel: ObservableObject {
         self.data = data // Detached task, potential race conditions
     }
 }
-```
+```text
 
 ✅ **CORRECT**: Use .task() modifier
 
@@ -127,7 +127,7 @@ class ViewModel: ObservableObject {
 .task {
     await loadData()
 }
-```
+```text
 
 **Why**: `.task()` auto-cancels on disappear, preventing orphaned tasks and leaks.
 
@@ -139,7 +139,7 @@ class ViewModel: ObservableObject {
 Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { _ in
     self.updateValue() // Reference cycle!
 }
-```
+```text
 
 ✅ **CORRECT**: Use weak self
 
@@ -147,7 +147,7 @@ Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { _ in
 Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self] _ in
     self?.updateValue()
 }
-```
+```text
 
 **Why**: Prevents memory leaks from reference cycles.
 
@@ -171,7 +171,7 @@ struct ChildView1: View {
     @StateObject private var viewModel = ViewModel()  // Wrong!
     var body: some View { Text("View 1") }
 }
-```
+```text
 
 ✅ **CORRECT**: Owner uses @StateObject, children use @ObservedObject
 
@@ -191,7 +191,7 @@ struct ChildView1: View {
     @ObservedObject var viewModel: ViewModel  // Observer, same instance
     var body: some View { Text("View 1") }
 }
-```
+```text
 
 **Why**: Multiple @StateObjects create independent instances. Only the owner creates; children observe the same instance.
 
@@ -207,7 +207,7 @@ ScrollView {
         }
     }
 }
-```
+```text
 
 ✅ **CORRECT**: List recycles views like UITableView
 
@@ -217,7 +217,7 @@ List {
         ItemCell(item: item)
     }
 }
-```
+```text
 
 **Why**: `List` recycles views (memory efficient). `LazyVStack` only defers creation—all views stay in memory.
 
@@ -251,7 +251,7 @@ struct ContentView: View {
         }
     }
 }
-```
+```text
 
 **Key pattern**:
 
@@ -279,7 +279,7 @@ struct CustomButton: View {
         .disabled(isLoading)
     }
 }
-```
+```text
 
 ### ViewModel Pattern (MVVM)
 
@@ -306,7 +306,7 @@ class ContentViewModel: ObservableObject {
         isLoading = false
     }
 }
-```
+```text
 
 **@MainActor**: Compile-time guarantee that UI updates happen on main thread.
 
@@ -338,7 +338,7 @@ var body: some View {
         }
     }
 }
-```
+```text
 
 ### Issue: View Rendering in Infinite Loop
 
@@ -371,7 +371,7 @@ var body: some View {
             }
         }
 }
-```
+```text
 
 ### Issue: Memory Leak with Reference Cycles
 
@@ -398,7 +398,7 @@ Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self] _ in
         await viewModel.update()
     }
 }
-```
+```text
 
 ### Issue: Navigation Not Working
 
@@ -425,7 +425,7 @@ NavigationSplitView {
             .foregroundColor(.secondary)
     }
 }
-```
+```text
 
 ### Issue: Crashes with Background Thread UI Updates
 
@@ -443,7 +443,7 @@ class ViewModel: ObservableObject {
         self.data = items  // Safe now
     }
 }
-```
+```text
 
 ### Issue: List Performance Degradation
 
@@ -464,7 +464,7 @@ List(largeArray, id: \.id) { item in
 
 // Extract expensive computations to ViewModel
 // Verify improvements with Instruments > Core Animation
-```
+```text
 
 ---
 
@@ -492,7 +492,7 @@ ZStack {
     .padding()
     .background(.ultraThinMaterial)  // Adapts to background content
 }
-```
+```text
 
 **Key Properties**:
 
@@ -539,7 +539,7 @@ NavigationSplitView {
 } detail: {
     DetailView()
 }
-```
+```text
 
 ---
 
@@ -556,7 +556,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         window.makeKeyAndOrderFront(nil)
     }
 }
-```
+```text
 
 ✅ **NEW (SwiftUI)**:
 
@@ -571,7 +571,7 @@ struct MyApp: App {
         .windowResizability(.contentMinSize(CGSize(width: 400, height: 300)))
     }
 }
-```
+```text
 
 ### Deprecated Navigation
 
@@ -582,7 +582,7 @@ NavigationView {
     List { ... }
     DetailView()
 }
-```
+```text
 
 ✅ **NEW (Recommended)**:
 
@@ -592,7 +592,7 @@ NavigationSplitView {
 } detail: {
     DetailView()
 }
-```
+```text
 
 ### Keyboard Shortcuts
 
@@ -600,7 +600,7 @@ NavigationSplitView {
 
 ```swift
 // Complex menu builder code
-```
+```text
 
 ✅ **NEW (SwiftUI)**:
 
@@ -613,7 +613,7 @@ NavigationSplitView {
         .keyboardShortcut("n", modifiers: .command)
     }
 }
-```
+```text
 
 ### Focus Management
 
@@ -626,7 +626,7 @@ NavigationSplitView {
 
 TextField("Name", text: $name)
     .focused($focusedField, equals: .nameField)
-```
+```text
 
 ### Migration Strategies
 
@@ -675,7 +675,7 @@ ScrollView {
         }
     }
 }
-```
+```text
 
 ### Optimization Techniques
 
@@ -699,7 +699,7 @@ Text("User avatar")
 Button("Save") { save() }
     .accessibilityLabel("Save document")
     .accessibilityHint("Saves the current document")
-```
+```text
 
 ### Interactive Elements
 
@@ -710,7 +710,7 @@ TextField("Email", text: $email)
 Slider(value: $volume, in: 0...100)
     .accessibilityLabel("Volume")
     .accessibilityValue("\(Int(volume))%")
-```
+```text
 
 ### Container Labels
 
@@ -720,7 +720,7 @@ VStack {
 }
 .accessibilityElement(children: .contain)
 .accessibilityLabel("Settings panel")
-```
+```text
 
 ---
 
@@ -751,7 +751,7 @@ var body: some View {
         }
     }
 }
-```
+```text
 
 ### Keyboard Shortcuts
 
@@ -761,7 +761,7 @@ Button("Save") { save() }
 
 Button("Find") { showSearchBar() }
     .keyboardShortcut("f", modifiers: .command)
-```
+```text
 
 ### Focusable Elements
 
@@ -770,7 +770,7 @@ VStack {
     Button("Action") { }
         .focusable()
 }
-```
+```text
 
 ---
 

@@ -84,7 +84,7 @@ gh pr create --title "[Issue #<number>] Title" --body "Closes #<number>"
 
 # Search related issues
 gh issue list --search "in:title <keyword>" --json number,title,labels
-```
+```text
 
 ### Linear Flow
 
@@ -100,7 +100,7 @@ linear-cli issues --team <team-name>
 
 # Create feature branch (manual naming)
 git checkout -b "feature/<team-id>-<description>"
-```
+```text
 
 ## Implementation Quality Standards
 

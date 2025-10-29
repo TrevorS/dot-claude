@@ -48,7 +48,7 @@ For minimal skills (single focused task):
 ```text
 my-skill/
 └── SKILL.md
-```
+```text
 
 For skills needing supporting files:
 
@@ -56,7 +56,7 @@ For skills needing supporting files:
 my-skill/
 ├── SKILL.md              (main instructions - keep <200 lines)
 └── REFERENCE.md          (detailed patterns, examples)
-```
+```text
 
 ### 4. Write the SKILL.md
 
@@ -90,7 +90,7 @@ description: What it does and when to use. [Include 3-5 trigger phrases]
 - Do X in situation Y
 - Avoid Z because...
 - Use this pattern when...
-```
+```text
 
 ### 5. Validate Skill Quality
 
@@ -154,7 +154,7 @@ Use when: Focused skill with simple instructions
 ```text
 skill/
 └── SKILL.md (100-150 lines)
-```
+```text
 
 ### With Progressive Disclosure
 
@@ -164,7 +164,7 @@ Use when: Related capabilities or lots of examples
 skill/
 ├── SKILL.md (150-200 lines with quick patterns)
 └── REFERENCE.md (300-400 lines with detailed examples and TOC)
-```
+```text
 
 ## Key Principles
 

@@ -77,4 +77,4 @@ Emit a file **$3/test-results.json** with this schema:
     "verdict": "PASS"
   }
 }
-```
+```text

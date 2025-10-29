@@ -36,7 +36,7 @@ find ~/.claude/todos -name "*.json" -exec sh -c 'if [ "$(cat "$1")" = "[]" ]; th
 
 # Verify cleanup success
 find ~/.claude/todos -name "*.json" | wc -l
-```
+```text
 
 ## Output Format
 

@@ -36,7 +36,7 @@ I will:
 ```text
 Before: fix typo → add feature → fix build → temp commit → another fix
 After:  refactor: extract helper functions → feat: implement user auth → test: add auth validation
-```
+```text
 
 ## Safety Features
 
@@ -70,7 +70,7 @@ git range-diff backup-branch..old-branch backup-branch..new-branch
 
 # Recover from backup if needed
 git reset --hard ${CURRENT_BRANCH}-backup
-```
+```text
 
 ## Quality Guarantees
 
@@ -95,7 +95,7 @@ git branch -D ${CURRENT_BRANCH}
 
 # Rename backup to original
 git branch -m ${CURRENT_BRANCH}-backup ${CURRENT_BRANCH}
-```
+```text
 
 ## Agent Integration
 
