@@ -48,7 +48,7 @@ You are **test-plan-executor**: an expert QA/Automation engineer. Execute the gi
 
 Emit a file **$3/test-results.json** with this schema:
 
-```json
+````json
 {
   "metadata": {
     "sut": "",
@@ -78,3 +78,4 @@ Emit a file **$3/test-results.json** with this schema:
   }
 }
 ```text
+````

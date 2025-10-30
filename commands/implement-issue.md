@@ -62,45 +62,26 @@ The command automatically detects the issue tracking system:
 - **Body**: Links to Linear issue and includes manual test plan
 - **Teams**: Assigned based on Linear team configuration
 
-## Command Reference
+## CLI References
 
-### GitHub Flow
+**Git & Branch Operations**: See `@git-workflows` skill for:
 
-```bash
-# Check current branch
-git branch --show-current
+- Checking current branch (`git branch --show-current`)
+- Creating and switching branches (`git checkout -b`)
+- Pushing with upstream tracking (`git push -u origin HEAD`)
 
-# View issue details with full context
-gh issue view <number> --json title,body,labels,assignees,milestone
+**GitHub Issue & PR Operations**: See `@github-cli` skill for:
 
-# Create feature branch
-git checkout -b "feature/issue-<number>-<description>"
+- Viewing issue details (`gh issue view`)
+- Viewing PR details (`gh pr view`)
+- Creating pull requests (`gh pr create`)
+- Searching and filtering issues (`gh issue list`)
 
-# Push with upstream tracking
-git push -u origin HEAD
+**Linear Issue Operations**: See `@linear-cli` skill for:
 
-# Create PR linking to issue
-gh pr create --title "[Issue #<number>] Title" --body "Closes #<number>"
-
-# Search related issues
-gh issue list --search "in:title <keyword>" --json number,title,labels
-```text
-
-### Linear Flow
-
-```bash
-# View all issues
-linear-cli issues
-
-# View specific issue with details
-linear-cli issue <team-id>
-
-# Search issues by team or keyword
-linear-cli issues --team <team-name>
-
-# Create feature branch (manual naming)
-git checkout -b "feature/<team-id>-<description>"
-```text
+- Viewing Linear issues (`linear-cli issue`)
+- Listing issues by team (`linear-cli issues`)
+- Updating Linear issue status
 
 ## Implementation Quality Standards
 

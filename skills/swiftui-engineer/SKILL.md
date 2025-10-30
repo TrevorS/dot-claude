@@ -75,7 +75,7 @@ Choose the mode that matches your task:
 
 **Use NavigationSplitView** (not deprecated NavigationView):
 
-```swift
+````swift
 NavigationSplitView {
     List(selection: $viewModel.selectedItem) {
         // Sidebar content
@@ -209,3 +209,4 @@ For detailed examples, anti-patterns, debuggging techniques, and migration strat
 - What's the scope (single view or whole app)?
 - Timeline and priority?
 - Do you have test coverage?
+````

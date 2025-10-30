@@ -39,21 +39,14 @@ Check `./CLAUDE.md` for project permissions. If on protected branch without perm
 - Handle pre-commit hooks and conflicts
 - Stop on validation failures (unless `--no-validate`)
 
-## Commands Used
+## CLI References
 
-```bash
-# Check permissions
-grep "## Project Permissions" ./CLAUDE.md
+**Git Operations**: See `@git-workflows` skill for:
 
-# Validate code
-make validate  # or auto-detect formatters/linters
-
-# Commit
-git add . && git commit -F /tmp/commit-msg.txt
-
-# Push (if --push)
-git push -u origin HEAD
-```text
+- Staging changes (`git add`)
+- Creating commits (`git commit`)
+- Pushing to remote (`git push -u origin HEAD`)
+- Viewing commit history (`git log`)
 
 ## Error Handling
 
@@ -79,7 +72,7 @@ Example CLAUDE.md section:
 - **Direct Commits Allowed**: yes|no
 - **Push to Main Allowed**: yes|no
 - **Last Checked**: 2024-08-09
-```text
+```
 
 ## Examples
 
@@ -95,4 +88,4 @@ Example CLAUDE.md section:
 
 # Commit and push without running validation
 /commit --push --no-validate
-```text
+```

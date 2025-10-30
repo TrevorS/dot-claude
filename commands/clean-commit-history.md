@@ -33,7 +33,7 @@ I will:
 
 ### Example Scenarios
 
-```text
+````text
 Before: fix typo → add feature → fix build → temp commit → another fix
 After:  refactor: extract helper functions → feat: implement user auth → test: add auth validation
 ```text
@@ -56,23 +56,18 @@ The surgeon follows these strict priorities:
 5. **Feature/Logic changes** → grouped by cohesive functionality
 6. **Tests** → co-located with their corresponding logic changes
 
-## Command Reference
+## CLI References
 
-```bash
-# Safety backup (automatic)
-git branch ${CURRENT_BRANCH}-backup
+**Git Operations**: See `@git-workflows` skill for:
+- Creating backup branches (`git branch`)
+- Viewing history (`git log`)
+- Comparing commit ranges (`git range-diff`)
+- Resetting to backups (`git reset --hard`)
+- Interactive rebase (`git rebase -i`)
+- Cherry-picking (`git cherry-pick`)
+- Branch management (`git branch -m`, `git branch -D`)
 
-# View original history
-git log --oneline HEAD~10..HEAD
-
-# Compare before/after
-git range-diff backup-branch..old-branch backup-branch..new-branch
-
-# Recover from backup if needed
-git reset --hard ${CURRENT_BRANCH}-backup
-```text
-
-## Quality Guarantees
+**Quality Guarantees**
 
 The surgeon ensures:
 
@@ -81,21 +76,6 @@ The surgeon ensures:
 - **Buildable history**: Every intermediate commit builds and tests pass
 - **Clean messages**: Follows conventional commit format with clear rationales
 - **Reviewer-friendly**: Easy to review and debug with git bisect
-
-## Recovery Process
-
-If you need to restore the original history:
-
-```bash
-# Switch back to backup
-git reset --hard ${CURRENT_BRANCH}-backup
-
-# Delete surgery attempt (optional)
-git branch -D ${CURRENT_BRANCH}
-
-# Rename backup to original
-git branch -m ${CURRENT_BRANCH}-backup ${CURRENT_BRANCH}
-```text
 
 ## Agent Integration
 
@@ -106,3 +86,4 @@ This command launches the specialized `git-commit-surgeon` agent that:
 - Prioritizes safety and recoverability above all else
 - Produces detailed commit plans before making changes
 - Validates every step to ensure no work is lost
+````

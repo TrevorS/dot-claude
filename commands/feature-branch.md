@@ -36,7 +36,7 @@ I will:
 
 #### Format Examples
 
-```text
+````text
 feature/user-authentication
 fix/login-validation-error
 fix/issue-42-password-reset
@@ -175,30 +175,15 @@ After successful creation or switch:
 - Consider `/implement-issue <number>` if this relates to a GitHub issue
 - Use `git log --oneline` to review what changes were made
 
-## Command Reference
+## CLI References
 
-```bash
-# Check current status
-git status --porcelain
+**Git Operations**: See `@git-workflows` skill for:
+- Checking status (`git status`)
+- Getting current branch (`git branch --show-current`)
+- Creating and switching branches (`git checkout -b`)
+- Stashing operations (`git stash push`, `git stash pop`)
 
-# Get current branch
-git branch --show-current
-
-# Fetch latest (if needed)
-git fetch origin
-
-# View issue details
-gh issue view <number> --json title,labels
-
-# Create feature branch
-git checkout -b "feature/description"
-
-# Stash changes with message
-git stash push -m "switch-to-feature: Moving work"
-
-# Apply stashed changes
-git stash pop
-
-# List stashes
-git stash list
-```text
+**GitHub Issue Operations**: See `@github-cli` skill for:
+- Viewing issue details (`gh issue view`)
+- Filtering by labels (`gh issue view --json`)
+````

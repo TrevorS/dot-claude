@@ -45,7 +45,7 @@ Description formula: `<What it does>. Use when <trigger> or <trigger> or <trigge
 
 For minimal skills (single focused task):
 
-```text
+````text
 my-skill/
 └── SKILL.md
 ```text
@@ -203,3 +203,4 @@ If Claude doesn't use your skill when expected:
 3. Verify description covers both "what" AND "when"
 4. Test with natural language phrasings
 5. Make sure trigger words match user vocabulary
+````

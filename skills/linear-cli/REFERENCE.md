@@ -37,7 +37,7 @@ Complete documentation for all commands, flags, and workflows.
 
 ### View Issues
 
-```bash
+````bash
 # Your work
 linear-cli my-work
 
@@ -365,3 +365,4 @@ Your instance may have custom statuses—run `linear-cli issues` and check what 
 - `2` - High
 - `3` - Medium
 - `4` - Low
+````

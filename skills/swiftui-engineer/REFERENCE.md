@@ -21,7 +21,7 @@ Complete reference for SwiftUI patterns, anti-patterns, debugging techniques, an
 
 ❌ **WRONG**: Using `@State` in non-view classes
 
-```swift
+````swift
 class DataManager {
     @State var items: [Item] = [] // Wrong!
 }
@@ -788,3 +788,4 @@ VStack {
 - [ ] **Accessibility**: Views properly annotated with labels/hints?
 - [ ] **Style**: Swift naming and code style conventions followed?
 - [ ] **Liquid Glass**: Materials used appropriately for macOS 26?
+````

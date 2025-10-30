@@ -18,3 +18,6 @@ MD026: false
 
 # Allow first line to not be a top-level heading (for command templates)
 MD041: false
+
+# Allow link fragments (sometimes valid markdown checker issue)
+MD051: false

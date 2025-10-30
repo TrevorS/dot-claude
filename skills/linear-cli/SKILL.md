@@ -9,7 +9,7 @@ Query, create, and update Linear issues without leaving the terminal.
 
 ## Most Used Commands
 
-```bash
+````bash
 # Check your assigned work
 linear-cli my-work
 
@@ -66,3 +66,4 @@ linear-cli login    # OAuth login (stores credentials)
 linear-cli logout   # Clear stored credentials
 linear-cli status   # Verify connection
 ```text
+````

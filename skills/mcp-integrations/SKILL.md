@@ -20,7 +20,7 @@ Use journaling when you want to capture insights, work through problems, or refl
 
 Write reflections and insights into your personal journal.
 
-```text
+````text
 Use this when you want to capture a thought, insight, or reflection that might be useful to review later.
 
 Triggers: End of a difficult debugging session, after solving a complex problem, when realizing a pattern or antipattern
@@ -162,3 +162,4 @@ Use this skill when:
 - You're feeling stuck, frustrated, creative, or proud
 - You want to catch up on team progress and celebrate others
 - You're starting a task that feels familiar and want to remember what you learned before
+````

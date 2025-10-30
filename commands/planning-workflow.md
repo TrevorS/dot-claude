@@ -57,7 +57,7 @@ This focuses purely on **what needs to be built** and **how it should behave** w
 
 ### Example
 
-```bash
+````bash
 /planning-workflow spec-to-requirements spec.md
 # Outputs: requirements.md with structured requirements
 ```text
@@ -224,3 +224,4 @@ This pipeline ensures:
 - ✓ Proper task decomposition
 - ✓ Traceable GitHub issues with dependencies
 - ✓ No timeline/phase confusion - just deliverables and dependencies
+````

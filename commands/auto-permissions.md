@@ -44,7 +44,7 @@ I will:
 
 ### Project Type Detection
 
-```bash
+````bash
 # Priority order for mixed projects:
 1. pyproject.toml exists → Python project (add Python permissions)
 2. package.json exists → Node.js project (add Node.js permissions)
@@ -169,3 +169,4 @@ The generated permissions adapt based on:
 - **Security context**: Automatically applies more restrictive permissions for sensitive repos
 
 This command eliminates the need for manual permission configuration while maintaining appropriate security boundaries based on the actual work context.
+````

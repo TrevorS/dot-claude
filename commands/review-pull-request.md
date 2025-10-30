@@ -89,39 +89,21 @@ The command automatically detects the issue tracking context:
 - **Request Changes**: Specific issues to address
 - **Comment**: Self-authored PR feedback
 
-## Command Reference
+## CLI References
 
-### GitHub Flow
+**GitHub PR Operations**: See `@github-cli` skill for:
 
-```bash
-# View PR with full details
-gh pr view <number> --json title,body,author,commits,files,comments,reviews
+- Viewing PR details (`gh pr view`)
+- Getting PR diff (`gh pr diff`)
+- Viewing related issues (`gh issue view`)
+- Listing PRs for context (`gh pr list`)
+- Submitting reviews (`gh pr review`)
 
-# Get diff and file changes
-gh pr diff <number>
+**Linear Issue Operations**: See `@linear-cli` skill for:
 
-# View related GitHub issue
-gh issue view <number> --json title,body,labels,assignees
-
-# List all PRs for context
-gh pr list --state all --json number,title,author,createdAt,updatedAt
-
-# Submit review (if not self-authored)
-gh pr review <number> --approve|--request-changes|--comment
-```text
-
-### Linear Integration
-
-```bash
-# View all issues for context
-linear-cli issues
-
-# View specific Linear issue
-linear-cli issue <team-id>
-
-# Search for issues referenced in PR
-linear-cli issues --filter "description contains '<pr-reference>'"
-```text
+- Viewing Linear issues (`linear-cli issue`)
+- Listing issues by team (`linear-cli issues`)
+- Searching for issue references
 
 ## Review Quality Standards
 

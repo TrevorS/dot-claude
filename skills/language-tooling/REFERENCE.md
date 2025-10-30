@@ -10,7 +10,7 @@ Detailed patterns and troubleshooting for Python, TypeScript/JavaScript, and Rus
 
 ### Common Commands
 
-```bash
+````bash
 # Add a dependency
 uv add requests
 
@@ -430,3 +430,4 @@ make test    # Run all tests
 make lint    # Run linter
 make format  # Format code
 ```text
+````

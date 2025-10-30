@@ -24,7 +24,7 @@ I will:
 
 ## Commands Used
 
-```bash
+````bash
 # Count total files before cleanup
 find ~/.claude/todos -name "*.json" | wc -l
 
@@ -64,3 +64,4 @@ Example cleanup result:
 - Removed: 351 empty files
 - Preserved: 297 files with content
 - Disk space saved: ~35KB+ depending on filesystem
+````

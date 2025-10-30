@@ -31,36 +31,20 @@ The command automatically detects the issue tracking system:
 - **GitHub PRs**: Uses `gh pr view` and `gh issue view` commands
 - **Linear PRs**: Uses `linear-cli issue` and looks for Linear issue references
 
-## Command Reference
+## CLI References
 
-### GitHub Flow
+**GitHub PR Operations**: See `@github-cli` skill for:
 
-```bash
-# View PR with full details
-gh pr view <number> --json title,body,author,commits,files,comments,reviews
+- Viewing PR with full details (`gh pr view`)
+- Getting review comments (`gh pr view --json reviews`)
+- Getting inline code comments (`gh api repos/.../comments`)
+- Viewing related issues (`gh issue view`)
 
-# Get formal reviews with review comments
-gh pr view <number> --json reviews
+**Linear Issue Operations**: See `@linear-cli` skill for:
 
-# Get inline code comments
-gh api repos/<owner>/<repo>/pulls/<number>/comments
-
-# View related GitHub issue
-gh issue view <number> --json title,body,labels
-```text
-
-### Linear Flow
-
-```bash
-# View all Linear issues
-linear-cli issues
-
-# View specific Linear issue
-linear-cli issue <issue-id>
-
-# Search for issue by PR reference
-linear-cli issues --filter "identifier:<issue-id>"
-```text
+- Viewing Linear issues (`linear-cli issue`)
+- Listing issues (`linear-cli issues`)
+- Searching for issues by identifier
 
 ## Safety Protocol
 

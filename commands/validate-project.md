@@ -53,7 +53,7 @@ The validation follows this order to maximize success:
 
 The command intelligently detects project configuration:
 
-```bash
+````bash
 # Project type detection (priority order)
 if [ -f "pyproject.toml" ]; then
   # Python project - check for uv, poetry, pip-tools
@@ -105,3 +105,4 @@ Mixed Python/Node.js project with markdown documentation
 - **Validation failures**: Specific fix recommendations
 - **Permission issues**: Guidance for access problems
 - **Dependency conflicts**: Resolution strategies
+````

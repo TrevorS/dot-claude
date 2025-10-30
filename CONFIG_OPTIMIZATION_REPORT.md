@@ -125,7 +125,7 @@ Successfully optimized your Claude Code configuration by extracting language-spe
 
 **Examples**:
 
-```bash
+````bash
 /commit                        # Commit with validation
 /commit --push                 # Commit and push
 /commit --no-validate          # Skip validation
@@ -588,3 +588,4 @@ You now have:
 6. **Progressive disclosure** - Full knowledge available on-demand
 
 All while maintaining complete functionality and improving user experience. Nice work, Teej! 🚀
+````
