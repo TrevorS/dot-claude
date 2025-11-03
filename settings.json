@@ -54,7 +54,7 @@
     "type": "command",
     "command": "~/.claude/hooks/status.sh"
   },
-  "alwaysThinkingEnabled": false,
+  "alwaysThinkingEnabled": true,
   "feedbackSurveyState": {
     "lastShownTime": 1754086151370
   }
