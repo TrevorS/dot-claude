@@ -73,21 +73,7 @@ Choose the mode that matches your task:
 
 ### Navigation (macOS)
 
-**Use NavigationSplitView** (not deprecated NavigationView):
-
-```swift
-NavigationSplitView {
-    List(selection: $viewModel.selectedItem) {
-        // Sidebar content
-    }
-} detail: {
-    if let item = viewModel.selectedItem {
-        DetailView(item: item)
-    } else {
-        Text("Select an item")
-    }
-}
-```
+**Use NavigationSplitView** (not deprecated NavigationView). See REFERENCE.md for detailed example.
 
 ### Async/Await
 
@@ -101,13 +87,7 @@ NavigationSplitView {
 
 ### macOS 26 Tahoe: Liquid Glass
 
-```swift
-VStack {
-    Text("Content with Liquid Glass")
-}
-.padding()
-.background(.ultraThinMaterial)  // Adapts to background
-```
+Use `.background(.ultraThinMaterial)` for adaptive backgrounds. See REFERENCE.md for examples.
 
 ## Workflow for Each Mode
 
@@ -148,15 +128,11 @@ VStack {
 
 ## Key Principles
 
-**Thread Safety**: All UI updates on main thread. Use `@MainActor` on ViewModels with `@Published` properties.
-
-**Ownership**: Only one `@StateObject` per data source. Pass to children via `@ObservedObject`.
-
-**Async Patterns**: Use `.task()` for view lifecycle. Prefer `.task()` over `Task {}` in `.onAppear`.
-
-**macOS Patterns**: Use `NavigationSplitView` (not deprecated `NavigationView`), proper menu integration, keyboard management.
-
-**Minimal State**: Keep state close to where it's used. Lift only when shared.
+- **Thread Safety**: Use `@MainActor` on ViewModels with `@Published` properties
+- **Ownership**: One `@StateObject` per data source, pass via `@ObservedObject`
+- **Async**: Use `.task()` for view lifecycle (not `Task {}` in `.onAppear`)
+- **macOS**: Use `NavigationSplitView`, proper menus, keyboard management
+- **State**: Keep close to where it's used, lift only when shared
 
 ## Common Anti-Patterns to Avoid
 
