@@ -66,5 +66,5 @@
 
 - Always examine project structure before making changes
 - Check package.json, cargo.toml, pyproject.toml for available dependencies
-- Start code files with "ABOUTME: " comments explaining what the file does
+- When creating complex modules or files, consider taking the time to document them at the top
 - Validation commands: `make format`, `make lint`, `make test`
