@@ -27,3 +27,4 @@ debug/
 file-history/
 *.jsonl
 __pycache__/
+plans/

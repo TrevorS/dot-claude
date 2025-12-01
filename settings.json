@@ -21,7 +21,6 @@
       "Read(./*.pem)"
     ]
   },
-  "model": "haiku",
   "hooks": {
     "Notification": [
       {
@@ -40,10 +39,6 @@
         "hooks": [
           {
             "type": "command",
-            "command": "~/.claude/hooks/command_blocker.sh"
-          },
-          {
-            "type": "command",
             "command": "~/.claude/hooks/branch_protection.sh"
           }
         ]
@@ -54,10 +49,10 @@
     "type": "command",
     "command": "~/.claude/hooks/status.sh"
   },
-  "alwaysThinkingEnabled": false,
+  "forceLoginMethod": "claudeai",
+  "alwaysThinkingEnabled": true,
+  "companyAnnouncements": ["[hi!]\t o\n\t-|-\n\t -\n\t| |"],
   "feedbackSurveyState": {
     "lastShownTime": 1754086151370
-  },
-  "companyAnnouncements": ["[hi!].o->-<"],
-  "forceLoginMethod": "claudeai"
+  }
 }
