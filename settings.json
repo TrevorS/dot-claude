@@ -50,8 +50,10 @@
     "command": "~/.claude/hooks/status.sh"
   },
   "forceLoginMethod": "claudeai",
-  "alwaysThinkingEnabled": true,
-  "companyAnnouncements": ["[hi!]\t o\n\t-|-\n\t -\n\t| |"],
+  "alwaysThinkingEnabled": false,
+  "companyAnnouncements": [
+    "[hi!]\t o\n\t-|-\n\t -\n\t| |"
+  ],
   "feedbackSurveyState": {
     "lastShownTime": 1754086151370
   }
