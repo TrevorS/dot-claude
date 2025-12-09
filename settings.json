@@ -8,6 +8,7 @@
   },
   "includeCoAuthoredBy": false,
   "permissions": {
+    "allow": ["mcp__notion__notion-fetch", "mcp__notion__notion-search"],
     "deny": [
       "Read(./.env)",
       "Read(./.env.*)",
@@ -50,10 +51,8 @@
     "command": "~/.claude/hooks/status.sh"
   },
   "forceLoginMethod": "claudeai",
-  "alwaysThinkingEnabled": false,
-  "companyAnnouncements": [
-    "[hi!]\t o\n\t-|-\n\t -\n\t| |"
-  ],
+  "alwaysThinkingEnabled": true,
+  "companyAnnouncements": ["[hi!]\t o\n\t-|-\n\t -\n\t| |"],
   "feedbackSurveyState": {
     "lastShownTime": 1754086151370
   }
