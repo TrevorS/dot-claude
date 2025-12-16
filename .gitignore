@@ -26,5 +26,6 @@ claude_files_*/
 debug/
 file-history/
 *.jsonl
+stats-cache.json
 __pycache__/
 plans/

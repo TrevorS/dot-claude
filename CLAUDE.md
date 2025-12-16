@@ -68,6 +68,11 @@
 - The "is running..." message means START of work, not completion
 - Execute the expanded prompt; never claim "Done!" without doing the work
 
+### Conversation History
+
+- Use `glhf` skill to search past Claude Code sessions for solutions, commands, and related work
+- See `~/.claude/skills/glhf/SKILL.md` for usage patterns
+
 ## Guidelines
 
 ### Git
