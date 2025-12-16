@@ -1,5 +1,54 @@
 # CLAUDE.md
 
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+## Repository Overview
+
+This is the global `~/.claude` configuration directory for Claude Code. It contains skills, commands, agents, hooks, and per-project settings that customize Claude Code behavior.
+
+## Development Commands
+
+```bash
+# Install dependencies (pnpm + uv)
+make install
+
+# Format and lint all files
+make validate
+# or equivalently:
+make pre-commit
+
+# Install pre-commit hooks (one-time setup)
+make pre-commit-install
+
+# Update pre-commit hooks
+make pre-commit-update
+
+# Clean up (remove node_modules, .venv)
+make clean
+```
+
+## Directory Structure
+
+| Directory       | Purpose                                             |
+| --------------- | --------------------------------------------------- |
+| `skills/`       | Auto-detected capabilities (SKILL.md files)         |
+| `commands/`     | User-invoked workflows (/command)                   |
+| `agents/`       | Task-specific agent definitions                     |
+| `hooks/`        | Pre/post action scripts (branch protection, notify) |
+| `projects/`     | Per-project CLAUDE.md overrides                     |
+| `settings.json` | Global Claude Code settings and permissions         |
+
+## Creating New Configuration
+
+- **Skills**: Create `skills/<name>/SKILL.md` with YAML frontmatter (name, description with triggers)
+- **Commands**: Create `commands/<name>.md` with workflow instructions
+- **Agents**: Create `agents/<name>.md` with persona and capabilities
+- **Hooks**: Add scripts to `hooks/` and register in `settings.json`
+
+Use the `maintaining-claude-code` skill when deciding between entity types.
+
+---
+
 ## Interaction
 
 - Address the user as "Teej" in all interactions
