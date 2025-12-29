@@ -124,7 +124,38 @@ Use the `maintaining-claude-code` skill when deciding between entity types.
 
 ## Guidelines
 
-### Git
+### Version Control: jj for Work, Git for Interface
+
+Use **jj (jujutsu)** for granular local work, **git** for GitHub interface.
+
+**Check which VCS to use:**
+
+```bash
+jj root  # If this works, use jj. If not, fall back to git.
+```
+
+**During implementation (use jj):**
+
+- Don't manually commit - jj auto-tracks all changes
+- Use `jj new -m "trying X"` before risky experiments
+- Use `jj describe -m "checkpoint: what works"` to annotate progress
+- If things break: `jj op log` then `jj op restore <id>`
+- Surgical undo: `jj restore --from @- <path>` for specific files
+
+**Before presenting to team (curate with jj, push with git):**
+
+```bash
+jj squash                           # Combine messy checkpoints
+jj describe -m "feat: clean msg"    # Proper commit message
+jj bookmark create feature-x        # Name for pushing
+jj git push --allow-new             # Push to GitHub
+```
+
+**Teammates see clean git history.** They can't tell you used jj.
+
+**Bail out anytime:** `rm -rf .jj` returns to plain git.
+
+### Git (when not using jj)
 
 - Temporary files: `/tmp/{repo-name}-{branch-name}-{temp-file-name}.txt`
 - Use Write tool for commit messages (avoids shell escaping)

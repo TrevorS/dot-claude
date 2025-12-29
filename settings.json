@@ -11,6 +11,7 @@
     "allow": [
       "mcp__notion__notion-fetch",
       "mcp__notion__notion-search",
+      "Bash(jj:*)",
       "Bash(find:*)",
       "Bash(ls:*)",
       "Bash(rg:*)",
@@ -120,6 +121,17 @@
     "defaultMode": "default"
   },
   "hooks": {
+    "Stop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/jj-checkpoint.sh"
+          }
+        ]
+      }
+    ],
     "Notification": [
       {
         "matcher": "",
