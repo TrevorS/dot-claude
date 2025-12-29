@@ -8,7 +8,11 @@
   },
   "includeCoAuthoredBy": false,
   "permissions": {
-    "allow": ["mcp__notion__notion-fetch", "mcp__notion__notion-search"],
+    "allow": [
+      "mcp__notion__notion-fetch",
+      "mcp__notion__notion-search",
+      "Bash(jj:*)"
+    ],
     "deny": [
       "Read(./.env)",
       "Read(./.env.*)",
@@ -23,6 +27,17 @@
     ]
   },
   "hooks": {
+    "Stop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/jj-checkpoint.sh"
+          }
+        ]
+      }
+    ],
     "Notification": [
       {
         "matcher": "",

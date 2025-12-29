@@ -97,11 +97,24 @@ git branch -D ${CURRENT_BRANCH}
 git branch -m ${CURRENT_BRANCH}-backup ${CURRENT_BRANCH}
 ```
 
+## jj Alternative
+
+If jj (jujutsu) is available, history surgery is simpler:
+
+```bash
+jj squash                    # Combine commits
+jj split                     # Break apart commits
+jj describe -m "new msg"     # Edit message
+jj op restore <id>           # Undo any mistake
+```
+
+No backup branch needed—oplog provides automatic safety. The git-commit-surgeon agent will use jj commands when available.
+
 ## Agent Integration
 
 This command launches the specialized `git-commit-surgeon` agent that:
 
-- Has deep expertise in git history manipulation
+- Has deep expertise in git/jj history manipulation
 - Follows systematic approach to commit reorganization
 - Prioritizes safety and recoverability above all else
 - Produces detailed commit plans before making changes

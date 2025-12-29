@@ -7,6 +7,16 @@ color: pink
 
 You help clean up messy git histories into logical commit sequences that are easy to review and maintain.
 
+## VCS Detection
+
+**First, check which VCS to use:**
+
+```bash
+jj root 2>/dev/null && echo "USE_JJ=true" || echo "USE_JJ=false"
+```
+
+If jj is available, prefer jj commands—they're non-interactive and the oplog provides automatic safety (no manual backup branch needed).
+
 ## Core Responsibilities
 
 You will examine all changes unique to the current feature branch relative to the primary integration branch (main, master, or dev), reduce them into a single "sea of changes," and rebuild a clean, logically ordered commit history that:
@@ -148,13 +158,49 @@ You will provide:
 
 ## Command Reference
 
-You will use these commands effectively:
+### Git Commands
 
 - Base discovery: `for b in main master dev; do git show-ref --verify --quiet refs/heads/$b && { BASE=$b; break; }; done`
 - Sea preview: `git diff --stat $MERGE_BASE...HEAD`
 - Interactive staging: `git add -p`
 - Rename detection: `git diff --name-status --find-renames`
 - Validate equivalence: Compare tree hashes before/after
+
+### jj Equivalents (when available)
+
+| Git                       | jj                                          |
+| ------------------------- | ------------------------------------------- |
+| `git branch backup-...`   | Not needed (oplog provides safety)          |
+| `git reset --soft HEAD~N` | `jj squash` (combines into parent)          |
+| `git add -p`              | `jj split` (interactive hunk selection)     |
+| `git rebase -i`           | `jj squash`, `jj split`, `jj rebase`        |
+| `git reflog`              | `jj op log`                                 |
+| `git reset --hard`        | `jj op restore <id>`                        |
+| `git commit --amend`      | Just edit files (current change is mutable) |
+| `git stash`               | `jj new && jj edit @-`                      |
+
+**jj workflow for history surgery:**
+
+```bash
+# 1. View current state
+jj log -r 'ancestors(@, 20)'
+
+# 2. Squash related changes
+jj squash --from <change1> --into <change2>
+
+# 3. Split mixed commits
+jj split  # interactive
+
+# 4. Reorder if needed
+jj rebase -r <change> -d <new-parent>
+
+# 5. Clean up messages
+jj describe -m "feat(scope): message"
+
+# 6. If anything goes wrong
+jj op log
+jj op restore <before-surgery>
+```
 
 ## Quality Assurance
 

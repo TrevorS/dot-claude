@@ -1,11 +1,13 @@
 ---
 name: git-workflow
-description: Handle squashing multiple commits and rebasing feature branches safely. Use when consolidating commits into a single commit, or rebasing feature branches onto updated development branches.
+description: Handle squashing multiple commits and rebasing feature branches safely. Use when consolidating commits into a single commit, or rebasing feature branches onto updated development branches. Falls back from jj when not available.
 ---
 
 # Git Workflow
 
 Safe, non-interactive approaches for squashing commits and rebasing feature branches.
+
+> **Tip**: If jj is available (`jj root` succeeds), prefer jj-workflow—it's simpler and has automatic safety via oplog.
 
 ## Squash N Commits
 
