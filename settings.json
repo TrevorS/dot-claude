@@ -4,7 +4,8 @@
     "DISABLE_BUG_COMMAND": "true",
     "DISABLE_COST_WARNINGS": "true",
     "DISABLE_ERROR_REPORTING": "true",
-    "DISABLE_TELEMETRY": "true"
+    "DISABLE_TELEMETRY": "true",
+    "ENABLE_LSP_TOOL": "1"
   },
   "includeCoAuthoredBy": false,
   "permissions": {
@@ -159,7 +160,17 @@
     "type": "command",
     "command": "~/.claude/hooks/status.sh"
   },
+  "enabledPlugins": {
+    "clangd-lsp@claude-plugins-official": true,
+    "gopls-lsp@claude-plugins-official": true,
+    "lua-lsp@claude-plugins-official": true,
+    "pyright-lsp@claude-plugins-official": true,
+    "rust-analyzer-lsp@claude-plugins-official": true,
+    "swift-lsp@claude-plugins-official": true,
+    "typescript-lsp@claude-plugins-official": true
+  },
   "forceLoginMethod": "claudeai",
+  "syntaxHighlightingDisabled": false,
   "alwaysThinkingEnabled": true,
   "companyAnnouncements": ["[hi!]\t o\n\t-|-\n\t -\n\t| |"],
   "feedbackSurveyState": {

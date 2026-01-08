@@ -16,9 +16,11 @@ repos:
     hooks:
       - id: prettier
         types_or: [markdown, json, yaml, javascript]
+        exclude: ^cache/
 
   - repo: https://github.com/igorshubovych/markdownlint-cli
     rev: v0.45.0
     hooks:
       - id: markdownlint
         args: ["--config", ".markdownlint.yaml"]
+        exclude: ^cache/

@@ -26,7 +26,7 @@ description: |
 | Annotate what you did | `jj describe -m "feat: auth"`                             |
 | Broke something       | `jj op log` → `jj op restore <id>`                        |
 | Undo one file         | `jj restore --from @- <path>`                             |
-| Combine messy commits | `jj squash`                                               |
+| Combine messy commits | `jj squash -m "message"` (use `-m` to avoid editor)       |
 | Split bloated commit  | `jj split`                                                |
 | Try something risky   | `jj new -m "experiment"`, then `jj abandon @` if it fails |
 
@@ -45,15 +45,22 @@ jj op restore <id>     # Go back
 
 # When done, curate
 jj log -r 'ancestors(@, 10)'
-jj squash              # Combine checkpoints
-jj describe -m "feat: OAuth support"
+jj squash -m "feat: OAuth support"  # -m avoids opening editor
 ```
 
 ## Push to GitHub
 
 ```bash
-jj bookmark create feature-x   # Name for pushing
-jj git push --allow-new        # Push to remote
+# For new branches
+jj bookmark create feature-x -r @-   # Create at parent (the commit, not empty @)
+jj git push                          # Push to remote
+
+# For existing branches (like master)
+jj bookmark set master -r @-         # Update bookmark to commit
+jj git push                          # Push to remote
+
+# If "nothing changed", fall back to git
+git push origin master
 ```
 
 Teammates see clean git. They don't know you used jj.

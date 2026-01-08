@@ -8,9 +8,11 @@ Build up changes incrementally, squash when ready:
 jj describe -m "wip: building feature"
 jj new                               # Work in fresh change
 # ... make changes ...
-jj squash                            # Merge into parent
-jj squash -i                         # Pick specific hunks
+jj squash -m "feat: done"            # Merge into parent (-m avoids editor)
+jj squash -i                         # Pick specific hunks (interactive)
 ```
+
+**Note:** `jj squash` without `-m` opens an editor. Always use `-m "message"` for non-interactive use.
 
 ## History Surgery
 
@@ -46,26 +48,39 @@ jj cat -r <id> <path>                # Show file at revision
 ```bash
 jj git fetch                         # Pull remote
 jj rebase -d main                    # Rebase onto main
-jj git push --allow-new              # Push (creates remote branch)
+
+# Push requires a bookmark
+jj bookmark set master -r @-         # Point bookmark at commit (not empty @)
+jj git push                          # Push to remote
+
+# For new branches
+jj bookmark create feature-x -r @-
+jj git push
 ```
+
+**Note:** `--allow-new` is deprecated. Set bookmarks manually before pushing.
 
 ## Troubleshooting
 
-| Problem       | Fix                                 |
-| ------------- | ----------------------------------- |
-| Conflict      | Fix files, then `jj squash`         |
-| Lost work     | `jj op log` → `jj op restore`       |
-| Wrong parent  | `jj rebase -r @ -d <target>`        |
-| Push rejected | `jj git fetch && jj rebase -d main` |
+| Problem             | Fix                                            |
+| ------------------- | ---------------------------------------------- |
+| Conflict            | Fix files, then `jj squash -m "resolve"`       |
+| Lost work           | `jj op log` → `jj op restore`                  |
+| Wrong parent        | `jj rebase -r @ -d <target>`                   |
+| Push rejected       | `jj git fetch && jj rebase -d main`            |
+| "Nothing changed"   | `jj bookmark set master -r @-` then push       |
+| Squash opens editor | Use `jj squash -m "message"` instead           |
+| @ is empty          | Your work is in `@-`; use `-r @-` for commands |
 
 ## Git Equivalents
 
-| Git                       | jj                       |
-| ------------------------- | ------------------------ |
-| `git add . && git commit` | `jj new`                 |
-| `git commit --amend`      | Just edit (auto-saved)   |
-| `git stash`               | `jj new && jj edit @-`   |
-| `git rebase -i`           | `jj squash` / `jj split` |
-| `git reflog`              | `jj op log`              |
-| `git reset --hard`        | `jj op restore`          |
-| `git branch`              | `jj bookmark`            |
+| Git                       | jj                                       |
+| ------------------------- | ---------------------------------------- |
+| `git add . && git commit` | `jj new` (or `jj squash -m "msg"`)       |
+| `git commit --amend`      | Just edit (auto-saved)                   |
+| `git stash`               | `jj new && jj edit @-`                   |
+| `git rebase -i`           | `jj squash -m` / `jj split`              |
+| `git reflog`              | `jj op log`                              |
+| `git reset --hard`        | `jj op restore`                          |
+| `git branch`              | `jj bookmark`                            |
+| `git push`                | `jj bookmark set X -r @- && jj git push` |

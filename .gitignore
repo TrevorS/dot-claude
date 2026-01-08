@@ -13,6 +13,7 @@ settings.local.json
 .DS_Store
 Thumbs.db
 
+cache/
 projects/
 statsig/
 todos/
@@ -29,3 +30,5 @@ file-history/
 stats-cache.json
 __pycache__/
 plans/
+chrome/
+stats-cache.json
