@@ -9,6 +9,26 @@ description: |
 
 # jj Workflow
 
+## CRITICAL: Avoid Interactive Mode
+
+**Always use `-m` flag** to prevent jj from opening an editor:
+
+```bash
+# WRONG - opens editor, blocks AI
+jj new
+jj describe
+jj squash
+
+# CORRECT - non-interactive
+jj new -m "message"
+jj describe -m "message"
+jj squash -m "message"
+```
+
+**Never use these interactive commands:**
+
+- `jj split` - inherently interactive, no non-interactive mode
+
 ## Mental Model
 
 **No staging area.** Your working directory is always a commit. Every save is tracked.
@@ -22,12 +42,11 @@ description: |
 | Situation             | Do This                                                   |
 | --------------------- | --------------------------------------------------------- |
 | Starting new work     | `jj new -m "what I'm trying"`                             |
-| Work is done, move on | `jj new` (current becomes parent)                         |
+| Work is done, move on | `jj new -m "next task"`                                   |
 | Annotate what you did | `jj describe -m "feat: auth"`                             |
 | Broke something       | `jj op log` → `jj op restore <id>`                        |
 | Undo one file         | `jj restore --from @- <path>`                             |
-| Combine messy commits | `jj squash -m "message"` (use `-m` to avoid editor)       |
-| Split bloated commit  | `jj split`                                                |
+| Combine messy commits | `jj squash -m "combined message"`                         |
 | Try something risky   | `jj new -m "experiment"`, then `jj abandon @` if it fails |
 
 ## AI Coding Pattern
@@ -45,7 +64,7 @@ jj op restore <id>     # Go back
 
 # When done, curate
 jj log -r 'ancestors(@, 10)'
-jj squash -m "feat: OAuth support"  # -m avoids opening editor
+jj squash -m "feat: OAuth support"
 ```
 
 ## Push to GitHub
