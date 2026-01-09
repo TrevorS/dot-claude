@@ -75,17 +75,33 @@ jj squash -m "feat: OAuth support"
 
 ## Push to GitHub
 
+**Pushed commits are immutable.** You can't squash into or modify them. The safe pattern:
+
 ```bash
-# For new branches
-jj bookmark create feature-x -r @-   # Create at parent (the commit, not empty @)
-jj git push                          # Push to remote
+# 1. Abandon empty checkpoint commits cluttering history
+jj log -r '::@'                      # Find checkpoints
+jj abandon <change-ids>              # Remove empty ones
 
-# For existing branches (like master)
-jj bookmark set master -r @-         # Update bookmark to commit
-jj git push                          # Push to remote
+# 2. Describe your work (don't try to squash into immutable parent)
+jj describe -m "feat: what you did"
 
-# If "nothing changed", fall back to git
-git push origin master
+# 3. Move bookmark to your commit and push
+jj bookmark set master -r @
+jj git push
+```
+
+**For feature branches (new):**
+
+```bash
+jj bookmark create feature-x -r @
+jj git push --allow-new
+```
+
+**For feature branches (updating):**
+
+```bash
+jj bookmark set feature-x -r @
+jj git push
 ```
 
 Teammates see clean git. They don't know you used jj.

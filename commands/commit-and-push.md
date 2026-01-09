@@ -34,28 +34,27 @@ fi
 
 ## jj Workflow (When .jj/ exists)
 
-**CRITICAL: Always use `-m` flag** to prevent jj from opening an editor (blocks AI):
+**CRITICAL:** Always use `-m` flag to prevent jj from opening an editor (blocks AI).
+
+**Pushed commits are immutable.** Don't try to squash into them. Use this safe pattern:
 
 ```bash
 # 1. Check status and changes
 jj status
-jj diff
+jj diff --stat
 
-# 2. View commits to squash (commits on top of main)
-jj log -r 'main..@'
+# 2. Clean up empty checkpoint commits
+jj log -r '::@' --no-graph          # Find any checkpoint commits
+jj abandon <empty-checkpoint-ids>   # Remove empty ones
 
-# 3. If main is immutable (already pushed), create new commit on main:
-jj new main -m "commit message here"
-jj restore --from <change-id-with-work> .   # Bring in changes
+# 3. Describe your work with final commit message
+jj describe -m "feat: commit message here"
+
+# 4. Move bookmark to your commit and push
 jj bookmark set main -r @
 jj git push
 
-# 4. If main is mutable, squash into it:
-jj squash --into main -m "commit message here"
-jj bookmark set main -r @
-jj git push
-
-# 5. Track remote bookmark if needed
+# 5. Track remote bookmark if needed (first time only)
 jj bookmark track main@origin
 ```
 

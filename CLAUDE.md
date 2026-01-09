@@ -142,12 +142,20 @@ jj root  # If this works, use jj. If not, fall back to git.
 - If things break: `jj op log` then `jj op restore <id>`
 - Surgical undo: `jj restore --from @- <path>` for specific files
 
-**Before presenting to team (curate with jj, push with git):**
+**Before pushing (pushed commits are immutable!):**
 
 ```bash
-jj squash -m "feat: clean msg"      # Combine messy checkpoints (always -m!)
-jj bookmark create feature-x        # Name for pushing
-jj git push --allow-new             # Push to GitHub
+jj abandon <empty-checkpoints>      # Clean up empty commits
+jj describe -m "feat: clean msg"    # Final commit message
+jj bookmark set main -r @           # Move bookmark to your commit
+jj git push                         # Push to GitHub
+```
+
+**For new feature branches:**
+
+```bash
+jj bookmark create feature-x -r @
+jj git push --allow-new
 ```
 
 **Teammates see clean git history.** They can't tell you used jj.
