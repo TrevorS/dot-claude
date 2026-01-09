@@ -102,11 +102,12 @@ git branch -m ${CURRENT_BRANCH}-backup ${CURRENT_BRANCH}
 If jj (jujutsu) is available, history surgery is simpler:
 
 ```bash
-jj squash                    # Combine commits
-jj split                     # Break apart commits
-jj describe -m "new msg"     # Edit message
-jj op restore <id>           # Undo any mistake
+jj squash -m "combined message"   # Combine commits (always use -m!)
+jj describe -m "new msg"          # Edit message
+jj op restore <id>                # Undo any mistake
 ```
+
+**Note:** `jj split` is inherently interactive and cannot be used in AI workflows. Use selective `jj restore` operations instead.
 
 No backup branch needed—oplog provides automatic safety. The git-commit-surgeon agent will use jj commands when available.
 

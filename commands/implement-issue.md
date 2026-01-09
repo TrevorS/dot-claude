@@ -103,7 +103,7 @@ jj new -m "checkpoint: trying new approach"
 jj describe -m "feat: updated description of what this does"
 
 # Before pushing - clean up history
-jj squash  # Combine working changes into parent
+jj squash -m "feat: final commit message"  # Combine changes (always use -m!)
 
 # Push to remote (first time)
 jj git push --allow-new
@@ -166,7 +166,7 @@ jj new main -m "feat: <team-id> short description"
 jj bookmark create "feature/<team-id>-<description>"
 
 # Push when ready
-jj squash
+jj squash -m "feat: final commit message"
 jj git push --allow-new
 ```
 
@@ -188,8 +188,8 @@ jj git push --allow-new
 **Branch Management (jj):**
 
 - Use `jj new -m "checkpoint"` before risky experiments
-- Use `jj describe` to update commit messages as understanding evolves
-- Use `jj squash` to combine checkpoints into clean commits before push
+- Use `jj describe -m "message"` to update commit messages as understanding evolves
+- Use `jj squash -m "message"` to combine checkpoints into clean commits before push
 - Teammates see clean git history - they can't tell you used jj
 
 **Branch Management (git):**

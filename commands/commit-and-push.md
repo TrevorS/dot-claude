@@ -36,23 +36,6 @@ fi
 
 **CRITICAL: Always use `-m` flag** to prevent jj from opening an editor (blocks AI):
 
-### Step 1: Detect and Clean Up Checkpoint Commits
-
-Claude's Stop hook creates "checkpoint: YYYY-MM-DD_HH:MM:SS" commits automatically. These must be cleaned up before pushing.
-
-```bash
-# Check for checkpoint commits (empty commits with "checkpoint:" prefix)
-jj log --no-graph -r '::@' -T 'if(description.starts_with("checkpoint:"), change_id ++ "\n")' | head -5
-
-# If checkpoints exist, abandon them (they're typically empty)
-jj abandon <checkpoint-change-ids>
-
-# Or if they have actual changes, squash into parent:
-jj squash -r <checkpoint-change-id>
-```
-
-### Step 2: Normal Commit Flow
-
 ```bash
 # 1. Check status and changes
 jj status

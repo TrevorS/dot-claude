@@ -31,21 +31,6 @@ else
 fi
 ```
 
-## jj Checkpoint Cleanup
-
-Claude's Stop hook creates "checkpoint: YYYY-MM-DD_HH:MM:SS" commits automatically. Clean these up before committing:
-
-```bash
-# Check for checkpoint commits
-jj log --no-graph -r '::@' -T 'if(description.starts_with("checkpoint:"), change_id ++ "\n")' | head -5
-
-# If checkpoints exist and are empty, abandon them
-jj abandon <checkpoint-change-ids>
-
-# Or if they have changes, squash into parent
-jj squash -r <checkpoint-change-id>
-```
-
 **CRITICAL: Always use `-m` flag with jj** to prevent editor from blocking:
 
 - `jj describe -m "message"` (not `jj describe`)

@@ -122,17 +122,6 @@
     "defaultMode": "default"
   },
   "hooks": {
-    "Stop": [
-      {
-        "matcher": "",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "~/.claude/hooks/jj-checkpoint.sh"
-          }
-        ]
-      }
-    ],
     "Notification": [
       {
         "matcher": "",

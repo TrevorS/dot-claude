@@ -171,25 +171,30 @@ You will provide:
 | Git                       | jj                                          |
 | ------------------------- | ------------------------------------------- |
 | `git branch backup-...`   | Not needed (oplog provides safety)          |
-| `git reset --soft HEAD~N` | `jj squash` (combines into parent)          |
-| `git add -p`              | `jj split` (interactive hunk selection)     |
-| `git rebase -i`           | `jj squash`, `jj split`, `jj rebase`        |
+| `git reset --soft HEAD~N` | `jj squash -m "msg"` (combines into parent) |
+| `git add -p`              | `jj restore` (selective file restoration)   |
+| `git rebase -i`           | `jj squash -m`, `jj rebase`                 |
 | `git reflog`              | `jj op log`                                 |
 | `git reset --hard`        | `jj op restore <id>`                        |
 | `git commit --amend`      | Just edit files (current change is mutable) |
-| `git stash`               | `jj new && jj edit @-`                      |
+| `git stash`               | `jj new -m "stash" && jj edit @-`           |
 
-**jj workflow for history surgery:**
+**Note:** `jj split` is inherently interactive and cannot be used in AI workflows. Use selective `jj restore` operations instead.
+
+**jj workflow for history surgery (always use -m flags!):**
 
 ```bash
 # 1. View current state
 jj log -r 'ancestors(@, 20)'
 
 # 2. Squash related changes
-jj squash --from <change1> --into <change2>
+jj squash --from <change1> --into <change2> -m "combined message"
 
-# 3. Split mixed commits
-jj split  # interactive
+# 3. To separate changes, use selective restore (jj split is interactive, avoid it)
+jj new -m "first part"
+jj restore --from @- <files-for-first-commit>
+jj new -m "second part"
+# Remaining changes stay in new working copy
 
 # 4. Reorder if needed
 jj rebase -r <change> -d <new-parent>

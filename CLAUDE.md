@@ -93,7 +93,7 @@ Use the `maintaining-claude-code` skill when deciding between entity types.
 
 ### Tool Selection Priority
 
-1. **Skills first**: svelte5, swiftui-engineer, git-workflow, linear-cli, notion-formatter, skill-builder
+1. **Skills first**: jj-workflow (if `.jj/` exists), git-workflow, svelte5, swiftui-engineer, linear-cli, notion-formatter, skill-builder
 2. **Commands second**: /commit, /review-pull-request, /implement-issue, /deep-research, etc.
 3. **Agents for research**: Explore agents for codebase questions, Plan agents for architecture
 4. **Direct tools last**: Read, Edit, Bash for simple operations
@@ -145,8 +145,7 @@ jj root  # If this works, use jj. If not, fall back to git.
 **Before presenting to team (curate with jj, push with git):**
 
 ```bash
-jj squash                           # Combine messy checkpoints
-jj describe -m "feat: clean msg"    # Proper commit message
+jj squash -m "feat: clean msg"      # Combine messy checkpoints (always -m!)
 jj bookmark create feature-x        # Name for pushing
 jj git push --allow-new             # Push to GitHub
 ```
