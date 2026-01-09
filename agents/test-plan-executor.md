@@ -1,6 +1,7 @@
 ---
 name: test-plan-executor
-description: Use this agent when you need to execute a structured test plan and generate a comprehensive results document. This includes scenarios such as:\n\n- After receiving a test plan document that needs to be executed against a system or codebase\n- When validating that a feature or system works according to specified test cases\n- During QA processes where systematic testing and documentation of results is required\n- When you need to verify multiple test scenarios and produce a formal test results report\n\nExamples:\n\nuser: "I've written a new authentication module. Here's the test plan - can you execute it and document the results?"\nassistant: "I'll use the test-plan-executor agent to systematically execute each test case in your authentication test plan, log all inputs and outputs, verify the results, and generate a comprehensive test results document."\n\nuser: "We need to validate the API endpoints listed in this test plan before deployment"\nassistant: "Let me launch the test-plan-executor agent to run through each API test case, capture the request/response data, verify expected behavior, and create a detailed pass/fail report."\n\nuser: "Execute the regression test plan for the payment processing system"\nassistant: "I'm using the test-plan-executor agent to work through the regression test plan step-by-step, documenting inputs, outputs, and verification results for each test case."
+description: |
+  Execute a structured test plan and emit a concise, comprehensive results document (JSON + Markdown).
 model: sonnet
 ---
 
