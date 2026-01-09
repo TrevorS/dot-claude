@@ -2,7 +2,7 @@
 
 <!-- ABOUTME: Creates feature branch and implements GitHub/Linear issues with TDD workflow -->
 
-<!-- ABOUTME: Auto-detects issue system, creates PR, and follows good implementation standards -->
+<!-- ABOUTME: Auto-detects issue system and VCS (jj/git), creates PR, follows good implementation standards -->
 
 Issue: $ARGUMENTS
 
@@ -12,18 +12,20 @@ I'll work through this issue carefully and figure out the best workflow.
 
 I will:
 
-1. **Auto-detect issue tracking system** - Check if GitHub (gh CLI) or Linear (linear-cli) based on argument format
-2. **Check current git status** and ensure we're not working on main/master/dev
-3. **Create feature branch** with proper naming convention based on issue details
-4. **Read and understand issue requirements** using appropriate CLI tool
-5. **Review project context** - check `spec.md`, `requirements.md`, `CLAUDE.md` for standards
-6. **Follow TDD approach** - write complete tests first
-7. **Implement minimal code** to pass tests
-8. **Refactor incrementally** while maintaining test coverage
-9. **Document key architectural decisions** in code comments
-10. **Push with upstream tracking** and create pull request
-11. **Write complete PR description** with test plan
-12. **Keep PR open** for review and iterate based on feedback
+1. **Auto-detect version control** - Check if repo uses jj (`jj root`) or plain git
+2. **Auto-detect issue tracking system** - Check if GitHub (gh CLI) or Linear (linear-cli) based on argument format
+3. **Check current working copy status** and ensure we're not on main/master/dev
+4. **Create feature branch** with proper naming convention based on issue details
+5. **Read and understand issue requirements** using appropriate CLI tool
+6. **Review project context** - check `spec.md`, `requirements.md`, `CLAUDE.md` for standards
+7. **Follow TDD approach** - write complete tests first
+8. **Implement minimal code** to pass tests
+9. **Refactor incrementally** while maintaining test coverage
+10. **Document key architectural decisions** in code comments
+11. **Clean up history** - squash/curate commits before pushing
+12. **Push with upstream tracking** and create pull request
+13. **Write complete PR description** with test plan
+14. **Keep PR open** for review and iterate based on feedback
 
 ## Auto-Detection Logic
 
@@ -33,16 +35,31 @@ The command automatically detects the issue tracking system:
 - **Linear Issues**: Team prefix format (e.g., `ENG-123`, `TEAM-456`) → Uses `linear-cli`
 - **Manual Override**: Use `--github` or `--linear` flags to force specific system
 
+## VCS Detection
+
+**Check which version control system to use:**
+
+```bash
+jj root  # If this succeeds, use jj. If not, fall back to git.
+```
+
 ## Branch Safety Protocol
 
-**Pre-Implementation Checks:**
+**Pre-Implementation Checks (jj):**
+
+- Check current bookmark: `jj log -r @ --no-graph -T 'bookmarks'`
+- If on main/master, create new change: `jj new main -m "feat: description"`
+- No need to stash - jj auto-tracks all changes
+- Fetch latest: `jj git fetch`
+
+**Pre-Implementation Checks (git):**
 
 - Verify current branch with `git branch --show-current`
 - If on protected branch (main/master/dev), create feature branch immediately
 - Check for uncommitted changes and stash if necessary
 - Fetch latest changes from origin
 
-**Branch Naming Conventions:**
+**Branch/Bookmark Naming Conventions:**
 
 - **GitHub**: `feature/issue-{number}-{short-description}` or `fix/issue-{number}-{description}`
 - **Linear**: `feature/{team-id}-{short-description}` or `fix/{team-id}-{description}`
@@ -64,7 +81,43 @@ The command automatically detects the issue tracking system:
 
 ## Command Reference
 
-### GitHub Flow
+### jj Flow (preferred when available)
+
+```bash
+# Check if jj is available
+jj root
+
+# Check current position
+jj log -r @ --no-graph
+
+# Start new work from main
+jj new main -m "feat: issue-<number> short description"
+
+# Create bookmark for pushing
+jj bookmark create "feature/issue-<number>-<description>"
+
+# During implementation - jj auto-tracks, use checkpoints for risky changes
+jj new -m "checkpoint: trying new approach"
+
+# Annotate current work
+jj describe -m "feat: updated description of what this does"
+
+# Before pushing - clean up history
+jj squash  # Combine working changes into parent
+
+# Push to remote (first time)
+jj git push --allow-new
+
+# Push updates
+jj git push
+
+# Undo mistakes
+jj op log                    # Find operation to restore
+jj op restore <operation-id> # Restore to that point
+jj restore --from @- <path>  # Surgical undo of specific files
+```
+
+### GitHub Flow (git)
 
 ```bash
 # Check current branch
@@ -86,7 +139,7 @@ gh pr create --title "[Issue #<number>] Title" --body "Closes #<number>"
 gh issue list --search "in:title <keyword>" --json number,title,labels
 ```
 
-### Linear Flow
+### Linear Flow (git)
 
 ```bash
 # View all issues
@@ -100,6 +153,21 @@ linear-cli issues --team <team-name>
 
 # Create feature branch (manual naming)
 git checkout -b "feature/<team-id>-<description>"
+```
+
+### Linear Flow (jj)
+
+```bash
+# View issue details
+linear-cli issue <team-id>
+
+# Start new work
+jj new main -m "feat: <team-id> short description"
+jj bookmark create "feature/<team-id>-<description>"
+
+# Push when ready
+jj squash
+jj git push --allow-new
 ```
 
 ## Implementation Quality Standards
@@ -117,7 +185,14 @@ git checkout -b "feature/<team-id>-<description>"
 - Ensure all edge cases are tested
 - Update documentation if public APIs change
 
-**Branch Management:**
+**Branch Management (jj):**
+
+- Use `jj new -m "checkpoint"` before risky experiments
+- Use `jj describe` to update commit messages as understanding evolves
+- Use `jj squash` to combine checkpoints into clean commits before push
+- Teammates see clean git history - they can't tell you used jj
+
+**Branch Management (git):**
 
 - Keep commits atomic and well-described
 - Squash related commits before final push

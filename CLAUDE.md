@@ -136,9 +136,9 @@ jj root  # If this works, use jj. If not, fall back to git.
 
 **During implementation (use jj):**
 
-- Don't manually commit - jj auto-tracks all changes
-- Use `jj new -m "trying X"` before risky experiments
-- Use `jj describe -m "checkpoint: what works"` to annotate progress
+- Start with intent: `jj new -m "feat: what I'm building"`
+- jj auto-tracks all changes as you work
+- Checkpoint before risky changes: `jj new -m "trying X"`
 - If things break: `jj op log` then `jj op restore <id>`
 - Surgical undo: `jj restore --from @- <path>` for specific files
 

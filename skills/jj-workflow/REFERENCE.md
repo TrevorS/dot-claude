@@ -2,14 +2,12 @@
 
 ## Squash Workflow (Recommended)
 
-Build up changes incrementally, squash when ready:
+Start with intent, build up changes, squash when ready:
 
 ```bash
-jj describe -m "wip: building feature"
-jj new                               # Work in fresh change
+jj new -m "feat: building feature"   # State intent upfront
 # ... make changes ...
 jj squash -m "feat: done"            # Merge into parent (-m avoids editor)
-jj squash -i                         # Pick specific hunks (interactive)
 ```
 
 **Note:** `jj squash` without `-m` opens an editor. Always use `-m "message"` for non-interactive use.

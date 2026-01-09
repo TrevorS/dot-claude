@@ -32,3 +32,4 @@ __pycache__/
 plans/
 chrome/
 stats-cache.json
+paste-cache/

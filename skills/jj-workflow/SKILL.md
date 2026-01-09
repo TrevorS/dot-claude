@@ -51,19 +51,25 @@ jj squash -m "message"
 
 ## AI Coding Pattern
 
-During implementation, don't think about commits. Just work. jj tracks everything.
+**Start with intent.** Before implementing, state what you're about to do:
 
 ```bash
-# Before risky change
+jj new -m "feat: add user logout button"
+# Now implement... jj tracks everything automatically
+```
+
+This keeps changes focused and gives meaningful `jj log` output while working.
+
+```bash
+# Checkpoint before risky changes
 jj describe -m "checkpoint: auth works"
-jj new -m "adding OAuth"
+jj new -m "trying OAuth integration"
 
 # If it breaks
 jj op log              # Find good state
 jj op restore <id>     # Go back
 
-# When done, curate
-jj log -r 'ancestors(@, 10)'
+# When done, curate history
 jj squash -m "feat: OAuth support"
 ```
 
