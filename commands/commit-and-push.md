@@ -122,5 +122,4 @@ Check `./CLAUDE.md` for project permissions. If on protected branch without perm
 - **Project Type**: personal|work
 - **Direct Commits Allowed**: yes|no
 - **Push to Main Allowed**: yes|no
-- **Last Checked**: 2024-08-09
 ```

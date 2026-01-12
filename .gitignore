@@ -31,5 +31,5 @@ stats-cache.json
 __pycache__/
 plans/
 chrome/
-stats-cache.json
+downloads/
 paste-cache/

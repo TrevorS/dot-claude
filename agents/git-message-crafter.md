@@ -49,7 +49,6 @@ Cache learned project information:
 - **Project Type**: personal|work
 - **Direct Commits Allowed**: yes|no
 - **Push to Main Allowed**: yes|no
-- **Last Checked**: YYYY-MM-DD
 ```
 
 Keep things safe and clear. When unsure, just ask and save the answer for next time.

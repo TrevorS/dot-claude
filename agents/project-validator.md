@@ -40,7 +40,6 @@ Update with validation tools and project permissions:
 
 - **Project Type**: personal|work
 - **Direct Commits Allowed**: yes|no
-- **Last Checked**: 2024-08-09
 ```
 
 Stop on failures. Check branch protection before making formatting changes. Cache permissions in CLAUDE.md.

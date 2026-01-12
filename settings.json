@@ -66,6 +66,7 @@
       "WebFetch(domain:gist.github.com)",
       "WebFetch(domain:raw.githubusercontent.com)",
       "WebFetch(domain:docs.anthropic.com)",
+      "WebFetch(domain:platform.claude.com)",
       "WebFetch(domain:docs.claude.com)",
       "WebFetch(domain:code.claude.com)",
       "WebFetch(domain:support.claude.com)",
@@ -130,9 +131,5 @@
   },
   "forceLoginMethod": "claudeai",
   "syntaxHighlightingDisabled": false,
-  "alwaysThinkingEnabled": true,
-  "companyAnnouncements": ["[hi!]\t o\n\t-|-\n\t -\n\t| |"],
-  "feedbackSurveyState": {
-    "lastShownTime": 1754086151370
-  }
+  "alwaysThinkingEnabled": true
 }

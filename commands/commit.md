@@ -85,5 +85,4 @@ Example CLAUDE.md section:
 
 - **Project Type**: personal|work
 - **Direct Commits Allowed**: yes|no
-- **Last Checked**: 2024-08-09
 ```
