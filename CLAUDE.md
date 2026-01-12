@@ -136,7 +136,9 @@ jj root  # If this works, use jj. If not, fall back to git.
 
 **During implementation (use jj):**
 
+- **Always have a description** - working copy should never be "(no description set)"
 - Start with intent: `jj new -m "feat: what I'm building"`
+- Forgot to start with `jj new`? Run `jj describe -m "what I'm doing"` immediately
 - jj auto-tracks all changes as you work
 - Checkpoint before risky changes: `jj new -m "trying X"`
 - If things break: `jj op log` then `jj op restore <id>`
@@ -155,7 +157,7 @@ jj git push                         # Push to GitHub
 
 ```bash
 jj bookmark create feature-x -r @
-jj git push --allow-new
+jj git push --bookmark feature-x
 ```
 
 **Teammates see clean git history.** They can't tell you used jj.

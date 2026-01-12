@@ -52,10 +52,11 @@ jj describe -m "feat: commit message here"
 
 # 4. Move bookmark to your commit and push
 jj bookmark set main -r @
-jj git push
+jj git push --bookmark main
 
-# 5. Track remote bookmark if needed (first time only)
-jj bookmark track main@origin
+# 5. If push refused for new bookmark, configure auto-tracking once:
+jj config set --user 'remotes.origin.auto-track-bookmarks' 'glob:*'
+# Then retry: jj git push --bookmark main
 ```
 
 **NEVER use without `-m` flag:**

@@ -39,26 +39,36 @@ jj squash -m "message"
 
 ## When to Use What
 
-| Situation             | Do This                                                   |
-| --------------------- | --------------------------------------------------------- |
-| Starting new work     | `jj new -m "what I'm trying"`                             |
-| Work is done, move on | `jj new -m "next task"`                                   |
-| Annotate what you did | `jj describe -m "feat: auth"`                             |
-| Broke something       | `jj op log` → `jj op restore <id>`                        |
-| Undo one file         | `jj restore --from @- <path>`                             |
-| Combine messy commits | `jj squash -m "combined message"`                         |
-| Try something risky   | `jj new -m "experiment"`, then `jj abandon @` if it fails |
+| Situation                   | Do This                                                   |
+| --------------------------- | --------------------------------------------------------- |
+| Starting new work           | `jj new -m "what I'm trying"`                             |
+| Forgot to start with jj new | `jj describe -m "what I'm doing"` (do this immediately)   |
+| Work is done, move on       | `jj new -m "next task"`                                   |
+| Annotate what you did       | `jj describe -m "feat: auth"`                             |
+| Broke something             | `jj op log` → `jj op restore <id>`                        |
+| Undo one file               | `jj restore --from @- <path>`                             |
+| Combine messy commits       | `jj squash -m "combined message"`                         |
+| Try something risky         | `jj new -m "experiment"`, then `jj abandon @` if it fails |
 
 ## AI Coding Pattern
 
-**Start with intent.** Before implementing, state what you're about to do:
+**Always have a description.** The working copy should never stay "(no description set)".
 
 ```bash
+# BEFORE starting work - declare intent
 jj new -m "feat: add user logout button"
 # Now implement... jj tracks everything automatically
+
+# FORGOT to start with jj new? Describe immediately
+jj describe -m "feat: what I'm working on"
 ```
 
-This keeps changes focused and gives meaningful `jj log` output while working.
+**Why this matters:**
+
+- `jj log` shows meaningful history while working
+- Easier to understand what each change does
+- Simpler to curate/squash later
+- Teammates can follow progress
 
 ```bash
 # Checkpoint before risky changes
@@ -94,7 +104,10 @@ jj git push
 
 ```bash
 jj bookmark create feature-x -r @
-jj git push --allow-new
+jj git push --bookmark feature-x
+# If refused, configure auto-tracking once:
+jj config set --user 'remotes.origin.auto-track-bookmarks' 'glob:*'
+# Then retry: jj git push --bookmark feature-x
 ```
 
 **For feature branches (updating):**

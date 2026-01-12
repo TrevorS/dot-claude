@@ -53,10 +53,14 @@ jj git push                          # Push to remote
 
 # For new branches
 jj bookmark create feature-x -r @-
-jj git push
+jj git push --bookmark feature-x
 ```
 
-**Note:** `--allow-new` is deprecated. Set bookmarks manually before pushing.
+**Note:** If push is refused for new bookmarks, configure auto-tracking:
+
+```bash
+jj config set --user 'remotes.origin.auto-track-bookmarks' 'glob:*'
+```
 
 ## Troubleshooting
 

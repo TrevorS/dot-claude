@@ -106,7 +106,7 @@ jj describe -m "feat: updated description of what this does"
 jj squash -m "feat: final commit message"  # Combine changes (always use -m!)
 
 # Push to remote (first time)
-jj git push --allow-new
+jj git push --bookmark feature-x
 
 # Push updates
 jj git push
@@ -167,7 +167,7 @@ jj bookmark create "feature/<team-id>-<description>"
 
 # Push when ready
 jj squash -m "feat: final commit message"
-jj git push --allow-new
+jj git push --bookmark feature-x
 ```
 
 ## Implementation Quality Standards
