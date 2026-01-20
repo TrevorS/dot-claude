@@ -48,6 +48,7 @@ csb build --host-network --insecure
 ```
 
 What these flags do:
+
 - `--host-network`: Uses host networking instead of bridge (which requires iptables)
 - `--insecure`: Adds `-k` to curl commands and disables npm strict-ssl (for SSL-intercepting proxies)
 

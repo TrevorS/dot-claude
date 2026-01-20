@@ -1,235 +1,13 @@
 # Linear CLI Reference
 
-Complete documentation for all commands, flags, and workflows.
+Workflow patterns and examples. For flags and options, use `linear-cli <command> --help`.
 
-## Table of Contents
-
-- [All Commands](#all-commands)
-- [Command Details](#command-details)
-- [All Flags](#all-flags)
-- [Advanced Examples](#advanced-examples)
-- [Workflow Patterns](#workflow-patterns)
-- [Tips & Troubleshooting](#tips--troubleshooting)
-
-## All Commands
-
-| Command          | Purpose                                 |
-| ---------------- | --------------------------------------- |
-| `my-work`        | Show assigned and created issues        |
-| `issue <id>`     | Show details for a single issue         |
-| `issues`         | List all issues (with optional filters) |
-| `create`         | Create a new issue                      |
-| `update <id>`    | Update an existing issue                |
-| `close <id>`     | Close an issue (convenience)            |
-| `reopen <id>`    | Reopen an issue (convenience)           |
-| `comment <id>`   | Add a comment to an issue               |
-| `comments <id>`  | Show all comments for an issue          |
-| `search <query>` | Search issues, projects, and comments   |
-| `projects`       | List all projects                       |
-| `teams`          | List all teams                          |
-| `status`         | Check connection to Linear              |
-| `login`          | Authenticate via OAuth                  |
-| `logout`         | Clear stored credentials                |
-| `images`         | Manage image cache (requires feature)   |
-| `completions`    | Generate shell completions              |
-
-## Command Details
-
-### View Issues
-
-```bash
-# Your work
-linear-cli my-work
-
-# Specific issue with full details
-linear-cli issue ENG-456
-
-# All issues, optionally filtered
-linear-cli issues
-linear-cli issues --team-key ENG
-linear-cli issues --status "In Progress"
-
-# Comments on an issue
-linear-cli comments ENG-456
-```
-
-### Create Issues
-
-```bash
-# Minimal creation
-linear-cli create --title "Fix login bug"
-
-# With team and priority
-linear-cli create --title "Urgent fix" --team-key ENG --priority 1
-
-# Full details
-linear-cli create \
-  --title "Feature request" \
-  --team-key ENG \
-  --description "Add dark mode support" \
-  --priority 2 \
-  --assignee "john@example.com"
-```
-
-### Update Issues
-
-```bash
-# Change status
-linear-cli update ENG-456 --status "In Progress"
-linear-cli update ENG-456 --status "Done"
-
-# Assign to self or others
-linear-cli update ENG-456 --assignee "your-name"
-linear-cli update ENG-456 --assignee "john@example.com"
-
-# Adjust priority
-linear-cli update ENG-456 --priority 1
-
-# Multiple changes at once
-linear-cli update ENG-456 --status "In Progress" --assignee "you" --priority 2
-```
-
-### Comments
-
-```bash
-# Add a comment
-linear-cli comment ENG-456 --message "Fixed in PR #789"
-
-# View all comments
-linear-cli comments ENG-456
-```
-
-### Convenience Commands
-
-```bash
-# Quick close/reopen
-linear-cli close ENG-456
-linear-cli reopen ENG-456
-```
-
-### Search
-
-```bash
-# Basic search
-linear-cli search "authentication"
-
-# Search results include issues, projects, and comments
-linear-cli search "database connection"
-
-# Pipe results for filtering
-linear-cli search "bug" | grep "priority: 1"
-```
-
-### Lists & Info
-
-```bash
-# Show all projects
-linear-cli projects
-
-# Show all teams
-linear-cli teams
-
-# Verify connection (useful for debugging)
-linear-cli status
-```
-
-## All Flags
-
-### Common to Most Commands
-
-| Flag            | Usage                           | Example                                   |
-| --------------- | ------------------------------- | ----------------------------------------- |
-| `--no-color`    | Disable colored output          | `linear-cli my-work --no-color`           |
-| `--force-color` | Force color (useful when piped) | `linear-cli issues --force-color \| less` |
-| `-v, --verbose` | Enable debug output             | `linear-cli issue ENG-456 -v`             |
-| `-h, --help`    | Show help for command           | `linear-cli create --help`                |
-
-### Create/Update Flags
-
-| Flag            | Purpose                    | Example                        |
-| --------------- | -------------------------- | ------------------------------ |
-| `--title`       | Issue title                | `--title "Fix auth bug"`       |
-| `--team-key`    | Team identifier            | `--team-key ENG`               |
-| `--status`      | Issue status               | `--status "In Progress"`       |
-| `--priority`    | Priority 1-4 (1 = highest) | `--priority 1`                 |
-| `--assignee`    | Assign to person           | `--assignee "john"`            |
-| `--description` | Full description           | `--description "Details here"` |
-| `--message`     | Comment text               | `--message "Fixed in v1.2"`    |
-
-### Filter Flags (for `issues` command)
-
-| Flag         | Purpose            | Example              |
-| ------------ | ------------------ | -------------------- |
-| `--team-key` | Filter by team     | `--team-key ENG`     |
-| `--status`   | Filter by status   | `--status "Backlog"` |
-| `--assignee` | Filter by assignee | `--assignee "john"`  |
-
-## Advanced Examples
-
-### Bulk Operations
-
-```bash
-# Find all high-priority open issues in your team
-linear-cli issues --team-key ENG | grep "priority: 1"
-
-# Count issues by status
-linear-cli issues --team-key ENG | grep "status:" | sort | uniq -c
-
-# List all your assignments
-linear-cli my-work | grep "assigned"
-```
-
-### Creating Multiple Issues
-
-```bash
-# Create from a list
-for title in "Fix login" "Add docs" "Refactor API"; do
-  linear-cli create --title "$title" --team-key ENG --priority 2
-done
-```
-
-### Workflow: Sprint Kickoff
-
-```bash
-# View all backlog items for your team
-linear-cli issues --team-key ENG --status "Backlog"
-
-# Assign to team members and set to "In Progress"
-linear-cli update ENG-100 --assignee "alice" --status "In Progress"
-linear-cli update ENG-101 --assignee "bob" --status "In Progress"
-```
-
-### Search-Based Workflows
-
-```bash
-# Find all issues mentioning "database"
-linear-cli search "database"
-
-# Find and view details on first result
-linear-cli issue ENG-200
-linear-cli comments ENG-200
-```
-
-### Integration: Script to Update All Done Issues
-
-```bash
-#!/bin/bash
-# Mark all "Ready for Review" issues as "In Review"
-for issue_id in $(linear-cli issues --status "Ready for Review" | grep "ENG-" | awk '{print $1}'); do
-  linear-cli update "$issue_id" --status "In Review"
-  echo "Updated $issue_id"
-done
-```
-
-## Workflow Patterns
+## Common Workflows
 
 ### Daily Standup
 
 ```bash
-# Check your work
 linear-cli my-work
-
-# Dig into any blockers
 linear-cli issue ENG-456
 linear-cli comments ENG-456
 ```
@@ -237,118 +15,50 @@ linear-cli comments ENG-456
 ### Starting a Task
 
 ```bash
-# Create issue if needed
-linear-cli create --title "New feature" --team-key ENG
-
-# Get the issue ID from output, then:
-linear-cli update ENG-789 --status "In Progress" --assignee "you"
+linear-cli create --title "New feature" --team ENG
+# Note the ID from output, then:
+linear-cli update ENG-789 --status "In Progress" --assignee me
 ```
 
 ### Closing Work
 
 ```bash
-# Update status
 linear-cli update ENG-456 --status "Done"
-
-# Add context about the fix
-linear-cli comment ENG-456 --message "Shipped in v2.1.0"
-linear-cli comment ENG-456 --message "Fixed by PR #1234"
+linear-cli comment ENG-456 "Shipped in v2.1.0"
 ```
 
-### Triaging Bugs
+### Filtering Issues
 
 ```bash
-# Search for recent bugs
-linear-cli search "bug"
-
-# Review each one
-linear-cli issue ENG-111
-linear-cli issue ENG-112
-
-# Assign and prioritize
-linear-cli update ENG-111 --assignee "alice" --priority 1 --status "In Progress"
+linear-cli issues --team ENG
+linear-cli issues --status "In Progress"
+linear-cli issues --assignee me
 ```
 
-### Sprint Cleanup
+### Search
 
 ```bash
-# Find all "Done" issues in current sprint
-linear-cli issues --team-key ENG --status "Done"
-
-# Archive or close as needed
-linear-cli close ENG-500
+linear-cli search "authentication"
+linear-cli search "bug" | grep "priority: 1"
 ```
 
-## Tips & Troubleshooting
-
-### Verify Connection
+## Bulk Operations
 
 ```bash
-linear-cli status
+# Create multiple issues
+for title in "Fix login" "Add docs" "Refactor API"; do
+  linear-cli create --title "$title" --team ENG
+done
+
+# Update multiple issues
+for id in ENG-100 ENG-101 ENG-102; do
+  linear-cli update "$id" --status "In Progress"
+done
 ```
 
-Confirms you're authenticated and connected to Linear.
+## Status Values
 
-### Get Help Anytime
-
-```bash
-linear-cli --help              # All commands
-linear-cli <command> --help    # Specific command
-```
-
-### Shell Completions
-
-```bash
-linear-cli completions
-```
-
-Generate shell completions for bash, zsh, or fish to enable auto-completion.
-
-### Custom Filtering with Grep
-
-```bash
-# Find high-priority issues
-linear-cli issues | grep "priority: 1"
-
-# Find your assignments
-linear-cli my-work | grep "assigned"
-
-# Search results and filter
-linear-cli search "api" | grep "ENG-"
-```
-
-### Debugging Issues
-
-```bash
-# Enable verbose output
-linear-cli my-work -v
-
-# Helps diagnose authentication or connection issues
-linear-cli status -v
-```
-
-### Re-authenticate
-
-```bash
-# If credentials seem stale
-linear-cli logout
-linear-cli login
-```
-
-### Combining Commands
-
-```bash
-# Create, view, and comment in sequence
-linear-cli create --title "Bug fix" --team-key ENG
-# Note the ID from output (e.g., ENG-789), then:
-linear-cli issue ENG-789
-linear-cli comment ENG-789 --message "Working on it now"
-linear-cli update ENG-789 --status "In Progress"
-```
-
-### Status Values
-
-Common status values across Linear instances:
+Common statuses (your instance may differ):
 
 - Backlog
 - Todo
@@ -357,11 +67,9 @@ Common status values across Linear instances:
 - Done
 - Cancelled
 
-Your instance may have custom statuses—run `linear-cli issues` and check what statuses appear.
+## Priority Levels
 
-### Priority Levels
-
-- `1` - Urgent/Highest
+- `1` - Urgent
 - `2` - High
-- `3` - Medium
+- `3` - Normal
 - `4` - Low

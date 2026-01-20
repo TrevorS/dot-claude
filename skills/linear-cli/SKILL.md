@@ -13,17 +13,20 @@ Query, create, and update Linear issues without leaving the terminal.
 # Check your assigned work
 linear-cli my-work
 
+# View issue details
+linear-cli issue ENG-456
+
 # Create a new issue
-linear-cli create --title "Production bug" --priority 1 --team-key ENG
+linear-cli create --title "Production bug" --priority 1 --team ENG
 
 # Update status and add comment
 linear-cli update ENG-456 --status "Done"
-linear-cli comment ENG-456 --message "Shipped in v2.1.0"
+linear-cli comment ENG-456 "Shipped in v2.1.0"
 ```
 
 ## Key Flags
 
-- `--team-key ENG` - Specify or filter by team
+- `--team ENG` - Specify or filter by team
 - `--status "In Progress"` - Set or filter by status
 - `--priority 1` - Set priority (1-4, 1 is highest)
 - `--assignee name` - Assign to team member
