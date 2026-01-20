@@ -11,11 +11,9 @@
   "permissions": {
     "allow": [
       "WebSearch",
-
       "mcp__notion__*",
       "mcp__socialmedia__*",
       "mcp__journal__*",
-
       "Bash(jj:*)",
       "Bash(git:*)",
       "Bash(gh:*)",
@@ -28,7 +26,6 @@
       "Bash(linear-cli:*)",
       "Bash(llm:*)",
       "Bash(claude:*)",
-
       "Bash(ls:*)",
       "Bash(find:*)",
       "Bash(rg:*)",
@@ -54,13 +51,11 @@
       "Bash(dwarfdump:*)",
       "Bash(otool:*)",
       "Bash(nm:*)",
-
       "Read(~/.local/**)",
       "Read(~/.config/**)",
       "Read(~/Library/**)",
       "Read(/usr/local/**)",
       "Read(/opt/**)",
-
       "WebFetch(domain:github.com)",
       "WebFetch(domain:docs.github.com)",
       "WebFetch(domain:gist.github.com)",
@@ -127,7 +122,8 @@
     "pyright-lsp@claude-plugins-official": true,
     "rust-analyzer-lsp@claude-plugins-official": true,
     "swift-lsp@claude-plugins-official": true,
-    "typescript-lsp@claude-plugins-official": true
+    "typescript-lsp@claude-plugins-official": true,
+    "code-simplifier@claude-plugins-official": true
   },
   "forceLoginMethod": "claudeai",
   "syntaxHighlightingDisabled": false,
