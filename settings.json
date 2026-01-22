@@ -88,6 +88,17 @@
     "defaultMode": "default"
   },
   "hooks": {
+    "UserPromptSubmit": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/user-prompt-submit/vcs-context.sh"
+          }
+        ]
+      }
+    ],
     "Notification": [
       {
         "matcher": "",

@@ -28,6 +28,7 @@ debug/
 file-history/
 *.jsonl
 stats-cache.json
+.credentials.json
 __pycache__/
 plans/
 chrome/
