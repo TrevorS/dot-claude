@@ -1,14 +1,6 @@
 ---
 name: jj-workflow
-description: |
-  Jujutsu (jj) version control for AI-assisted development.
-
-  LOAD THIS SKILL WHEN: Hook output shows `vcs=jj-colocated` or `vcs=jj` in the system-reminder.
-
-  Also use for:
-  - Undo/recovery after breaking changes
-  - Curating messy history before PR
-  - Any git operation in a jj-managed repo (use jj commands instead)
+description: Jujutsu (jj) version control, load skill when hook output shows vcs=jj-colocated or vcs=jj in the system-reminder.
 ---
 
 # jj Workflow
