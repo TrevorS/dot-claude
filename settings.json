@@ -11,7 +11,11 @@
   "permissions": {
     "allow": [
       "WebSearch",
-      "mcp__notion__*",
+      "mcp__notion__notion-search",
+      "mcp__notion__notion-fetch",
+      "mcp__notion__notion-get-comments",
+      "mcp__notion__notion-get-teams",
+      "mcp__notion__notion-get-users",
       "mcp__socialmedia__*",
       "mcp__journal__*",
       "Bash(jj:*)",
@@ -48,9 +52,6 @@
       "Bash(gsed:*)",
       "Bash(osascript:*)",
       "Bash(tailscale:*)",
-      "Bash(dwarfdump:*)",
-      "Bash(otool:*)",
-      "Bash(nm:*)",
       "Read(~/.local/**)",
       "Read(~/.config/**)",
       "Read(~/Library/**)",
@@ -138,6 +139,5 @@
     "ralph-loop@claude-plugins-official": true
   },
   "forceLoginMethod": "claudeai",
-  "syntaxHighlightingDisabled": false,
   "alwaysThinkingEnabled": true
 }
