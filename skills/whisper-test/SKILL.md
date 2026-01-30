@@ -47,15 +47,16 @@ uv run --no-project --with openai-whisper --with scipy --python 3.11 \
 Use `large-v3` for TTS quality verification. Smaller models hallucinate or miss
 words in synthesized speech, making them unreliable for judging output quality.
 
-| Model | VRAM | When to use |
-|---|---|---|
+| Model      | VRAM   | When to use                                                     |
+| ---------- | ------ | --------------------------------------------------------------- |
 | `large-v3` | ~10 GB | **Default.** TTS evaluation, quality gating, regression testing |
-| `medium` | ~5 GB | GPU memory constrained, still decent accuracy |
-| `small` | ~2 GB | Quick smoke tests only |
-| `base` | ~1 GB | Not recommended for TTS — high hallucination rate |
-| `tiny` | ~1 GB | Not recommended for TTS — unreliable |
+| `medium`   | ~5 GB  | GPU memory constrained, still decent accuracy                   |
+| `small`    | ~2 GB  | Quick smoke tests only                                          |
+| `base`     | ~1 GB  | Not recommended for TTS — high hallucination rate               |
+| `tiny`     | ~1 GB  | Not recommended for TTS — unreliable                            |
 
 Observed with identical Qwen3-TTS 1.7B voice-cloned output:
+
 - `large-v3`: "That's one tank. Flash attention pipeline." (key phrase captured)
 - `base`: "That's one thing, flash attention pipeline." (close but hallucinated)
 
@@ -67,7 +68,7 @@ confabulating plausible words.
 
 For each file, prints:
 
-```
+```text
 filename.wav:
   transcription: "Hello world, this is a test."
   duration: 2.96s
@@ -79,12 +80,12 @@ filename.wav:
 
 ## Interpreting Results
 
-| Transcription | Meaning |
-|---|---|
-| Matches expected text | Audio is intelligible and correct |
-| Partial match | Audio has some speech but quality issues |
-| Empty string `""` | Audio is unintelligible (noise, silence, or garbage) |
-| Hallucinated text | Model heard something in noise (common with Whisper, especially smaller models) |
+| Transcription         | Meaning                                                                         |
+| --------------------- | ------------------------------------------------------------------------------- |
+| Matches expected text | Audio is intelligible and correct                                               |
+| Partial match         | Audio has some speech but quality issues                                        |
+| Empty string `""`     | Audio is unintelligible (noise, silence, or garbage)                            |
+| Hallucinated text     | Model heard something in noise (common with Whisper, especially smaller models) |
 
 ### Audio Quality Indicators
 
@@ -95,6 +96,7 @@ filename.wav:
 ### TTS-Specific Patterns
 
 Voice-cloned TTS output often has these characteristics:
+
 - **Garbled opening, clear ending**: Common with ICL voice cloning on short references. The model needs a few frames to "lock in" to the target voice.
 - **Key phrases preserved**: Even when WER is high, domain-specific terms (e.g. "flash attention pipeline") often come through clearly.
 - **Smaller models produce worse audio**: 0.6B models produce significantly less intelligible output than 1.7B — expect Whisper to reflect this.
@@ -118,6 +120,7 @@ When testing on a GPU box inside an NGC container (e.g. for CUDA flash-attn buil
 ffmpeg isn't available and apt can be slow. Two workarounds:
 
 1. **Static ffmpeg binary** (fast, no apt):
+
    ```bash
    curl -sL https://johnvansickle.com/ffmpeg/releases/ffmpeg-release-arm64-static.tar.xz \
      | tar xJ --strip-components=1 -C /usr/local/bin/ --wildcards "*/ffmpeg" "*/ffprobe"
@@ -125,6 +128,7 @@ ffmpeg isn't available and apt can be slow. Two workarounds:
    ```
 
 2. **Use scipy loader** (this script's default — no ffmpeg needed):
+
    ```bash
    pip install openai-whisper scipy
    python3 ~/.claude/skills/whisper-test/transcribe.py --model large-v3 output.wav
