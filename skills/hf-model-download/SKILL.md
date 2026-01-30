@@ -42,6 +42,8 @@ uv run --with huggingface_hub hf download <org>/<repo> <file1> <file2> --local-d
 uv run --with huggingface_hub hf download <org>/<repo> --include "*.gguf" --local-dir <destination>
 ```
 
+**Warning**: Large GGUF models are often split into parts (e.g., `model.gguf.part-000`, `.part-001`, etc.). Use `--include "*.gguf*"` (note the trailing `*`) to match both single GGUFs and split parts. Use `--dry-run` first to check what files will be downloaded.
+
 ### Download entire repo
 
 ```bash
