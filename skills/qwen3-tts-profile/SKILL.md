@@ -35,7 +35,7 @@ docker run --rm --gpus all --entrypoint /bin/bash \
 
 ### 1. Chrome Trace (default — best for span hierarchy)
 
-Produces `trace.json` for viewing in `chrome://tracing` or https://ui.perfetto.dev.
+Produces `trace.json` for viewing in `chrome://tracing` or <https://ui.perfetto.dev>.
 
 ```bash
 docker run --rm --gpus all --entrypoint /bin/bash \
@@ -47,6 +47,7 @@ docker run --rm --gpus all --entrypoint /bin/bash \
 ```
 
 Output: `trace.json` (~12MB for 3 sentences). Contains spans:
+
 - `generate_frames` — full generation loop
 - `code_predictor` / `code_predictor_inner` — per-frame acoustic code generation
 - `talker_step` — per-frame transformer forward pass
@@ -94,7 +95,7 @@ bash scripts/audit-gpu-syncs.sh
 
 ### Stage Breakdown Table
 
-```
+```text
 Label  Words  Wall (ms)  Audio (s)  RTF    Tok/s  Mem (MB)  Prefill     Generate      Decode
 short     13    5235.2      3.68   1.423    8.8      858   21ms (1%)  2724ms (71%)  1109ms (29%)
 medium    53   23786.3     34.00   0.700   17.9      859   20ms (0%)  22694ms (95%)  1057ms (4%)
@@ -102,6 +103,7 @@ long     115   43797.4     60.96   0.718   17.4      864   19ms (0%)  41861ms (9
 ```
 
 Key metrics:
+
 - **RTF < 1.0** = faster than real-time
 - **Prefill**: Should be <50ms on GPU. If high, check embedding/attention.
 - **Generation**: Dominates. ~18 GPU→CPU syncs per frame (16 code_predictor + 2 sampling).
@@ -111,6 +113,7 @@ Key metrics:
 ### Chrome Trace Analysis
 
 In Perfetto/chrome://tracing:
+
 1. Look for gaps between `talker_step` and `code_predictor` — that's CPU overhead
 2. Check if `sampling` (top_k + top_p) is significant vs model forward passes
 3. The `gpu_sync` events mark where GPU stalls waiting for CPU
@@ -118,6 +121,7 @@ In Perfetto/chrome://tracing:
 ### Optimization Targets
 
 The ~18 `to_vec1()` calls per frame are the main bottleneck:
+
 - 16 in code_predictor (argmax per acoustic code group)
 - 2 in sampling (read sampled token)
 
@@ -125,15 +129,16 @@ Batch these to reduce GPU→CPU round-trips.
 
 ## Model Variants
 
-| Model | Dir | Notes |
-|-------|-----|-------|
-| 1.7B-CustomVoice | `test_data/models/1.7B-CustomVoice` | Default benchmark target |
-| 1.7B-Base | `test_data/models/1.7B-Base` | Voice cloning (needs ref audio) |
-| 1.7B-VoiceDesign | `test_data/models/1.7B-VoiceDesign` | Text-described voices |
+| Model            | Dir                                 | Notes                           |
+| ---------------- | ----------------------------------- | ------------------------------- |
+| 1.7B-CustomVoice | `test_data/models/1.7B-CustomVoice` | Default benchmark target        |
+| 1.7B-Base        | `test_data/models/1.7B-Base`        | Voice cloning (needs ref audio) |
+| 1.7B-VoiceDesign | `test_data/models/1.7B-VoiceDesign` | Text-described voices           |
 
 ## Reference Baseline (1.7B-CustomVoice, CUDA)
 
 From January 2025 on DGX (A100):
+
 - Short (13 words): RTF 1.42, 8.8 tok/s
 - Medium (53 words): RTF 0.70, 17.9 tok/s
 - Long (115 words): RTF 0.72, 17.4 tok/s
