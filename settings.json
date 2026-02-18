@@ -138,5 +138,6 @@
     "ralph-loop@claude-plugins-official": true
   },
   "forceLoginMethod": "claudeai",
-  "alwaysThinkingEnabled": true
+  "alwaysThinkingEnabled": true,
+  "skipDangerousModePermissionPrompt": true
 }
