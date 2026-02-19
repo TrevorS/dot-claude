@@ -130,10 +130,10 @@
   },
   "enabledPlugins": {
     "gopls-lsp@claude-plugins-official": false,
-    "lua-lsp@claude-plugins-official": true,
-    "pyright-lsp@claude-plugins-official": true,
+    "lua-lsp@claude-plugins-official": false,
+    "pyright-lsp@claude-plugins-official": false,
     "rust-analyzer-lsp@claude-plugins-official": false,
-    "swift-lsp@claude-plugins-official": true,
+    "swift-lsp@claude-plugins-official": false,
     "code-simplifier@claude-plugins-official": true,
     "ralph-loop@claude-plugins-official": true
   },
