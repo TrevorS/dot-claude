@@ -1,9 +1,5 @@
 # Review Pull Request
 
-<!-- ABOUTME: Conducts complete PR reviews against issue requirements and best practices -->
-
-<!-- ABOUTME: Analyzes code quality, tests, documentation, and implementation standards -->
-
 Pull Request: $ARGUMENTS
 
 ## Task

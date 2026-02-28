@@ -1,7 +1,9 @@
-# WAV Audio Analysis Skill
+---
+name: wav-analysis
+description: Analyze WAV audio files for debugging TTS and audio pipelines. Use when checking audio quality, validating WAV format, inspecting waveform patterns, or diagnosing generated speech issues.
+---
 
-<!-- ABOUTME: Analyze WAV audio files for debugging TTS/audio pipelines -->
-<!-- ABOUTME: Statistics, waveform patterns, and format validation -->
+# WAV Audio Analysis Skill
 
 ## Description
 

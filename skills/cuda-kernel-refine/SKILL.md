@@ -1,11 +1,6 @@
 ---
 name: cuda-kernel-refine
-description: |
-  Iterative CUDA kernel optimization using NVIDIA profiling tools (nsys, ncu).
-  Triggers on: "optimize kernel", "refine kernel", "improve throughput",
-  "kernel performance", "make kernel faster", "reduce bandwidth",
-  "memory bound", "compute bound", "roofline", "compare benchmark",
-  "register pressure", "occupancy"
+description: Iterative CUDA kernel optimization using NVIDIA profiling tools (nsys, ncu). Use when optimizing kernels, improving throughput, reducing bandwidth, analyzing roofline, comparing benchmarks, or investigating register pressure and occupancy.
 ---
 
 # CUDA Kernel Refinement Loop

@@ -1,9 +1,5 @@
 # Implement Issue
 
-<!-- ABOUTME: Creates feature branch and implements GitHub/Linear issues with TDD workflow -->
-
-<!-- ABOUTME: Auto-detects issue system and VCS (jj/git), creates PR, follows good implementation standards -->
-
 Issue: $ARGUMENTS
 
 ## Task

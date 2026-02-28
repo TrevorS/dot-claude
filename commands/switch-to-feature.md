@@ -1,9 +1,5 @@
 # Switch to Feature Branch
 
-<!-- ABOUTME: Moves work from protected branches to feature branches safely -->
-
-<!-- ABOUTME: Preserves all uncommitted changes using git stash during transfer -->
-
 Move current work from main/master/dev to a proper feature branch, preserving all uncommitted changes.
 
 Usage: `/switch-to-feature [branch-name-or-description]`

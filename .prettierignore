@@ -1,6 +1,3 @@
-# ABOUTME: Prettier ignore patterns to exclude auto-generated and dependency files
-# ABOUTME: Prevents formatting checks on files that shouldn't be modified
-
 # Python virtual environment
 .venv/
 __pycache__/

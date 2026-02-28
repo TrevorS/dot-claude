@@ -1,9 +1,5 @@
 # Commit Changes
 
-<!-- ABOUTME: Auto-stages, validates, and commits changes with clear messages -->
-
-<!-- ABOUTME: Supports incremental development workflow without pushing to remote -->
-
 Auto-stage, validate, and commit changes with a clear message for incremental development workflow.
 
 ## Task

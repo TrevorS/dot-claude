@@ -1,3 +1,8 @@
+---
+name: cuda-kernel-dev
+description: Develop and test custom CUDA kernels in the candle framework for qwen3-tts-rs. Use when writing CUDA kernels, debugging GPU code, or integrating kernels with candle.
+---
+
 # cuda-kernel-dev
 
 Skill for developing and testing custom CUDA kernels in the candle framework for `qwen3-tts-rs`.

@@ -1,6 +1,4 @@
 #!/bin/bash
-# ABOUTME: Enhanced macOS notification script for Claude Code hooks using native osascript
-# ABOUTME: Parses JSON from stdin and creates rich native macOS notifications with context
 
 set -euo pipefail
 

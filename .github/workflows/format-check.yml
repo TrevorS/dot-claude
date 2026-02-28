@@ -1,6 +1,3 @@
-# ABOUTME: GitHub Actions workflow for checking code formatting and linting
-# ABOUTME: Runs pre-commit hooks including prettier, markdownlint, and other checks
-
 name: Format and Lint Check
 
 on:

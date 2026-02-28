@@ -1,9 +1,5 @@
 # Validate Project
 
-<!-- ABOUTME: Auto-detects and runs formatter, linter, type checker, and tests -->
-
-<!-- ABOUTME: Validates project using detected tools and provides complete feedback -->
-
 Auto-detect and run formatter, linter, type checker, and tests for the current project.
 
 ## Task

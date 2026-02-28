@@ -1,9 +1,5 @@
 # Deep Research
 
-<!-- ABOUTME: Conducts thorough research using multiple tools and sources -->
-
-<!-- ABOUTME: Provides detailed analysis and findings for complex research questions -->
-
 Research question: $ARGUMENTS
 
 ## Task

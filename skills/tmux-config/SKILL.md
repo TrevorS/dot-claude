@@ -1,18 +1,6 @@
 ---
 name: tmux-config
-description: >
-  Build, review, and troubleshoot tmux configurations with modern best practices.
-  Use when creating tmux.conf from scratch, adding plugins, configuring themes,
-  integrating with Neovim, setting up session management, or debugging tmux issues.
-triggers:
-  - "tmux config"
-  - "tmux configuration"
-  - "tmux.conf"
-  - "tmux setup"
-  - "tmux plugins"
-  - "tmux theme"
-  - "tmux keybindings"
-  - "configure tmux"
+description: Build, review, and troubleshoot tmux configurations with modern best practices. Use when creating tmux.conf from scratch, adding plugins, configuring themes, integrating with Neovim, setting up session management, or debugging tmux issues.
 ---
 
 # tmux Configuration Skill

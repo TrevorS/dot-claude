@@ -1,9 +1,5 @@
 # Clean Commit History
 
-<!-- ABOUTME: Launches git-commit-surgeon agent to reorganize messy commit history into clean, logical sequences -->
-
-<!-- ABOUTME: Creates safety backup branch before performing any commit surgery operations -->
-
 Clean up a messy feature branch into a logical commit history that's easy to review and debug.
 
 Usage: `/clean-commit-history [branch-name]`

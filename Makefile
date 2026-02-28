@@ -1,6 +1,3 @@
-# ABOUTME: Makefile for formatting, linting, and managing the repository
-# ABOUTME: Provides targets for running prettier, pre-commit, and dependency management
-
 .PHONY: help install validate clean pre-commit pre-commit-install pre-commit-update dotfiles
 
 # Default target

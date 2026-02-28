@@ -43,6 +43,6 @@ This repo is the user's Claude Code configuration — skills, commands, agents, 
 
 Key patterns:
 
-- Skills use `SKILL.md` with ABOUTME comments for discovery; reference docs go in `REFERENCE.md`
+- Skills use `SKILL.md` for discovery; reference docs go in `REFERENCE.md`
 - Hooks are wired in `settings.json` under the `hooks` key
 - The `dotfiles/` convention: `dotfiles/<pkg>/<path-relative-to-home>` gets symlinked into `~`

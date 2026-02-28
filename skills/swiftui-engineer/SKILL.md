@@ -1,5 +1,5 @@
 ---
-name: SwiftUI Engineer
+name: swiftui-engineer
 description: Build, review, debug, and modernize SwiftUI apps for macOS with modern patterns. Use when building SwiftUI UIs, reviewing code quality, debugging view issues, checking anti-patterns, migrating from AppKit, or designing app architecture.
 ---
 

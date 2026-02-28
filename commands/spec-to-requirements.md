@@ -1,9 +1,5 @@
 # Extract requirements from specifications file
 
-<!-- ABOUTME: Extracts clear functional and non-functional requirements from spec.md files -->
-
-<!-- ABOUTME: Analyzes specifications and produces structured requirements documentation -->
-
 Extract requirements from specification: $ARGUMENTS
 
 I'll analyze a `spec.md` file and extract clear functional and non-functional requirements.

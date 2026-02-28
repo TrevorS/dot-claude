@@ -1,10 +1,6 @@
 ---
 name: whisper-test
-description: |
-  Transcribe WAV audio files using OpenAI Whisper for intelligibility testing.
-  Triggers on: "transcribe audio", "whisper test", "test audio output",
-  "is the audio intelligible", "check speech quality", "run whisper",
-  "speech to text test", "check if audio sounds right"
+description: Transcribe WAV audio files using OpenAI Whisper for intelligibility testing. Use when transcribing audio, testing speech output quality, running whisper, or checking if generated audio is intelligible.
 ---
 
 # Whisper Audio Intelligibility Test

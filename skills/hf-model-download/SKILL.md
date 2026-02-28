@@ -1,9 +1,6 @@
 ---
-name: HuggingFace Model Download
-description:
-  When downloading models from HuggingFace, use this skill to get the correct
-  command syntax. Triggers on "download model", "hf download", "huggingface
-  download", "get model from huggingface", "pull model".
+name: hf-model-download
+description: Get the correct command syntax for downloading models from HuggingFace. Use when downloading models, running "hf download", or pulling models from HuggingFace repos.
 ---
 
 # HuggingFace Model Download

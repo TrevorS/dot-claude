@@ -1,3 +1,8 @@
+---
+name: dotfiles-stow
+description: Manage dotfiles tracked in ~/.claude/dotfiles/ using GNU Stow. Use when adding config files to dotfiles, stowing/unstowing packages, or troubleshooting symlink conflicts.
+---
+
 # Dotfiles Management with GNU Stow
 
 Manage dotfiles tracked in `~/.claude/dotfiles/` using GNU Stow — a symlink farm manager that mirrors directory structure from a source package into `$HOME`.

@@ -1,6 +1,4 @@
 #!/bin/bash
-# ABOUTME: Claude Code status line script that generates clean Starship prompts
-# ABOUTME: Handles directory switching and output formatting for status line display
 
 # Read JSON input from stdin and extract workspace directory
 input=$(cat)

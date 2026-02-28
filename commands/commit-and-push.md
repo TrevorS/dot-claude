@@ -1,7 +1,5 @@
 # Commit and Push Changes
 
-<!-- ABOUTME: Validate, commit, and push changes with CI/CD monitoring -->
-
 Validate, commit with a clear message, and push to remote. Monitor CI/CD in the background if configured.
 
 ## Steps

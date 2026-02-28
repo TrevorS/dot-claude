@@ -1,5 +1,5 @@
 ---
-name: Skill Builder
+name: skill-builder
 description: Create and validate Agent Skills with proper structure and effective descriptions. Use when building custom skills, testing skill discovery, or designing new skill workflows.
 ---
 

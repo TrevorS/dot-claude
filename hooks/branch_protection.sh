@@ -1,6 +1,4 @@
 #!/bin/bash
-# ABOUTME: Warns when attempting git commits on protected branches
-# ABOUTME: Simple branch protection for main/master/dev
 
 set -euo pipefail
 

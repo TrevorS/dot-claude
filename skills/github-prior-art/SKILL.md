@@ -1,10 +1,6 @@
 ---
-name: GitHub Prior Art Research
-description:
-  When asked implementation questions or tool selection questions like "how do
-  I implement", "what's the best way to", "how should I", "which library",
-  "what tool should I use", or "how might we", search GitHub for prior art,
-  code examples, and proven approaches before proposing solutions
+name: github-prior-art
+description: Search GitHub for prior art, code examples, and proven approaches before proposing solutions. Use when asked "how do I implement", "what's the best way to", "which library", "what tool should I use", or any implementation/tool selection question.
 ---
 
 # GitHub Prior Art Research

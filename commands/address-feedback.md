@@ -1,8 +1,5 @@
 # Address Pull Request Feedback
 
-<!-- ABOUTME: Addresses pull request feedback systematically with implementation and testing -->
-<!-- ABOUTME: Analyzes review comments and implements requested changes with validation -->
-
 Pull Request: $ARGUMENTS
 
 ## Task
