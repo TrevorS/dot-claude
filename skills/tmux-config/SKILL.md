@@ -24,7 +24,7 @@ for an existing config before proposing changes. Prefer the XDG config path.
 
 1. Check tmux version: `tmux -V`
 2. Check existing config: `~/.config/tmux/tmux.conf` then `~/.tmux.conf`
-3. Check if TPM is installed: `ls ~/.tmux/plugins/tpm`
+3. Check if TPM is installed: `ls ~/.config/tmux/plugins/tpm` or `ls ~/.tmux/plugins/tpm`
 4. Read the current config before editing
 
 ## Config File Location
@@ -58,6 +58,7 @@ set -g display-time 4000
 set -g status-interval 5
 set -g focus-events on
 set -sg escape-time 0
+set -g set-clipboard on
 
 # -- Terminal & Colors --
 set -g default-terminal "tmux-256color"
@@ -83,10 +84,10 @@ bind c new-window -c "#{pane_current_path}"
 
 ## Plugin Manager (TPM)
 
-TPM is the standard. Install:
+TPM is the standard. Install to the XDG plugins directory:
 
 ```bash
-git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm
+git clone https://github.com/tmux-plugins/tpm ~/.config/tmux/plugins/tpm
 ```
 
 In tmux.conf (must be at the BOTTOM):
@@ -96,11 +97,33 @@ In tmux.conf (must be at the BOTTOM):
 set -g @plugin 'tmux-plugins/tpm'
 set -g @plugin 'tmux-plugins/tmux-sensible'
 
-# Initialize TPM (keep this line at the very bottom)
-run '~/.tmux/plugins/tpm/tpm'
+# Initialize TPM (keep these at the very bottom)
+set-environment -g TMUX_PLUGIN_MANAGER_PATH '~/.config/tmux/plugins/'
+run '~/.config/tmux/plugins/tpm/tpm'
 ```
 
+**IMPORTANT**: The `set-environment` line tells TPM where plugins live. Without
+it, TPM defaults to `~/.tmux/plugins/` and plugins end up split across two
+locations.
+
 After adding plugins: `prefix + I` to install, `prefix + U` to update.
+
+### Installing plugins headlessly (outside tmux)
+
+```bash
+tmux start-server \; source-file ~/.config/tmux/tmux.conf
+~/.config/tmux/plugins/tpm/bin/install_plugins
+```
+
+### Plugins that need a build step
+
+**tmux-thumbs** is written in Rust. After TPM clones it, build it:
+
+```bash
+cd ~/.config/tmux/plugins/tmux-thumbs && cargo build --release
+```
+
+Without this, `prefix + Space` silently fails.
 
 ## Plugin Tiers
 
@@ -115,12 +138,12 @@ After adding plugins: `prefix + I` to install, `prefix + U` to update.
 
 ### Tier 2: Power User
 
-| Plugin                           | Purpose                              |
-| -------------------------------- | ------------------------------------ |
-| `laktak/extrakto`                | Fuzzy-select text from pane with fzf |
-| `fcsonline/tmux-thumbs`          | Vimium-like hint copy (Rust)         |
-| `sainnhe/tmux-fzf`               | Fuzzy find sessions/windows/panes    |
-| `tmux-plugins/tmux-pain-control` | Standard pane navigation bindings    |
+| Plugin                           | Purpose                                   |
+| -------------------------------- | ----------------------------------------- |
+| `laktak/extrakto`                | Fuzzy-select text from pane with fzf      |
+| `fcsonline/tmux-thumbs`          | Vimium-like hint copy (Rust, needs build) |
+| `sainnhe/tmux-fzf`               | Fuzzy find sessions/windows/panes         |
+| `tmux-plugins/tmux-pain-control` | Standard pane navigation bindings         |
 
 ### Tier 3: Nice to Have
 
@@ -163,10 +186,14 @@ set -g @catppuccin_flavor 'mocha'  # latte, frappe, macchiato, mocha
 
 1. **Colors wrong?** Check `echo $TERM` inside tmux — should be `tmux-256color`
 2. **Slow escape?** Set `escape-time 0` (tmux-sensible does this)
-3. **Clipboard not working?** On macOS, tmux-yank should work out of the box.
-   On Linux, install `xclip` or `xsel`. Over SSH, use OSC-52.
+3. **Clipboard not working over SSH?** Ensure `set -g set-clipboard on` in config.
+   tmux-yank uses OSC-52. Terminal must support it (iTerm2, kitty, WezTerm do).
 4. **Plugins not loading?** TPM `run` line must be the LAST line in config.
    Run `prefix + I` after adding new plugins.
-5. **After upgrade issues?** Kill all tmux servers: `tmux kill-server`
+5. **tmux-thumbs not working?** It's Rust — needs `cargo build --release` after install.
+6. **Plugins in wrong directory?** With XDG path, you need
+   `set-environment -g TMUX_PLUGIN_MANAGER_PATH '~/.config/tmux/plugins/'`
+   before the TPM `run` line.
+7. **After upgrade issues?** Kill all tmux servers: `tmux kill-server`
 
 See [REFERENCE.md](REFERENCE.md) for detailed plugin configs and advanced patterns.

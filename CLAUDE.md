@@ -1,13 +1,19 @@
 # CLAUDE.md
 
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
 ## Development Commands
 
 ```bash
-make install        # Install dependencies (pnpm + uv)
-make validate       # Format and lint all files (also: make pre-commit)
+make install             # Install dependencies (pnpm + uv) and stow dotfiles
+make validate            # Format and lint all files (also: make pre-commit)
+make dotfiles            # Stow all dotfile packages into ~
 make pre-commit-install  # Install pre-commit hooks (one-time)
-make clean          # Remove node_modules, .venv
+make clean               # Remove node_modules, .venv
 ```
+
+Validation runs pre-commit hooks: trailing-whitespace, end-of-file-fixer, mixed-line-ending,
+check-yaml, check-json, check-merge-conflict, check-added-large-files, prettier, markdownlint.
 
 ## Interaction
 
@@ -22,3 +28,21 @@ make clean          # Remove node_modules, .venv
 
 - User's last name: **strieber** (NOT strueburg or strueber - always use "strieber")
 - Cross-check path spellings against environment context at the start of each conversation
+
+## Repository Architecture (when working in ~/.claude/)
+
+This repo is the user's Claude Code configuration — skills, commands, agents, hooks, rules, and dotfiles.
+
+- **`rules/`** — Always-loaded behavioral rules (thinking, workflow, languages, version-control, anti-patterns)
+- **`skills/`** — On-demand reference docs loaded via skill matching (21 skills). Each has a `SKILL.md`.
+- **`commands/`** — Slash commands (`/commit`, `/review-pull-request`, etc.) as markdown prompt templates
+- **`agents/`** — Custom agent definitions (ascii-art-generator, docs-researcher, etc.)
+- **`hooks/`** — Shell scripts triggered by Claude Code events (VCS context injection, branch protection, notifications)
+- **`dotfiles/`** — GNU Stow packages mirroring `$HOME` structure, managed via `make dotfiles`
+- **`settings.json`** — Permissions, hooks config, enabled plugins, environment variables
+
+Key patterns:
+
+- Skills use `SKILL.md` with ABOUTME comments for discovery; reference docs go in `REFERENCE.md`
+- Hooks are wired in `settings.json` under the `hooks` key
+- The `dotfiles/` convention: `dotfiles/<pkg>/<path-relative-to-home>` gets symlinked into `~`

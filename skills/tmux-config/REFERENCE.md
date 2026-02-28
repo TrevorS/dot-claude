@@ -81,11 +81,10 @@ Key: `prefix + tab` to activate
 
 ### tmux-thumbs
 
+**Requires Rust.** After TPM clones it, build: `cd ~/.config/tmux/plugins/tmux-thumbs && cargo build --release`
+
 ```bash
 set -g @plugin 'fcsonline/tmux-thumbs'
-
-# Run thumbs-install after first install
-run-shell ~/.tmux/plugins/tmux-thumbs/tmux-thumbs.tmux
 
 # Customize hint characters
 set -g @thumbs-alphabet colemak-homerow
@@ -371,91 +370,56 @@ clipboard" is enabled in Preferences > General > Selection.
 
 ## Complete Example Config
 
-A full starter config combining the essentials above. Copy to
+Our default config. SSH-first, lean, C-Space prefix. Copy to
 `~/.config/tmux/tmux.conf`:
 
 ```bash
-# ============================================
-# Prefix
-# ============================================
+# -- Prefix --
 unbind C-b
-set -g prefix C-a
-bind C-a send-prefix
+set -g prefix C-Space
+bind C-Space send-prefix
 
-# ============================================
-# General
-# ============================================
+# -- General --
 set -g mouse on
 set -g base-index 1
 setw -g pane-base-index 1
 set -g renumber-windows on
 set -g history-limit 50000
-set -g display-time 4000
-set -g status-interval 5
 set -g focus-events on
 set -sg escape-time 0
 set -g set-clipboard on
 
-# ============================================
-# Terminal & Colors
-# ============================================
+# -- Terminal & Colors --
 set -g default-terminal "tmux-256color"
 set -ag terminal-overrides ",xterm-256color:RGB"
-set -as terminal-overrides ',*:Smulx=\E[4::%p1%dm'
-set -as terminal-overrides ',*:Setulc=\E[58::2::%p1%{65536}%/%d::%p1%{256}%/%{255}%&%d::%p1%{255}%&%d%;m'
 
-# ============================================
-# Keybindings
-# ============================================
+# -- Copy mode (vi) --
 setw -g mode-keys vi
 bind -T copy-mode-vi v send -X begin-selection
 bind -T copy-mode-vi y send -X copy-pipe-and-cancel
 
-bind r source-file ~/.config/tmux/tmux.conf \; display "Reloaded!"
+# -- Pane splitting --
 bind | split-window -h -c "#{pane_current_path}"
 bind - split-window -v -c "#{pane_current_path}"
-bind c new-window -c "#{pane_current_path}"
 unbind '"'
 unbind %
 
-# Popup shortcuts
-bind t display-popup -E -w 80% -h 80% -d "#{pane_current_path}"
-bind g display-popup -E -w 90% -h 90% -d "#{pane_current_path}" "lazygit"
+# -- New windows keep path --
+bind c new-window -c "#{pane_current_path}"
 
-# ============================================
-# Neovim Integration
-# ============================================
-is_vim="ps -o state= -o comm= -t '#{pane_tty}' | grep -iqE '^[^TXZ ]+ +(\\S+\\/)?g?\.?(view|n?vim?x?|fzf)(diff)?$'"
-bind-key -n 'C-h' if-shell "$is_vim" 'send-keys C-h' 'select-pane -L'
-bind-key -n 'C-j' if-shell "$is_vim" 'send-keys C-j' 'select-pane -D'
-bind-key -n 'C-k' if-shell "$is_vim" 'send-keys C-k' 'select-pane -U'
-bind-key -n 'C-l' if-shell "$is_vim" 'send-keys C-l' 'select-pane -R'
+# -- Reload config --
+bind r source-file ~/.config/tmux/tmux.conf \; display "Reloaded!"
 
-# ============================================
-# Plugins
-# ============================================
+# -- Plugins --
 set -g @plugin 'tmux-plugins/tpm'
 set -g @plugin 'tmux-plugins/tmux-sensible'
-set -g @plugin 'tmux-plugins/tmux-resurrect'
-set -g @plugin 'tmux-plugins/tmux-continuum'
 set -g @plugin 'tmux-plugins/tmux-yank'
-set -g @plugin 'laktak/extrakto'
-
-# Plugin settings
-set -g @resurrect-strategy-nvim 'session'
-set -g @continuum-restore 'on'
-set -g @yank_action 'copy-pipe'
-
-# Theme
+set -g @plugin 'fcsonline/tmux-thumbs'
+set -g @plugin 'sainnhe/tmux-fzf'
 set -g @plugin 'catppuccin/tmux'
 set -g @catppuccin_flavor 'mocha'
 
-# ============================================
-# Local overrides
-# ============================================
-if-shell "test -f ~/.config/tmux/local.conf" \
-  "source-file ~/.config/tmux/local.conf"
-
-# Initialize TPM (MUST be last line)
-run '~/.tmux/plugins/tpm/tpm'
+# -- Initialize TPM (keep at bottom) --
+set-environment -g TMUX_PLUGIN_MANAGER_PATH '~/.config/tmux/plugins/'
+run '~/.config/tmux/plugins/tpm/tpm'
 ```
