@@ -33,8 +33,11 @@ pre-commit-update:
 	@uv run pre-commit autoupdate
 
 dotfiles:
-	@command -v stow >/dev/null 2>&1 || { echo "stow not found — skipping dotfiles (install with: brew install stow)"; exit 0; }
-	@for pkg in dotfiles/*/; do \
-		echo "Stowing $$(basename $$pkg)..."; \
-		stow -d dotfiles -t ~ $$(basename $$pkg); \
-	done
+	@if ! command -v stow >/dev/null 2>&1; then \
+		echo "stow not found — skipping dotfiles (install with: brew install stow)"; \
+	else \
+		for pkg in dotfiles/*/; do \
+			echo "Stowing $$(basename $$pkg)..."; \
+			stow -d dotfiles -t ~ $$(basename $$pkg); \
+		done; \
+	fi
