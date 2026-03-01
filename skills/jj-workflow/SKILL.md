@@ -5,7 +5,18 @@ description: Jujutsu (jj) version control, load skill when hook output shows vcs
 
 # jj Workflow
 
-## CRITICAL: Avoid Interactive Mode
+## Philosophy
+
+1. **Commits are cheap, descriptions are mandatory.** The working copy is always a commit. Never leave it as "(no description set)".
+2. **Experiment freely, the oplog is your safety net.** Every mutation is recorded. `jj undo` and `jj op restore` make anything reversible.
+3. **Conflicts are state, not emergencies.** jj stores conflicts in commits as structured data. Rebase succeeds even with conflicts. Resolve when ready.
+4. **Change IDs are your handle on work.** Commit hashes change on rewrite; change IDs don't. Use change IDs to refer to work across rebases and squashes.
+5. **Bookmarks exist for GitHub, not for you.** Work with anonymous changes. Add bookmarks only when you need to push.
+6. **Keep the stack shallow.** Squash early. Don't let history grow 10 commits deep before curating.
+7. **Use `absorb` over manual squash routing.** When fixing across a stack, let jj figure out where each hunk belongs.
+8. **Colocated = invisible to the team.** Teammates see standard git. They don't know you use jj.
+
+## CRITICAL: AI-Specific Rules
 
 **Always use `-m` flag** to prevent jj from opening an editor:
 
@@ -13,120 +24,198 @@ description: Jujutsu (jj) version control, load skill when hook output shows vcs
 # WRONG - opens editor, blocks AI
 jj new
 jj describe
+jj commit
 jj squash
 
 # CORRECT - non-interactive
 jj new -m "message"
 jj describe -m "message"
+jj commit -m "message"
 jj squash -m "message"
 ```
 
-**Never use these interactive commands:**
+**Never use these interactive commands** (no non-interactive mode):
 
-- `jj split` - inherently interactive, no non-interactive mode
+- `jj split` / `jj split -i`
+- `jj squash -i`
+- `jj diffedit`
 
-## Mental Model
+## Core Concepts
 
-**No staging area.** Your working directory is always a commit. Every save is tracked.
+### Working Copy = Commit
 
-- `@` = your current change (the working copy)
+There is no staging area. Every file edit is automatically tracked in `@` (the current change). No `git add` needed.
+
+- `@` = your current change (working copy commit)
 - `@-` = parent of current change
-- Changes are mutable until pushed
+- `@--` = grandparent
 
-## When to Use What
+### Change IDs vs Commit IDs
 
-| Situation                   | Do This                                                   |
-| --------------------------- | --------------------------------------------------------- |
-| Starting new work           | `jj new -m "what I'm trying"`                             |
-| Forgot to start with jj new | `jj describe -m "what I'm doing"` (do this immediately)   |
-| Work is done, move on       | `jj new -m "next task"`                                   |
-| Annotate what you did       | `jj describe -m "feat: auth"`                             |
-| Broke something             | `jj op log` → `jj op restore <id>`                        |
-| Undo one file               | `jj restore --from @- <path>`                             |
-| Combine messy commits       | `jj squash -m "combined message"`                         |
-| Try something risky         | `jj new -m "experiment"`, then `jj abandon @` if it fails |
+Every change has two identifiers:
 
-## AI Coding Pattern
+- **Change ID** (e.g., `kpqxywon`) — stable across rewrites. Use this to refer to work.
+- **Commit ID** (e.g., `a1b2c3d4`) — changes when content is rewritten.
 
-**Always have a description.** The working copy should never stay "(no description set)".
+When you squash, rebase, or amend, the change ID stays the same. This means you can bookmark a change ID mentally and it always resolves, unlike git commit hashes.
+
+### Conflicts Are Just State
+
+When a rebase produces conflicts, jj records the conflict in the commit and succeeds. No "rebase in progress" blocking state. No `--continue` ceremony.
+
+- Descendants of conflicted commits work normally
+- Resolve conflicts whenever convenient — check out the commit, fix files, done
+- `jj log` marks conflicted commits so you can spot them
+
+## Workflows
+
+### The Squash Workflow (Recommended)
 
 ```bash
-# BEFORE starting work - declare intent
-jj new -m "feat: add user logout button"
-# Now implement... jj tracks everything automatically
-
-# FORGOT to start with jj new? Describe immediately
-jj describe -m "feat: what I'm working on"
+jj describe -m "feat: what I'm building"   # State intent on current change
+jj new -m "wip"                             # New empty change on top
+# ... make changes ...
+jj squash -m "feat: done"                   # Squash into parent
 ```
 
-**Why this matters:**
-
-- `jj log` shows meaningful history while working
-- Easier to understand what each change does
-- Simpler to curate/squash later
-- Teammates can follow progress
+### The Commit Workflow (Simpler)
 
 ```bash
-# Checkpoint before risky changes
-jj describe -m "checkpoint: auth works"
-jj new -m "trying OAuth integration"
-
-# If it breaks
-jj op log              # Find good state
-jj op restore <id>     # Go back
-
-# When done, curate history
-jj squash -m "feat: OAuth support"
+# ... make changes ...
+jj commit -m "feat: what I did"             # Describe + create new change in one step
+# ... keep working ...
 ```
 
-## Push to GitHub
+`jj commit` is equivalent to `jj describe -m "..." && jj new`.
 
-**Pushed commits are immutable.** You can't squash into or modify them. The safe pattern:
+### The Edit Workflow (Mid-Stack Fixes)
+
+Need to fix something in an older change? No stash/rebase-i dance:
 
 ```bash
-# 1. Abandon empty checkpoint commits cluttering history
-jj log -r '::@'                      # Find checkpoints
-jj abandon <change-ids>              # Remove empty ones
+jj edit <change-id>        # Switch working copy to that change
+# ... make your fix ...
+jj new -m "back to work"   # Return to tip (descendants auto-rebased)
+```
 
-# 2. Describe your work (don't try to squash into immutable parent)
-jj describe -m "feat: what you did"
+All descendants of the edited change are automatically rebased.
 
-# 3. Move bookmark to your commit and push
-jj bookmark set master -r @
+### Parallel Experiments
+
+```bash
+jj new main -m "approach A"           # Branch from main
+jj new main -m "approach B"           # Another branch from main (not from A)
+jj diff --from <A-id> --to <B-id>    # Compare approaches
+jj edit <winner-id>                   # Continue with the winner
+jj abandon <loser-id>                 # Discard the loser
+```
+
+## Absorb: Smart Squash Routing
+
+When you have a stack of changes and make fixes in `@`, `jj absorb` automatically distributes each hunk to the ancestor where those lines were last modified.
+
+```bash
+# You're at the top of a 3-commit stack, fixing bugs across all of them
+jj absorb    # Each fix goes to the right commit automatically
+```
+
+Use `jj absorb` when fixing across a stack. Use `jj squash` when you know exactly where changes should go.
+
+## Bookmarks & Pushing
+
+Bookmarks are jj's equivalent of git branches, but they **don't auto-advance**. You must move them explicitly.
+
+### Push to main
+
+```bash
+jj bookmark set master -r @-        # Point bookmark at your commit (not empty @)
 jj git push
 ```
 
-**For feature branches (new):**
+### Feature branches
 
 ```bash
-jj bookmark create feature-x -r @
-jj git push --bookmark feature-x
-# If refused, configure auto-tracking once:
-jj config set --user 'remotes.origin.auto-track-bookmarks' 'glob:*'
-# Then retry: jj git push --bookmark feature-x
-```
+# Create and push
+jj bookmark create feature-x -r @-
+jj git push
 
-**For feature branches (updating):**
-
-```bash
-jj bookmark set feature-x -r @
+# Update after more work
+jj bookmark set feature-x -r @-
 jj git push
 ```
 
-Teammates see clean git. They don't know you used jj.
+### Addressing PR feedback
+
+```bash
+jj new feature-x- -m "address review feedback"
+# ... make changes ...
+jj squash -m "feat: updated per review"
+jj bookmark set feature-x -r @-
+jj git push
+```
+
+## Revsets
+
+Revsets are a functional language for selecting commits. Beyond `@` and `@-`:
+
+| Expression            | Meaning                |
+| --------------------- | ---------------------- |
+| `@`                   | Current working copy   |
+| `@-`                  | Parent                 |
+| `@--`                 | Grandparent            |
+| `x+`                  | Children of x          |
+| `x::`                 | All descendants of x   |
+| `::x`                 | All ancestors of x     |
+| `trunk()`             | The trunk/main commit  |
+| `bookmarks()`         | All bookmarked commits |
+| `empty()`             | Empty commits          |
+| `description("text")` | Filter by description  |
+| `author("name")`      | Filter by author       |
+
+Useful examples:
+
+```bash
+jj log -r 'trunk()..@'              # Everything between main and here
+jj log -r '::@ & ~::trunk()'         # My branch only
+jj log -r 'author("trevor")'         # My commits
+```
+
+## Syncing with Remote
+
+```bash
+jj git fetch                         # Pull from remote
+jj rebase -d master@origin           # Rebase onto updated main
+```
 
 ## Recovery
 
-The oplog records every operation. Nothing is lost.
+The operation log records every mutation. Nothing is ever truly lost.
 
 ```bash
-jj op log                      # See all operations
-jj undo                        # Undo last operation
-jj op restore <id>             # Jump to any past state
+jj op log                            # See all operations
+jj undo                              # Undo last operation
+jj op restore <id>                   # Jump to any past state
+jj evolog                            # See how current change evolved
+jj evolog -r <change-id>             # See how any change evolved
+```
+
+## Recommended Config
+
+User config lives at `~/.config/jj/config.toml`:
+
+```toml
+[remotes.origin]
+auto-track-bookmarks = "*"
+
+[revset-aliases]
+# Prevent rewriting pushed commits
+'immutable_heads()' = 'builtin_immutable_heads() | remote_bookmarks()'
+# Shorthand for trunk
+'trunk()' = 'master@origin'
 ```
 
 ## Bail Out
 
 ```bash
-rm -rf .jj    # Delete jj, keep git unchanged
+rm -rf .jj    # Delete jj state, keep git unchanged
 ```

@@ -1,6 +1,6 @@
 ---
 name: git-workflow
-description: Handle squashing multiple commits and rebasing feature branches safely. Use when consolidating commits into a single commit, or rebasing feature branches onto updated development branches. Falls back from jj when not available.
+description: Git version control workflows. Load when hook output shows vcs=git (not jj). Use when squashing commits, rebasing feature branches, or doing git operations in non-jj repos.
 ---
 
 # Git Workflow

@@ -1,6 +1,6 @@
 ---
 name: ci-monitor
-description: Monitor GitHub Actions CI/CD runs after pushing. Auto-detects branch via jj or git, deduplicates monitors, and reports pass/fail with failed logs. Use after pushing code, when checking CI status, or when you want to watch a pipeline.
+description: Monitor GitHub Actions CI/CD runs after pushing. Auto-load after any `jj git push` or `git push` command. Also use when checking CI status or watching a pipeline. Auto-detects branch, deduplicates monitors, reports pass/fail with failed logs.
 ---
 
 # CI Monitor

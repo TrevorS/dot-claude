@@ -1,6 +1,6 @@
 ---
 name: maintaining-claude-code
-description: Validate and improve Claude Code configurations (CLAUDE.md, skills, commands, hooks). Use when auditing config quality, checking skill discoverability, organizing .claude directory, or deciding which entity type to use.
+description: Validate and improve Claude Code configurations (CLAUDE.md, skills, commands, hooks). Auto-load when working in ~/.claude/ on skills, rules, hooks, or commands. Use when auditing config quality, checking skill discoverability, or deciding which entity type to use.
 ---
 
 # Maintaining Claude Code

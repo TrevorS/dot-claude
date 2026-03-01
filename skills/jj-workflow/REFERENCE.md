@@ -1,35 +1,28 @@
-# jj Quick Patterns
+# jj Quick Reference
 
-## Squash Workflow (Recommended)
+## Daily Commands
 
-Start with intent, build up changes, squash when ready:
-
-```bash
-jj new -m "feat: building feature"   # State intent upfront
-# ... make changes ...
-jj squash -m "feat: done"            # Merge into parent (-m avoids editor)
-```
-
-**Note:** `jj squash` without `-m` opens an editor. Always use `-m "message"` for non-interactive use.
+| Do this               | Command                             |
+| --------------------- | ----------------------------------- |
+| Start new work        | `jj new -m "what I'm building"`     |
+| Describe current work | `jj describe -m "feat: what I did"` |
+| Finish and move on    | `jj commit -m "feat: done"`         |
+| Squash into parent    | `jj squash -m "combined message"`   |
+| Auto-distribute fixes | `jj absorb`                         |
+| Edit older change     | `jj edit <change-id>`               |
+| Abandon a change      | `jj abandon <change-id>`            |
+| View log              | `jj log`                            |
+| View status           | `jj st`                             |
+| View diff             | `jj diff`                           |
 
 ## History Surgery
 
 ```bash
-jj squash                            # Current into parent
-jj squash --from X --into Y          # Combine any two
-jj split                             # Break current into pieces
-jj split -i                          # Interactive hunk selection
+jj squash -m "msg"                   # Current into parent
+jj squash --from X --into Y -m "msg" # Combine any two
+jj absorb                            # Auto-route fixes to right ancestors
 jj rebase -r @ -d <target>           # Move current change
-```
-
-## Parallel Experiments
-
-```bash
-jj new main -m "approach A"          # Branch A from main
-jj new main -m "approach B"          # Branch B from main (not from A)
-jj edit <change-id>                  # Switch between them
-jj abandon <change-id>               # Discard loser
-jj diff --from A --to B              # Compare approaches
+jj rebase -s <src> -d <dest>         # Move change + descendants
 ```
 
 ## File Operations
@@ -38,51 +31,82 @@ jj diff --from A --to B              # Compare approaches
 jj restore --from @- <path>          # Undo file to parent state
 jj restore --from <id> <path>        # Restore from any change
 jj diff <path>                       # Diff specific file
-jj cat -r <id> <path>                # Show file at revision
+jj file show -r <id> <path>          # Show file at revision
 ```
 
-## Syncing
+## Bookmarks & Push
 
 ```bash
-jj git fetch                         # Pull remote
-jj rebase -d main                    # Rebase onto main
+# Push to main
+jj bookmark set master -r @-
+jj git push
 
-# Push requires a bookmark
-jj bookmark set master -r @-         # Point bookmark at commit (not empty @)
-jj git push                          # Push to remote
-
-# For new branches
+# New feature branch
 jj bookmark create feature-x -r @-
 jj git push --bookmark feature-x
+
+# Update feature branch
+jj bookmark set feature-x -r @-
+jj git push
+
+# Sync from remote
+jj git fetch
+jj rebase -d master@origin
 ```
 
-**Note:** If push is refused for new bookmarks, configure auto-tracking:
+## Recovery
 
 ```bash
-jj config set --user 'remotes.origin.auto-track-bookmarks' 'glob:*'
+jj op log                            # All operations
+jj undo                              # Undo last
+jj op restore <id>                   # Restore any state
+jj evolog                            # Evolution of current change
+jj evolog -r <change-id> -p          # Evolution with diffs
 ```
 
-## Troubleshooting
+## Revset Cheatsheet
 
-| Problem             | Fix                                            |
-| ------------------- | ---------------------------------------------- |
-| Conflict            | Fix files, then `jj squash -m "resolve"`       |
-| Lost work           | `jj op log` → `jj op restore`                  |
-| Wrong parent        | `jj rebase -r @ -d <target>`                   |
-| Push rejected       | `jj git fetch && jj rebase -d main`            |
-| "Nothing changed"   | `jj bookmark set master -r @-` then push       |
-| Squash opens editor | Use `jj squash -m "message"` instead           |
-| @ is empty          | Your work is in `@-`; use `-r @-` for commands |
+```text
+@           Current change
+@-          Parent
+trunk()     Main branch
+x::         Descendants of x
+::x         Ancestors of x
+x+          Children of x
+x & y       Intersection
+x | y       Union
+trunk()..@  My branch
+empty()     Empty commits
+bookmarks() Bookmarked commits
+```
 
 ## Git Equivalents
 
-| Git                       | jj                                       |
-| ------------------------- | ---------------------------------------- |
-| `git add . && git commit` | `jj new` (or `jj squash -m "msg"`)       |
-| `git commit --amend`      | Just edit (auto-saved)                   |
-| `git stash`               | `jj new && jj edit @-`                   |
-| `git rebase -i`           | `jj squash -m` / `jj split`              |
-| `git reflog`              | `jj op log`                              |
-| `git reset --hard`        | `jj op restore`                          |
-| `git branch`              | `jj bookmark`                            |
-| `git push`                | `jj bookmark set X -r @- && jj git push` |
+| Git                       | jj                                     |
+| ------------------------- | -------------------------------------- |
+| `git add . && git commit` | `jj commit -m "msg"`                   |
+| `git commit --amend`      | Just edit files (auto-saved to `@`)    |
+| `git stash`               | `jj new -m "other work" && jj edit @-` |
+| `git stash pop`           | `jj edit <stashed-change-id>`          |
+| `git rebase -i`           | `jj squash -m` / `jj absorb`           |
+| `git reflog`              | `jj op log`                            |
+| `git reset --hard`        | `jj op restore <id>`                   |
+| `git branch`              | `jj bookmark`                          |
+| `git log`                 | `jj log`                               |
+| `git diff`                | `jj diff`                              |
+| `git checkout <branch>`   | `jj edit <change-id>`                  |
+| `git cherry-pick`         | `jj duplicate <id>`                    |
+
+## Troubleshooting
+
+| Problem                   | Fix                                                              |
+| ------------------------- | ---------------------------------------------------------------- |
+| Conflict after rebase     | Don't panic — fix files in the conflicted commit, done           |
+| Lost work                 | `jj op log` then `jj op restore <id>`                            |
+| Wrong parent              | `jj rebase -r @ -d <target>`                                     |
+| Push rejected             | `jj git fetch && jj rebase -d master@origin`                     |
+| @ is empty                | Your work is in `@-`; target `@-` for bookmarks/push             |
+| Squash opens editor       | Use `jj squash -m "message"`                                     |
+| "Immutable" error         | You're trying to modify a pushed commit; work on a descendant    |
+| Bookmark didn't move      | Bookmarks don't auto-advance; `jj bookmark set X -r @-`          |
+| New bookmark push refused | `jj config set --user 'remotes.origin.auto-track-bookmarks' '*'` |

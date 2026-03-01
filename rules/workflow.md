@@ -2,10 +2,24 @@
 
 ## Tool Selection Priority
 
-1. **Skills first**: jj-workflow (if `.jj/` exists), git-workflow, svelte5, swiftui-engineer, linear-cli, notion-formatter, skill-builder
-2. **Commands second**: /commit, /review-pull-request, /implement-issue, /deep-research, etc.
-3. **Agents for research**: Explore agents for codebase questions, Plan agents for architecture
-4. **Direct tools last**: Read, Edit, Bash for simple operations
+1. **Skills first** — load before doing the related work
+2. **Commands second** — /commit, /review-pull-request, /implement-issue, /deep-research, etc.
+3. **Agents for research** — Explore agents for codebase questions, Plan agents for architecture
+4. **Direct tools last** — Read, Edit, Bash for simple operations
+
+### Auto-Load Skills
+
+These skills should be loaded automatically when context is detected:
+
+| Context                                | Skill                     | Trigger                           |
+| -------------------------------------- | ------------------------- | --------------------------------- |
+| `vcs=jj` or `vcs=jj-colocated` in hook | `jj-workflow`             | Every prompt in jj repos          |
+| `vcs=git` in hook (not jj)             | `git-workflow`            | Every prompt in git-only repos    |
+| `.svelte` files in project             | `svelte5`                 | Path-scoped rule auto-loads       |
+| `.swift` files in project              | `swiftui-engineer`        | Path-scoped rule auto-loads       |
+| After `jj git push` or `git push`      | `ci-monitor`              | Load to monitor CI runs           |
+| Working in `~/.claude/`                | `maintaining-claude-code` | When modifying skills/rules/hooks |
+| User mentions past sessions            | `glhf`                    | Search conversation history       |
 
 ## Core Principles
 
