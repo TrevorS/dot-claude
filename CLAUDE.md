@@ -34,11 +34,12 @@ check-yaml, check-json, check-merge-conflict, check-added-large-files, prettier,
 This repo is the user's Claude Code configuration — skills, commands, agents, hooks, rules, and dotfiles.
 
 - **`rules/`** — Always-loaded behavioral rules (thinking, workflow, languages, version-control, anti-patterns)
-- **`skills/`** — On-demand reference docs loaded via skill matching (21 skills). Each has a `SKILL.md`.
+- **`skills/`** — On-demand reference docs loaded via skill matching (22 skills). Each has a `SKILL.md`.
 - **`commands/`** — Slash commands (`/commit`, `/review-pull-request`, etc.) as markdown prompt templates
 - **`agents/`** — Custom agent definitions (ascii-art-generator, docs-researcher, etc.)
 - **`hooks/`** — Shell scripts triggered by Claude Code events (VCS context injection, branch protection, notifications)
-- **`dotfiles/`** — GNU Stow packages mirroring `$HOME` structure, managed via `make dotfiles`
+- **`dotfiles/`** — GNU Stow packages mirroring `$HOME` structure, managed via `make dotfiles` (requires `stow`)
+  - Packages: `zsh`, `starship`, `tmux`, `atuin`, `kitty`, `ghostty`, `git`, `lscolors`
 - **`settings.json`** — Permissions, hooks config, enabled plugins, environment variables
 
 Key patterns:

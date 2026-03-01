@@ -1,0 +1,9 @@
+theme = Catppuccin Mocha
+font-family = BerkeleyMono Nerd Font
+font-family-bold = BerkeleyMono Nerd Font Bold
+font-family-italic = BerkeleyMono Nerd Font Italic
+font-family-bold-italic = BerkeleyMono Nerd Font Bold Italic
+font-thicken = true
+macos-titlebar-style = tabs
+macos-titlebar-proxy-icon = hidden
+keybind = shift+enter=text:\n

@@ -50,6 +50,9 @@ autoload -Uz compinit && compinit
 # python debugging
 export PYTHONBREAKPOINT=ipdb.set_trace
 
+# ls colors
+[ -f ~/.local/share/lscolors.sh ] && source ~/.local/share/lscolors.sh
+
 # tool inits (guarded)
 command -v fnm      >/dev/null && eval "$(fnm env --use-on-cd)"
 command -v starship >/dev/null && eval "$(starship init zsh)"
