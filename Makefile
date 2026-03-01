@@ -32,12 +32,19 @@ pre-commit-install:
 pre-commit-update:
 	@uv run pre-commit autoupdate
 
+MACOS_ONLY_PKGS := ghostty
+
 dotfiles:
 	@if ! command -v stow >/dev/null 2>&1; then \
 		echo "stow not found — skipping dotfiles (install with: brew install stow)"; \
 	else \
 		for pkg in dotfiles/*/; do \
-			echo "Stowing $$(basename $$pkg)..."; \
-			stow -d dotfiles -t ~ $$(basename $$pkg); \
+			name=$$(basename $$pkg); \
+			case "$$(uname)" in \
+				Darwin) ;; \
+				*) echo "$(MACOS_ONLY_PKGS)" | grep -qw "$$name" && { echo "Skipping $$name (macOS only)"; continue; } ;; \
+			esac; \
+			echo "Stowing $$name..."; \
+			stow -d dotfiles -t ~ $$name; \
 		done; \
 	fi

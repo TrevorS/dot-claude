@@ -1,0 +1,14 @@
+{
+  "runtime": {
+    "version": "LuaJIT"
+  },
+  "diagnostics": {
+    "globals": ["vim", "MiniStatusline"],
+    "undefined-field": false,
+    "assign-type-mismatch": false
+  },
+  "workspace": {
+    "checkThirdParty": false,
+    "library": ["${3rd}/luv/library", "${VIMRUNTIME}"]
+  }
+}

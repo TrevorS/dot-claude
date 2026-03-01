@@ -39,7 +39,8 @@ This repo is the user's Claude Code configuration — skills, commands, agents, 
 - **`agents/`** — Custom agent definitions (ascii-art-generator, docs-researcher, etc.)
 - **`hooks/`** — Shell scripts triggered by Claude Code events (VCS context injection, branch protection, notifications)
 - **`dotfiles/`** — GNU Stow packages mirroring `$HOME` structure, managed via `make dotfiles` (requires `stow`)
-  - Packages: `zsh`, `starship`, `tmux`, `atuin`, `kitty`, `ghostty`, `git`, `jj`, `lscolors`
+  - Packages: `zsh`, `starship`, `tmux`, `atuin`, `ghostty`, `git`, `jj`, `nvim`, `lscolors`
+  - macOS-only: `ghostty` (skipped on Linux via Makefile)
 - **`settings.json`** — Permissions, hooks config, enabled plugins, environment variables
 
 Key patterns:
