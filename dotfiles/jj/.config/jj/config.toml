@@ -1,0 +1,8 @@
+#:schema https://docs.jj-vcs.dev/latest/config-schema.json
+
+[user]
+name = "Trevor Strieber"
+email = "trevor@strieber.org"
+
+[ui]
+default-command = "log"
