@@ -183,5 +183,49 @@ set -g @catppuccin_flavor 'mocha'  # latte, frappe, macchiato, mocha
    `set-environment -g TMUX_PLUGIN_MANAGER_PATH '~/.config/tmux/plugins/'`
    before the TPM `run` line.
 7. **After upgrade issues?** Kill all tmux servers: `tmux kill-server`
+8. **Removed options still active after reload?** `prefix + r` (source-file) does
+   NOT unset removed options — they persist in tmux's memory. To clear a stale
+   option: `tmux set-option -gu @option-name`. To verify what's live:
+   `tmux show-options -g | grep pattern`. This is critical when iterating on
+   plugin configs like `@thumbs-regexp-N` — old regexps stay active and can
+   cause silent failures even after removing them from tmux.conf.
+
+## tmux-thumbs Custom Patterns
+
+tmux-thumbs uses Rust's `regex` crate. Add custom patterns with `@thumbs-regexp-N`.
+
+**IMPORTANT**: When adding/removing/changing `@thumbs-regexp-N` patterns, you MUST
+manually unset old values — config reload doesn't clear them:
+
+```bash
+# Unset a specific pattern
+tmux set-option -gu @thumbs-regexp-1
+
+# Check what's currently live
+tmux show-options -g | grep thumbs
+
+# Nuclear option: unset all thumbs settings
+for opt in $(tmux show-options -g | grep @thumbs | cut -d' ' -f1); do
+  tmux set-option -gu "$opt"
+done
+```
+
+After clearing, reload config (`prefix + r`) to re-apply only what's in tmux.conf.
+
+Useful settings:
+
+- `@thumbs-osc52 1` — clipboard works over SSH
+- `@thumbs-contrast 1` — hints show in brackets for readability
+
+Useful patterns for coding workflows:
+
+```bash
+set -g @thumbs-regexp-1 '\S+\.\w+:\d+'            # file:line (src/main.rs:42)
+set -g @thumbs-regexp-2 '\b[a-f0-9]{7,12}\b'       # short commit/change IDs
+```
+
+**Caution**: Test patterns one at a time. A bad regex causes thumbs to crash
+silently (`|| true` in tmux-thumbs.sh swallows all errors). If thumbs flashes
+and shows nothing, unset all `@thumbs-regexp-N` and add them back individually.
 
 See [REFERENCE.md](REFERENCE.md) for detailed plugin configs and advanced patterns.
