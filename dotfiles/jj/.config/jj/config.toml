@@ -5,4 +5,32 @@ name = "Trevor Strieber"
 email = "trevor@strieber.org"
 
 [ui]
-default-command = "log"
+default-command = "status"
+pager = ["delta", "--dark"]
+diff.format = "git"
+editor = "nvim"
+diff-editor = ":builtin"
+
+[merge-tools.difft]
+program = "difft"
+diff-args = ["--color=always", "--display=inline", "$left", "$right"]
+
+[colors]
+"added" = { fg = "green", bold = true }
+"modified" = { fg = "yellow", bold = false }
+"removed" = { fg = "red", bold = true }
+"diff removed token" = { fg = "bright red", bg = "#400000", underline = false }
+"diff added token" = { fg = "bright green", bg = "#003000", underline = false }
+
+[aliases]
+s = ["status"]
+l = ["log", "-n", "15"]
+d = ["diff"]
+ds = ["diff", "--stat"]
+dd = ["diff", "--tool", "difft"]
+f = ["git", "fetch"]
+push = ["git", "push"]
+b = ["bookmark", "list"]
+
+[remotes.origin]
+auto-track-bookmarks = "glob:*"

@@ -7,3 +7,6 @@ font-thicken = true
 macos-titlebar-style = tabs
 macos-titlebar-proxy-icon = hidden
 keybind = shift+enter=text:\n
+
+# machine-local overrides (fonts, window size, etc.)
+config-file = ~/local/ghostty-overrides

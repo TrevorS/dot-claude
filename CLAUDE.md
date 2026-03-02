@@ -48,3 +48,7 @@ Key patterns:
 - Skills use `SKILL.md` for discovery; reference docs go in `REFERENCE.md`
 - Hooks are wired in `settings.json` under the `hooks` key
 - The `dotfiles/` convention: `dotfiles/<pkg>/<path-relative-to-home>` gets symlinked into `~`
+- Machine-local overrides use each tool's native include mechanism (not tracked in repo):
+  - **git**: `[include] path = ~/.config/git/local` — per-machine email, signing, etc.
+  - **ghostty**: `config-file = ~/local/ghostty-overrides` — per-machine fonts, window sizing
+  - **zsh**: `~/.local.zsh` (machine paths/tools), `~/.secrets.zsh` (API keys/tokens)

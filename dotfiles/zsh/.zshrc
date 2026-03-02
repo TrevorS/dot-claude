@@ -20,6 +20,9 @@ alias la="ls -la"
 alias lah="ls -lah"
 alias vim="nvim"
 alias cat="bat"
+alias sed="gsed"
+alias python=python3
+alias pip=pip3
 
 alias gst="git status"
 alias gaa="git add --all"
@@ -58,6 +61,8 @@ command -v fnm      >/dev/null && eval "$(fnm env --use-on-cd)"
 command -v starship >/dev/null && eval "$(starship init zsh)"
 command -v rbenv    >/dev/null && eval "$(rbenv init - zsh)"
 command -v atuin    >/dev/null && eval "$(atuin init zsh)"
+command -v fzf      >/dev/null && source <(fzf --zsh)
+command -v uv       >/dev/null && eval "$(uv generate-shell-completion zsh)"
 
 # bun
 export BUN_INSTALL="$HOME/.bun"
@@ -83,6 +88,9 @@ ollama_update_all() {
 
   echo "All models checked and pulled."
 }
+
+# machine-local config (paths, tools — not tracked in version control)
+[ -f ~/.local.zsh ] && source ~/.local.zsh
 
 # secrets (API keys, tokens — not tracked in version control)
 [ -f ~/.secrets.zsh ] && source ~/.secrets.zsh
