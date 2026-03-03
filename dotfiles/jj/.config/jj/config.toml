@@ -34,3 +34,7 @@ b = ["bookmark", "list"]
 
 [remotes.origin]
 auto-track-bookmarks = "glob:*"
+
+[revset-aliases]
+'trunk()' = 'master@origin'
+'immutable_heads()' = 'builtin_immutable_heads() | remote_bookmarks()'
