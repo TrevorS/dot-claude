@@ -34,6 +34,8 @@ alias gco="git checkout"
 alias gcm="git checkout master"
 alias gcd="git checkout dev"
 
+alias cdc="cd $HOME/.claude"
+
 alias dcu="docker compose up"
 alias dcd="docker compose down"
 
