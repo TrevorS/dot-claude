@@ -10,9 +10,8 @@ paths:
 
 ## Tooling
 
-- Package manager: prefer `pnpm`, fallback to `yarn` or `bun`
-- Node version: `fnm` (check `.node-version` or `.nvmrc`)
-- New projects: use framework-specific scaffolds (`create-next-app`, `create-svelte`, `pnpm create`, `bun init`)
+- Package manager: prefer `bun`, fallback to `pnpm` or `yarn`
+- New projects: use framework-specific scaffolds (`create-next-app`, `create-svelte`, `bun create`, `bun init`)
 
 ## TypeScript Strictness
 

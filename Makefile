@@ -13,7 +13,6 @@ help:
 	@echo "  pre-commit-update  - Update pre-commit hooks to latest versions"
 
 install:
-	@pnpm install
 	@uv sync
 	@$(MAKE) dotfiles
 
@@ -24,7 +23,7 @@ pre-commit:
 	@$(MAKE) validate
 
 clean:
-	rm -rf node_modules .pnpm-store .venv
+	rm -rf .venv
 
 pre-commit-install:
 	@uv run pre-commit install

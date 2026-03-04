@@ -5,11 +5,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Development Commands
 
 ```bash
-make install             # Install dependencies (pnpm + uv) and stow dotfiles
+make install             # Install dependencies (uv) and stow dotfiles
 make validate            # Format and lint all files (also: make pre-commit)
 make dotfiles            # Stow all dotfile packages into ~
 make pre-commit-install  # Install pre-commit hooks (one-time)
-make clean               # Remove node_modules, .venv
+make clean               # Remove .venv
 ```
 
 Validation runs pre-commit hooks: trailing-whitespace, end-of-file-fixer, mixed-line-ending,
@@ -34,7 +34,7 @@ check-yaml, check-json, check-merge-conflict, check-added-large-files, prettier,
 This repo is the user's Claude Code configuration — skills, commands, agents, hooks, rules, and dotfiles.
 
 - **`rules/`** — Always-loaded behavioral rules (thinking, workflow, languages, version-control, anti-patterns)
-- **`skills/`** — On-demand reference docs loaded via skill matching (22 skills). Each has a `SKILL.md`.
+- **`skills/`** — On-demand reference docs loaded via skill matching. Each has a `SKILL.md`.
 - **`commands/`** — Slash commands (`/commit`, `/review-pull-request`, etc.) as markdown prompt templates
 - **`agents/`** — Custom agent definitions (ascii-art-generator, docs-researcher, etc.)
 - **`hooks/`** — Shell scripts triggered by Claude Code events (VCS context injection, branch protection, notifications)
