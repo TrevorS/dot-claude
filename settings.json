@@ -17,8 +17,6 @@
       "mcp__notion__notion-get-comments",
       "mcp__notion__notion-get-teams",
       "mcp__notion__notion-get-users",
-      "mcp__socialmedia__*",
-      "mcp__journal__*",
       "Bash(jj:*)",
       "Bash(git:*)",
       "Bash(gh:*)",
@@ -127,14 +125,10 @@
     "command": "~/.claude/hooks/status.sh"
   },
   "enabledPlugins": {
-    "gopls-lsp@claude-plugins-official": false,
-    "lua-lsp@claude-plugins-official": false,
-    "pyright-lsp@claude-plugins-official": false,
-    "rust-analyzer-lsp@claude-plugins-official": false,
-    "swift-lsp@claude-plugins-official": false,
     "code-simplifier@claude-plugins-official": true,
     "ralph-loop@claude-plugins-official": true,
-    "stable-data@stable-plugins": true
+    "stable-data@stable-plugins": true,
+    "claude-md-management@claude-plugins-official": true
   },
   "forceLoginMethod": "claudeai",
   "alwaysThinkingEnabled": true,
