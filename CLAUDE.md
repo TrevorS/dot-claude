@@ -28,6 +28,7 @@ check-yaml, check-json, check-merge-conflict, check-added-large-files, prettier,
 
 - User's last name: **strieber** (NOT strueburg or strueber - always use "strieber")
 - Cross-check path spellings against environment context at the start of each conversation
+- Use the `glhf` skill to search Claude Code conversation history and tool logs — whenever you need to recall past solutions, find commands that were run, or check how something was done before, load glhf and search rather than guessing
 
 ## Repository Architecture (when working in ~/.claude/)
 

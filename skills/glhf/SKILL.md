@@ -1,11 +1,21 @@
 ---
 name: glhf
-description: Search Claude Code conversation history to find past solutions, recall commands, and discover related work. Use when looking for previous implementations, finding commands you ran before, or exploring what was done in past sessions.
+description: >-
+  Search Claude Code conversation history and tool logs to find past solutions,
+  recall commands, and discover related work. Use when the user mentions past
+  sessions, asks "have I done this before", "how did I", "what command did I
+  run", or needs to find previous implementations, error resolutions, debugging
+  approaches, or configuration changes. Also use proactively before proposing
+  solutions — check if a similar problem was already solved.
+allowed-tools: Bash
+argument-hint: "<search-query>"
 ---
 
-# glhf
+# glhf — Conversation History Search
 
 Search your Claude Code conversation history using hybrid search (text + semantic).
+
+When invoked as `/glhf <query>`, run: `glhf search "$ARGUMENTS" --mode semantic --compact`
 
 ## Quick Examples
 
