@@ -133,7 +133,8 @@
     "rust-analyzer-lsp@claude-plugins-official": false,
     "swift-lsp@claude-plugins-official": false,
     "code-simplifier@claude-plugins-official": true,
-    "ralph-loop@claude-plugins-official": true
+    "ralph-loop@claude-plugins-official": true,
+    "stable-data@stable-plugins": true
   },
   "forceLoginMethod": "claudeai",
   "alwaysThinkingEnabled": true,
