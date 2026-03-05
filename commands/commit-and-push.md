@@ -51,7 +51,7 @@ Use the Write tool for commit message files (avoids shell escaping). Handle pre-
 
 ## CI/CD Monitoring
 
-After a successful push, if `.github/workflows/` exists, run the ci-monitor script in the background:
+After a successful push, check the `ci=` value from the hook output in the system-reminder. If `ci=github-actions`, run the ci-monitor skill in the background:
 
 ```bash
 uv run ~/.claude/skills/ci-monitor/ci-monitor.py --branch <branch-name>
@@ -60,3 +60,5 @@ uv run ~/.claude/skills/ci-monitor/ci-monitor.py --branch <branch-name>
 Use `run_in_background: true`. The script handles dedup, polling, watching, and failure log fetching automatically.
 
 Tell the user: "CI monitor running in background — you'll be notified when it completes."
+
+If `ci=none`, skip silently — do NOT claim there is no CI without checking.

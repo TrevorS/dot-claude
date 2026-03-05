@@ -17,7 +17,7 @@ These skills should be loaded automatically when context is detected:
 | `vcs=git` in hook (not jj)             | `git-workflow`            | Every prompt in git-only repos    |
 | `.svelte` files in project             | `svelte5`                 | Path-scoped rule auto-loads       |
 | `.swift` files in project              | `swiftui-engineer`        | Path-scoped rule auto-loads       |
-| After `jj git push` or `git push`      | `ci-monitor`              | Load to monitor CI runs           |
+| `ci=github-actions` in hook            | `ci-monitor`              | After push, monitor CI runs       |
 | Working in `~/.claude/`                | `maintaining-claude-code` | When modifying skills/rules/hooks |
 | User mentions past sessions            | `glhf`                    | Search conversation history       |
 

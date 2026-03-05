@@ -92,7 +92,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "~/.claude/hooks/user-prompt-submit/vcs-context.sh"
+            "command": "~/.claude/hooks/user-prompt-submit/project-context.sh"
           }
         ]
       }
