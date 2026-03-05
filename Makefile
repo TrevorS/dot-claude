@@ -27,6 +27,8 @@ tpm:
 		echo "Installing TPM..."; \
 		git clone https://github.com/tmux-plugins/tpm "$(TPM_DIR)"; \
 	fi
+	@echo "Installing tmux plugins..."
+	@"$(TPM_DIR)/bin/install_plugins"
 
 validate:
 	@uv run pre-commit run --all-files
