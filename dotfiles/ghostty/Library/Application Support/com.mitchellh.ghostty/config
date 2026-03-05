@@ -1,12 +1,30 @@
+# Theme
 theme = Catppuccin Mocha
-font-family = BerkeleyMono Nerd Font
-font-family-bold = BerkeleyMono Nerd Font Bold
-font-family-italic = BerkeleyMono Nerd Font Italic
-font-family-bold-italic = BerkeleyMono Nerd Font Bold Italic
+
+# Font — use base font; Ghostty has built-in Nerd Font support
+font-family = Berkeley Mono
+font-family-bold = Berkeley Mono Bold
+font-family-italic = Berkeley Mono Italic
+font-family-bold-italic = Berkeley Mono Bold Italic
 font-thicken = true
+
+# Typography
+adjust-cell-height = 3
+
+# macOS chrome
 macos-titlebar-style = tabs
 macos-titlebar-proxy-icon = hidden
+
+# Display
+window-colorspace = display-p3
+window-padding-balance = true
+
+# Behavior
+mouse-hide-while-typing = true
+scrollback-limit = 100000
+
+# Keybinds
 keybind = shift+enter=text:\n
 
-# machine-local overrides (fonts, window size, etc.)
-config-file = ~/local/ghostty-overrides
+# Machine-local overrides (fonts, window size, etc.)
+config-file = ?~/local/ghostty-overrides
