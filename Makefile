@@ -18,7 +18,7 @@ TPM_DIR := $(HOME)/.local/share/tmux/plugins/tpm
 install:
 	@uv sync
 	@$(MAKE) dotfiles
-	@$(MAKE) tpm
+	@if [ -z "$$CI" ]; then $(MAKE) tpm; fi
 
 tpm:
 	@if [ -d "$(TPM_DIR)" ]; then \
