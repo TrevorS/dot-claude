@@ -12,6 +12,12 @@
   "permissions": {
     "allow": [
       "WebSearch",
+      "mcp__journal__journal_add",
+      "mcp__journal__journal_search",
+      "mcp__journal__journal_list",
+      "mcp__journal__journal_read",
+      "mcp__journal__journal_init",
+      "mcp__journal__journal_sync",
       "mcp__notion__notion-search",
       "mcp__notion__notion-fetch",
       "mcp__notion__notion-get-comments",
@@ -69,7 +75,9 @@
       "WebFetch(domain:www.notion.com)",
       "WebFetch(domain:www.markdownguide.org)",
       "WebFetch(domain:simonwillison.net)",
-      "WebFetch(domain:harper.blog)"
+      "WebFetch(domain:harper.blog)",
+      "mcp__journal__journal_setup",
+      "mcp__journal__journal_dir"
     ],
     "deny": [
       "Read(./.env)",

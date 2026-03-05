@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "journal": {
+      "command": "cj",
+      "args": ["mcp"],
+      "type": "stdio"
+    }
+  }
+}

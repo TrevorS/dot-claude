@@ -205,6 +205,25 @@ jj git fetch                         # Pull from remote
 jj rebase -d master@origin           # Rebase onto updated main
 ```
 
+## Temporarily Disabling Immutable Commits
+
+When you need to rewrite a commit protected by `immutable_heads()` (e.g., squashing into a remote bookmark):
+
+```bash
+# Disable protection (quote the key — parentheses are invalid TOML bare keys)
+jj config set --repo 'revset-aliases."immutable_heads()"' 'none()'
+
+# Do your rewrite
+jj squash -m "updated message"
+
+# ALWAYS restore protection immediately after
+jj config set --repo 'revset-aliases."immutable_heads()"' 'builtin_immutable_heads() | remote_bookmarks()'
+```
+
+**Important:** The `NAME` argument requires shell quoting around the TOML key because `immutable_heads()` contains parentheses. Use single quotes around the full dotted key with inner double quotes: `'revset-aliases."immutable_heads()"'`.
+
+**CRITICAL: Always ask the user before disabling immutable protection.** Rewriting remote bookmarks means force-pushing, which rewrites shared history. Confirm with the user before proceeding — never silently disable immutability.
+
 ## Recovery
 
 The operation log records every mutation. Nothing is ever truly lost.
