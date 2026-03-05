@@ -59,6 +59,21 @@ Every change has two identifiers:
 
 When you squash, rebase, or amend, the change ID stays the same. This means you can bookmark a change ID mentally and it always resolves, unlike git commit hashes.
 
+#### Accessing Previous Versions (`xyz/n` syntax)
+
+Every rewrite of a change is recorded. Access previous versions with `<change-id>/n`:
+
+- `xyz/0` — latest (current) version (same as `xyz`)
+- `xyz/1` — previous version
+- `xyz/2` — two versions ago
+
+This is useful for restoring a change to its earlier state:
+
+```bash
+jj restore --from xyz/1 --to xyz    # Revert xyz to its previous contents
+jj diff --from xyz/1 --to xyz      # See what changed between versions
+```
+
 ### Conflicts Are Just State
 
 When a rebase produces conflicts, jj records the conflict in the commit and succeeds. No "rebase in progress" blocking state. No `--continue` ceremony.
@@ -158,19 +173,22 @@ jj git push
 
 Revsets are a functional language for selecting commits. Beyond `@` and `@-`:
 
-| Expression            | Meaning                |
-| --------------------- | ---------------------- |
-| `@`                   | Current working copy   |
-| `@-`                  | Parent                 |
-| `@--`                 | Grandparent            |
-| `x+`                  | Children of x          |
-| `x::`                 | All descendants of x   |
-| `::x`                 | All ancestors of x     |
-| `trunk()`             | The trunk/main commit  |
-| `bookmarks()`         | All bookmarked commits |
-| `empty()`             | Empty commits          |
-| `description("text")` | Filter by description  |
-| `author("name")`      | Filter by author       |
+| Expression            | Meaning                    |
+| --------------------- | -------------------------- |
+| `@`                   | Current working copy       |
+| `@-`                  | Parent                     |
+| `@--`                 | Grandparent                |
+| `x+`                  | Children of x              |
+| `x::`                 | All descendants of x       |
+| `::x`                 | All ancestors of x         |
+| `trunk()`             | The trunk/main commit      |
+| `bookmarks()`         | All bookmarked commits     |
+| `empty()`             | Empty commits              |
+| `divergent()`         | Divergent changes          |
+| `remote_tags()`       | Remote tags                |
+| `diff_lines("text")`  | Commits with matching diff |
+| `description("text")` | Filter by description      |
+| `author("name")`      | Filter by author           |
 
 Useful examples:
 

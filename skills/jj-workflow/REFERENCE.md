@@ -14,6 +14,7 @@
 | View log              | `jj log`                            |
 | View status           | `jj st`                             |
 | View diff             | `jj diff`                           |
+| Search file contents  | `jj file search "pattern"`          |
 
 ## History Surgery
 
@@ -78,6 +79,11 @@ x | y       Union
 trunk()..@  My branch
 empty()     Empty commits
 bookmarks() Bookmarked commits
+divergent() Divergent changes
+remote_tags() Remote tags
+diff_lines() Commits with matching diff
+xyz/0       Latest version of change xyz
+xyz/1       Previous version of change xyz
 ```
 
 ## Git Equivalents
@@ -94,6 +100,7 @@ bookmarks() Bookmarked commits
 | `git branch`              | `jj bookmark`                          |
 | `git log`                 | `jj log`                               |
 | `git diff`                | `jj diff`                              |
+| `git grep`                | `jj file search "pattern"`             |
 | `git checkout <branch>`   | `jj edit <change-id>`                  |
 | `git cherry-pick`         | `jj duplicate <id>`                    |
 
