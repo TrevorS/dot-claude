@@ -25,6 +25,9 @@ diff-args = ["--color=always", "--display=inline", "$left", "$right"]
 [aliases]
 s = ["status"]
 l = ["log", "-n", "15"]
+la = ["log", "--revsets", "all()"]
+lb = ["log", "-r", "trunk()..@"]
+e = ["evolog"]
 d = ["diff"]
 ds = ["diff", "--stat"]
 dd = ["diff", "--tool", "difft"]
@@ -36,5 +39,4 @@ b = ["bookmark", "list"]
 auto-track-bookmarks = "glob:*"
 
 [revset-aliases]
-'trunk()' = 'master@origin'
 'immutable_heads()' = 'builtin_immutable_heads() | remote_bookmarks()'

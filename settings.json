@@ -1,14 +1,5 @@
 {
   "$schema": "https://json.schemastore.org/claude-code-settings.json",
-  "alwaysThinkingEnabled": true,
-  "enabledPlugins": {
-    "claude-md-management@claude-plugins-official": true,
-    "code-simplifier@claude-plugins-official": true,
-    "ralph-loop@claude-plugins-official": true,
-    "stable-data@stable-plugins": true,
-    "swift-lsp@claude-plugins-official": true,
-    "typescript-lsp@claude-plugins-official": true
-  },
   "env": {
     "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1",
     "DISABLE_BUG_COMMAND": "true",
@@ -16,64 +7,6 @@
     "DISABLE_ERROR_REPORTING": "true",
     "DISABLE_TELEMETRY": "true",
     "ENABLE_LSP_TOOL": "1"
-  },
-  "forceLoginMethod": "claudeai",
-  "hooks": {
-    "Notification": [
-      {
-        "hooks": [
-          {
-            "command": "test -x /Users/trevor/Applications/claude-notify.app/Contents/MacOS/claude-notify && /Users/trevor/Applications/claude-notify.app/Contents/MacOS/claude-notify || true",
-            "type": "command"
-          }
-        ],
-        "matcher": ""
-      }
-    ],
-    "PostToolUse": [
-      {
-        "hooks": [
-          {
-            "command": "~/.claude/hooks/journal-reminder.sh",
-            "type": "command"
-          }
-        ],
-        "matcher": "Bash"
-      }
-    ],
-    "PreToolUse": [
-      {
-        "hooks": [
-          {
-            "command": "~/.claude/hooks/branch_protection.sh",
-            "type": "command"
-          }
-        ],
-        "matcher": "Bash"
-      }
-    ],
-    "Stop": [
-      {
-        "hooks": [
-          {
-            "command": "~/.claude/hooks/stop.sh",
-            "type": "command"
-          }
-        ],
-        "matcher": ""
-      }
-    ],
-    "UserPromptSubmit": [
-      {
-        "hooks": [
-          {
-            "command": "~/.claude/hooks/user-prompt-submit/project-context.sh",
-            "type": "command"
-          }
-        ],
-        "matcher": ""
-      }
-    ]
   },
   "includeCoAuthoredBy": false,
   "permissions": {
@@ -147,7 +80,6 @@
       "mcp__cj__journal_setup",
       "mcp__cj__journal_dir"
     ],
-    "defaultMode": "default",
     "deny": [
       "Read(./.env)",
       "Read(./.env.*)",
@@ -159,11 +91,79 @@
       "Read(./id_rsa*)",
       "Read(./id_ed25519*)",
       "Read(./*.pem)"
+    ],
+    "defaultMode": "default"
+  },
+  "hooks": {
+    "Notification": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "test -x /Users/trevor/Applications/claude-notify.app/Contents/MacOS/claude-notify && /Users/trevor/Applications/claude-notify.app/Contents/MacOS/claude-notify || true"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/journal-reminder.sh"
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/branch_protection.sh"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/stop.sh"
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/user-prompt-submit/project-context.sh"
+          }
+        ]
+      }
     ]
   },
-  "skipDangerousModePermissionPrompt": true,
   "statusLine": {
-    "command": "~/.claude/hooks/status.sh",
-    "type": "command"
-  }
+    "type": "command",
+    "command": "~/.claude/hooks/status.sh"
+  },
+  "enabledPlugins": {
+    "claude-md-management@claude-plugins-official": true,
+    "code-simplifier@claude-plugins-official": true,
+    "ralph-loop@claude-plugins-official": true,
+    "stable-data@stable-plugins": true,
+    "swift-lsp@claude-plugins-official": true,
+    "typescript-lsp@claude-plugins-official": true
+  },
+  "forceLoginMethod": "claudeai",
+  "alwaysThinkingEnabled": true,
+  "skipDangerousModePermissionPrompt": true
 }
