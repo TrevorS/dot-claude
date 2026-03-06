@@ -50,7 +50,12 @@ This repo is the user's Claude Code configuration — skills, commands, agents, 
 - **`skills/`** — On-demand reference docs loaded via skill matching. Each has a `SKILL.md`.
 - **`commands/`** — Slash commands (`/commit`, `/review-pull-request`, etc.) as markdown prompt templates
 - **`agents/`** — Custom agent definitions (ascii-art-generator, docs-researcher, etc.)
-- **`hooks/`** — Shell scripts triggered by Claude Code events (VCS context injection, branch protection, notifications)
+- **`hooks/`** — Shell scripts triggered by Claude Code events, wired in `settings.json`
+  - `user-prompt-submit/project-context.sh` — Injects VCS, package manager, and CI context on every prompt
+  - `branch_protection.sh` — PreToolUse guard preventing destructive git ops on protected branches
+  - `journal-reminder.sh` — PostToolUse (Bash) reminder to journal if >10min since last entry (threshold: `CJ_REMINDER_MINUTES` env var)
+  - `notify-osascript.sh` — macOS desktop notification when Claude needs input
+  - `status.sh` — Status line command
 - **`dotfiles/`** — GNU Stow packages mirroring `$HOME` structure, managed via `make dotfiles` (requires `stow`)
   - Packages: `zsh`, `starship`, `tmux`, `atuin`, `ghostty`, `git`, `jj`, `nvim`, `lscolors`
   - macOS-only: `ghostty` (skipped on Linux via Makefile)
@@ -60,7 +65,6 @@ This repo is the user's Claude Code configuration — skills, commands, agents, 
 Key patterns:
 
 - Skills use `SKILL.md` for discovery; reference docs go in `REFERENCE.md`
-- Hooks are wired in `settings.json` under the `hooks` key
 - The `dotfiles/` convention: `dotfiles/<pkg>/<path-relative-to-home>` gets symlinked into `~`
 - Machine-local overrides use each tool's native include mechanism (not tracked in repo):
   - **git**: `[include] path = ~/.config/git/local` — per-machine email, signing, etc.

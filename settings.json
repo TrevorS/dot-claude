@@ -76,6 +76,7 @@
       "WebFetch(domain:www.markdownguide.org)",
       "WebFetch(domain:simonwillison.net)",
       "WebFetch(domain:harper.blog)",
+      "mcp__cj__journal_last",
       "mcp__cj__journal_setup",
       "mcp__cj__journal_dir"
     ],
