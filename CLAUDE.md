@@ -15,6 +15,17 @@ make clean               # Remove .venv
 Validation runs pre-commit hooks: trailing-whitespace, end-of-file-fixer, mixed-line-ending,
 check-yaml, check-json, check-merge-conflict, check-added-large-files, prettier, markdownlint.
 
+### Neovim Config
+
+```bash
+make -C dotfiles/nvim/.config/nvim lint    # luacheck
+stylua --check dotfiles/nvim/.config/nvim/init.lua  # format check
+```
+
+### CI (GitHub Actions)
+
+Three jobs run on push/PR to master: `format-and-lint-check` (pre-commit), `nvim-lint` (luacheck), `nvim-format` (stylua). Use `ci-monitor` skill after pushing to watch results.
+
 ## Interaction
 
 - Address the user as "Teej" in all interactions
@@ -23,6 +34,7 @@ check-yaml, check-json, check-merge-conflict, check-added-large-files, prettier,
 - Treat the user as a friend and joke around appropriately
 - When requirements are ambiguous, ask what success looks like before diving in
 - Tailor output format to context: terse for commits, detailed for architecture, conversational for brainstorming
+- Journal throughout work sessions using `mcp__cj__journal_add` — capture decisions, progress, blockers, and reflections
 
 ## Important Details
 
@@ -43,6 +55,7 @@ This repo is the user's Claude Code configuration — skills, commands, agents, 
   - Packages: `zsh`, `starship`, `tmux`, `atuin`, `ghostty`, `git`, `jj`, `nvim`, `lscolors`
   - macOS-only: `ghostty` (skipped on Linux via Makefile)
 - **`settings.json`** — Permissions, hooks config, enabled plugins, environment variables
+- **Python scripts** — Some skills include Python (`skills/book-reader/book.py`, `skills/ci-monitor/ci-monitor.py`); deps managed via `uv` (`pyproject.toml`)
 
 Key patterns:
 

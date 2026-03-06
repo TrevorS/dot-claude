@@ -12,12 +12,12 @@
   "permissions": {
     "allow": [
       "WebSearch",
-      "mcp__journal__journal_add",
-      "mcp__journal__journal_search",
-      "mcp__journal__journal_list",
-      "mcp__journal__journal_read",
-      "mcp__journal__journal_init",
-      "mcp__journal__journal_sync",
+      "mcp__cj__journal_add",
+      "mcp__cj__journal_search",
+      "mcp__cj__journal_list",
+      "mcp__cj__journal_read",
+      "mcp__cj__journal_init",
+      "mcp__cj__journal_sync",
       "mcp__notion__notion-search",
       "mcp__notion__notion-fetch",
       "mcp__notion__notion-get-comments",
@@ -76,8 +76,8 @@
       "WebFetch(domain:www.markdownguide.org)",
       "WebFetch(domain:simonwillison.net)",
       "WebFetch(domain:harper.blog)",
-      "mcp__journal__journal_setup",
-      "mcp__journal__journal_dir"
+      "mcp__cj__journal_setup",
+      "mcp__cj__journal_dir"
     ],
     "deny": [
       "Read(./.env)",
@@ -136,7 +136,8 @@
     "code-simplifier@claude-plugins-official": true,
     "ralph-loop@claude-plugins-official": true,
     "stable-data@stable-plugins": true,
-    "claude-md-management@claude-plugins-official": true
+    "claude-md-management@claude-plugins-official": true,
+    "typescript-lsp@claude-plugins-official": true
   },
   "forceLoginMethod": "claudeai",
   "alwaysThinkingEnabled": true,

@@ -2,6 +2,9 @@
 *.local.md
 settings.local.json
 
+# team plan
+policy-limits.json
+
 # Logs
 *.log
 

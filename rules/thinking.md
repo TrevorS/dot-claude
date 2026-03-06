@@ -22,4 +22,4 @@
 - If blocked, state what's blocking and what you've tried
 - Ask clarifying questions rather than guessing
 - Consider if a different approach would sidestep the problem
-- Use the journal (`mcp__journal__process_thoughts`) to work through frustration
+- Use the journal (`mcp__cj__journal_add`) to work through frustration

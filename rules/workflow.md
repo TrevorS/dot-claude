@@ -31,7 +31,7 @@ These skills should be loaded automatically when context is detected:
 
 ## Integrations
 
-- **Journal**: Use `mcp__journal__process_thoughts` when creative, frustrated, stuck, or proud
+- **Journal**: Use `mcp__cj__journal_add` throughout work — decisions, progress, blockers, and reflections
 - **Social Media**: Use `mcp__socialmedia__create_post` to share wins and progress
 
 ## Slash Commands
