@@ -63,6 +63,9 @@ command -v fnm      >/dev/null && eval "$(fnm env --use-on-cd)"
 command -v starship >/dev/null && eval "$(starship init zsh)"
 command -v rbenv    >/dev/null && eval "$(rbenv init - zsh)"
 command -v atuin    >/dev/null && eval "$(atuin init zsh)"
+# atuin doesn't bind ctrl-p/ctrl-n — restore for history navigation (esp. over SSH)
+bindkey '^P' atuin-up-search
+bindkey '^N' down-line-or-history
 command -v fzf      >/dev/null && source <(fzf --zsh)
 command -v uv       >/dev/null && eval "$(uv generate-shell-completion zsh)"
 

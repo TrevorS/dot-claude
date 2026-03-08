@@ -24,3 +24,18 @@ repos:
       - id: markdownlint
         args: ["--config", ".markdownlint.yaml"]
         exclude: ^cache/
+
+  - repo: https://github.com/JohnnyMorganz/StyLua
+    rev: v2.4.0
+    hooks:
+      - id: stylua
+        files: ^dotfiles/nvim/
+
+  - repo: local
+    hooks:
+      - id: luacheck
+        name: luacheck
+        entry: luacheck --config dotfiles/nvim/.config/nvim/.luacheckrc
+        language: system
+        types: [lua]
+        files: ^dotfiles/nvim/

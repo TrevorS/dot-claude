@@ -23,7 +23,7 @@
       {
         "hooks": [
           {
-            "command": "/Users/trevor/Applications/claude-notify.app/Contents/MacOS/claude-notify",
+            "command": "test -x /Users/trevor/Applications/claude-notify.app/Contents/MacOS/claude-notify && /Users/trevor/Applications/claude-notify.app/Contents/MacOS/claude-notify || true",
             "type": "command"
           }
         ],
@@ -56,7 +56,7 @@
       {
         "hooks": [
           {
-            "command": "/Users/trevor/Applications/claude-notify.app/Contents/MacOS/claude-notify",
+            "command": "~/.claude/hooks/stop.sh",
             "type": "command"
           }
         ],

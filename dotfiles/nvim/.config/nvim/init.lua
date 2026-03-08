@@ -392,9 +392,8 @@ require("oil").setup({
 	},
 })
 
-require("nvim-treesitter.configs").setup({
+require("nvim-treesitter").setup({
 	ensure_installed = { "lua", "rust", "typescript", "javascript", "json", "toml", "markdown" },
-	highlight = { enable = true },
 })
 
 require("mini.clue").setup({
