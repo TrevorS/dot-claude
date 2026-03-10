@@ -161,7 +161,9 @@
     "ralph-loop@claude-plugins-official": true,
     "stable-data@stable-plugins": true,
     "swift-lsp@claude-plugins-official": true,
-    "typescript-lsp@claude-plugins-official": true
+    "typescript-lsp@claude-plugins-official": true,
+    "clangd-lsp@claude-plugins-official": true,
+    "rust-analyzer-lsp@claude-plugins-official": true
   },
   "forceLoginMethod": "claudeai",
   "alwaysThinkingEnabled": true,
