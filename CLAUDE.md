@@ -51,7 +51,7 @@ This repo is the user's Claude Code configuration — skills, commands, agents, 
 - **`commands/`** — Slash commands (`/commit`, `/review-pull-request`, etc.) as markdown prompt templates
 - **`agents/`** — Custom agent definitions (ascii-art-generator, docs-researcher, etc.)
 - **`hooks/`** — Shell scripts triggered by Claude Code events, wired in `settings.json` (branch protection, journal reminders, notifications, etc.)
-- **`dotfiles/`** — GNU Stow packages mirroring `$HOME` structure, managed via `make dotfiles` (requires `stow`). macOS-only packages are skipped on Linux via Makefile.
+- **`dotfiles/`** — GNU Stow packages mirroring `$HOME` structure, managed via `make dotfiles` (requires `stow`). macOS-only packages are skipped on Linux via Makefile. Includes a `scripts` package for standalone shell scripts (`~/.local/bin`).
 - **`settings.json`** — Permissions, hooks config, enabled plugins, environment variables
 - **Python scripts** — Some skills include Python (`skills/book-reader/book.py`, `skills/ci-monitor/ci-monitor.py`); deps managed via `uv` (`pyproject.toml`)
 

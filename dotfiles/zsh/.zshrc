@@ -1,5 +1,4 @@
 # path (last prepend wins — user bins must come after system bins)
-export PATH="/opt/homebrew/lib:$PATH"
 export PATH="/opt/homebrew/opt/sqlite/bin:$PATH"
 export PATH="/opt/homebrew/opt/coreutils/libexec/gnubin:$PATH"
 export PATH="/opt/homebrew/bin:$PATH"
@@ -7,7 +6,7 @@ export PATH="$HOME/.cache/lm-studio/bin:$PATH"
 export PATH="$HOME/go/bin:$PATH"
 export PATH="$HOME/.cargo/bin:$PATH"
 export PATH="$HOME/.local/bin:$PATH"
-export MANPATH="/usr/local/opt/coreutils/libexec/gnuman:$MANPATH"
+export MANPATH="/opt/homebrew/opt/coreutils/libexec/gnuman:$MANPATH"
 export LIBRARY_PATH=/opt/homebrew/lib:$LIBRARY_PATH
 
 # editor
@@ -63,37 +62,21 @@ export PYTHONBREAKPOINT=ipdb.set_trace
 command -v fnm      >/dev/null && eval "$(fnm env --use-on-cd)"
 command -v starship >/dev/null && eval "$(starship init zsh)"
 command -v rbenv    >/dev/null && eval "$(rbenv init - zsh)"
-command -v atuin    >/dev/null && eval "$(atuin init zsh)"
-# atuin doesn't bind ctrl-p/ctrl-n — restore for history navigation (esp. over SSH)
-bindkey '^P' atuin-up-search
-bindkey '^N' down-line-or-history
-command -v fzf      >/dev/null && source <(fzf --zsh)
+if command -v atuin >/dev/null; then
+  eval "$(atuin init zsh)"
+  # atuin doesn't bind ctrl-p/ctrl-n — restore for history navigation (esp. over SSH)
+  bindkey '^P' atuin-up-search
+  bindkey '^N' down-line-or-history
+fi
 command -v uv       >/dev/null && eval "$(uv generate-shell-completion zsh)"
 
 # bun
-export BUN_INSTALL="$HOME/.bun"
-export PATH="$BUN_INSTALL/bin:$PATH"
-[ -s "$HOME/.bun/_bun" ] && source "$HOME/.bun/_bun"
+if [ -d "$HOME/.bun" ]; then
+  export BUN_INSTALL="$HOME/.bun"
+  export PATH="$BUN_INSTALL/bin:$PATH"
+  [ -s "$HOME/.bun/_bun" ] && source "$HOME/.bun/_bun"
+fi
 
-# ollama
-ollama_update_all() {
-  echo "Fetching list of installed Ollama models..."
-  local models=($(ollama ls | tail -n +2 | awk '{print $1}'))
-
-  if [ ${#models[@]} -eq 0 ]; then
-    echo "No models found."
-    return 1
-  fi
-
-  echo "Updating ${#models[@]} model(s)..."
-  for model in "${models[@]}"; do
-    echo "Pulling latest version of '$model'..."
-    ollama pull "$model"
-    echo ""
-  done
-
-  echo "All models checked and pulled."
-}
 
 # machine-local config (paths, tools — not tracked in version control)
 [ -f ~/.local.zsh ] && source ~/.local.zsh

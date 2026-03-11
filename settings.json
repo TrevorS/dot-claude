@@ -101,7 +101,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "test -x /Users/trevor/Applications/claude-notify.app/Contents/MacOS/claude-notify && /Users/trevor/Applications/claude-notify.app/Contents/MacOS/claude-notify || true"
+            "command": "/Users/trevorstrieber/.claude/hooks/claude-notify.sh"
           }
         ]
       }
@@ -137,6 +137,15 @@
             "command": "~/.claude/hooks/stop.sh"
           }
         ]
+      },
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/trevorstrieber/.claude/hooks/claude-notify.sh"
+          }
+        ]
       }
     ],
     "UserPromptSubmit": [
@@ -156,14 +165,15 @@
     "command": "~/.claude/hooks/status.sh"
   },
   "enabledPlugins": {
+    "clangd-lsp@claude-plugins-official": true,
     "claude-md-management@claude-plugins-official": true,
     "code-simplifier@claude-plugins-official": true,
     "ralph-loop@claude-plugins-official": true,
+    "rust-analyzer-lsp@claude-plugins-official": true,
     "stable-data@stable-plugins": true,
     "swift-lsp@claude-plugins-official": true,
     "typescript-lsp@claude-plugins-official": true,
-    "clangd-lsp@claude-plugins-official": true,
-    "rust-analyzer-lsp@claude-plugins-official": true
+    "gopls-lsp@claude-plugins-official": true
   },
   "forceLoginMethod": "claudeai",
   "alwaysThinkingEnabled": true,

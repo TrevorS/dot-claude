@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+echo "Fetching list of installed Ollama models..."
+models=($(ollama ls | tail -n +2 | awk '{print $1}'))
+
+if [ ${#models[@]} -eq 0 ]; then
+  echo "No models found."
+  exit 1
+fi
+
+echo "Updating ${#models[@]} model(s)..."
+for model in "${models[@]}"; do
+  echo "Pulling latest version of '$model'..."
+  ollama pull "$model"
+  echo ""
+done
+
+echo "All models checked and pulled."
