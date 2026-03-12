@@ -1,4 +1,4 @@
-.PHONY: help install validate clean pre-commit pre-commit-install pre-commit-update dotfiles tpm
+.PHONY: help install validate clean pre-commit pre-commit-install pre-commit-update dotfiles tpm typecheck
 
 # Default target
 help:
@@ -8,6 +8,7 @@ help:
 	@echo "  clean             - Clean up generated files"
 	@echo "  dotfiles          - Stow all dotfile packages into ~"
 	@echo "  tpm               - Install tmux plugin manager"
+	@echo "  typecheck         - Type check Python scripts (ty)"
 	@echo ""
 	@echo "Pre-commit commands:"
 	@echo "  pre-commit-install - Install pre-commit hooks"
@@ -30,8 +31,12 @@ tpm:
 	@echo "Installing tmux plugins..."
 	@"$(TPM_DIR)/bin/install_plugins"
 
+typecheck:
+	@uv run ty check skills/book-reader/book.py skills/ci-monitor/ci-monitor.py skills/whisper-test/transcribe.py
+
 validate:
 	@uv run pre-commit run --all-files
+	@$(MAKE) typecheck
 
 pre-commit:
 	@$(MAKE) validate

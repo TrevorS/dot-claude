@@ -1,25 +1,10 @@
-# Python virtual environment
+# Python
 .venv/
 __pycache__/
 
-# Node.js dependencies
-node_modules/
-.pnpm-store/
-
-# Git directory
+# Git / VCS
 .git/
-
-# Build outputs
-dist/
-build/
-*.min.js
-*.min.css
+.jj/
 
 # Lock files
-package-lock.json
-pnpm-lock.yaml
 uv.lock
-
-# Generated files
-*.log
-.DS_Store

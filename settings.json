@@ -26,7 +26,7 @@
       {
         "hooks": [
           {
-            "command": "/Users/trevor/.claude/hooks/claude-notify.sh",
+            "command": "~/.claude/hooks/claude-notify.sh",
             "type": "command"
           }
         ],
@@ -68,7 +68,7 @@
       {
         "hooks": [
           {
-            "command": "/Users/trevor/.claude/hooks/claude-notify.sh",
+            "command": "~/.claude/hooks/claude-notify.sh",
             "type": "command"
           }
         ],
@@ -97,11 +97,6 @@
       "mcp__cj__journal_read",
       "mcp__cj__journal_init",
       "mcp__cj__journal_sync",
-      "mcp__notion__notion-search",
-      "mcp__notion__notion-fetch",
-      "mcp__notion__notion-get-comments",
-      "mcp__notion__notion-get-teams",
-      "mcp__notion__notion-get-users",
       "Bash(jj:*)",
       "Bash(git:*)",
       "Bash(gh:*)",

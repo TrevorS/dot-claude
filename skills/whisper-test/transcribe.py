@@ -78,7 +78,7 @@ def word_error_rate(reference: str, hypothesis: str) -> float:
     return dp[n][m] / n
 
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(description="Transcribe WAV files with Whisper")
     parser.add_argument("files", nargs="+", help="WAV file paths")
     parser.add_argument(

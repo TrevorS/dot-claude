@@ -32,6 +32,24 @@ jobs:
         env:
           SKIP: luacheck,stylua
 
+  typecheck:
+    name: Type check Python
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+
+      - uses: astral-sh/setup-uv@v7
+        with:
+          version: "latest"
+
+      - run: uv sync
+
+      - run: make typecheck
+
   nvim-lint:
     name: Lint nvim config
     runs-on: ubuntu-latest

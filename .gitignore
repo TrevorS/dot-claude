@@ -2,7 +2,7 @@
 *.local.md
 settings.local.json
 
-# team plan
+# Team plan
 policy-limits.json
 
 # Logs
@@ -16,28 +16,38 @@ policy-limits.json
 .DS_Store
 Thumbs.db
 
-cache/
-projects/
-statsig/
-todos/
-plugins/
+# Python / build
+__pycache__/
+.pytest_cache/
+.venv/
 
-*.db
-node_modules/
-ide/
-shell-snapshots/
+# Claude Code runtime
+cache/
+chrome/
 claude_files_*/
 debug/
-file-history/
-*.jsonl
-stats-cache.json
-.credentials.json
-__pycache__/
-plans/
-chrome/
 downloads/
-paste-cache/
-tasks/
+file-history/
+ide/
 image-cache/
+mcp-needs-auth-cache.json
+node_modules/
+paste-cache/
+plans/
+plugins/
+projects/
+session-env/
+shell-snapshots/
+stats-cache.json
+statsig/
+tasks/
 teams/
+todos/
+
+# Data files
+*.db
+*.jsonl
+.credentials.json
+
+# Backups
 backups/

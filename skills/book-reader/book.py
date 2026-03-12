@@ -628,14 +628,14 @@ def load_book(path: Path) -> Book:
 
 
 @click.group()
-def cli():
+def cli() -> None:
     """Book Reader - Read and search digital books."""
     pass
 
 
 @cli.command()
 @click.argument('file', type=click.Path(exists=True))
-def info(file: str):
+def info(file: str) -> None:
     """Show book metadata and info."""
     path = Path(file).expanduser().resolve()
     extractor = get_extractor(path)
@@ -654,7 +654,7 @@ def info(file: str):
 
 @cli.command()
 @click.argument('file', type=click.Path(exists=True))
-def toc(file: str):
+def toc(file: str) -> None:
     """Show table of contents."""
     book = load_book(Path(file))
 
@@ -672,7 +672,7 @@ def toc(file: str):
 @click.option('--page', '-p', type=int, help='Read specific page')
 @click.option('--start', '-s', type=int, default=0, help='Start position (chars)')
 @click.option('--length', '-l', type=int, default=5000, help='Length to read (chars)')
-def read(file: str, chapter: int | None, page: int | None, start: int, length: int):
+def read(file: str, chapter: int | None, page: int | None, start: int, length: int) -> None:
     """Read book content."""
     book = load_book(Path(file))
 
@@ -701,7 +701,7 @@ def read(file: str, chapter: int | None, page: int | None, start: int, length: i
 @click.argument('file', type=click.Path(exists=True))
 @click.argument('query')
 @click.option('--top', '-n', type=int, default=5, help='Number of results')
-def search(file: str, query: str, top: int):
+def search(file: str, query: str, top: int) -> None:
     """Search for text in the book."""
     book = load_book(Path(file))
     searcher = BookSearcher(book)
@@ -722,7 +722,7 @@ def search(file: str, query: str, top: int):
 
 @cli.command()
 @click.argument('file', type=click.Path(exists=True))
-def extract(file: str):
+def extract(file: str) -> None:
     """Extract full text from book."""
     book = load_book(Path(file))
 

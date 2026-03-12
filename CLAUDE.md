@@ -6,7 +6,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ```bash
 make install              # Install deps (uv sync), stow dotfiles, install TPM
-make validate             # Run all checks: formatting, linting, stylua, luacheck (also: make pre-commit)
+make validate             # Run all checks: formatting, linting, type checking, stylua, luacheck (also: make pre-commit)
+make typecheck            # Type check Python scripts (ty)
 make dotfiles             # Stow all dotfile packages into ~
 make tpm                  # Install tmux plugin manager + plugins
 make pre-commit-install   # Install pre-commit hooks (one-time)
@@ -14,7 +15,7 @@ make pre-commit-update    # Update pre-commit hooks to latest versions
 make clean                # Remove .venv
 ```
 
-CI runs three jobs on push/PR to master: `format-and-lint-check`, `nvim-lint`, `nvim-format`. Use `ci-monitor` skill after pushing.
+CI runs four jobs on push/PR to master: `format-and-lint-check`, `typecheck`, `nvim-lint`, `nvim-format`. Use `ci-monitor` skill after pushing.
 
 ## Interaction
 
