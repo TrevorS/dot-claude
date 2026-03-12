@@ -32,11 +32,17 @@ d = ["diff"]
 ds = ["diff", "--stat"]
 dd = ["diff", "--tool", "difft"]
 f = ["git", "fetch"]
+pull = ["git", "fetch", "--branch"]
 push = ["git", "push"]
 b = ["bookmark", "list"]
+tug = ["bookmark", "move", "--from", "heads(::@- & bookmarks())", "--to", "@-"]
 
 [remotes.origin]
 auto-track-bookmarks = "glob:*"
+
+[revsets]
+bookmark-advance-from = "bookmarks()"
+bookmark-advance-to = "@"
 
 [revset-aliases]
 'immutable_heads()' = 'builtin_immutable_heads() | remote_bookmarks()'

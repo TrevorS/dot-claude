@@ -5,26 +5,16 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Development Commands
 
 ```bash
-make install             # Install dependencies (uv) and stow dotfiles
-make validate            # Format and lint all files (also: make pre-commit)
-make dotfiles            # Stow all dotfile packages into ~
-make pre-commit-install  # Install pre-commit hooks (one-time)
-make clean               # Remove .venv
+make install              # Install deps (uv sync), stow dotfiles, install TPM
+make validate             # Run all checks: formatting, linting, stylua, luacheck (also: make pre-commit)
+make dotfiles             # Stow all dotfile packages into ~
+make tpm                  # Install tmux plugin manager + plugins
+make pre-commit-install   # Install pre-commit hooks (one-time)
+make pre-commit-update    # Update pre-commit hooks to latest versions
+make clean                # Remove .venv
 ```
 
-Validation runs pre-commit hooks: trailing-whitespace, end-of-file-fixer, mixed-line-ending,
-check-yaml, check-json, check-merge-conflict, check-added-large-files, prettier, markdownlint.
-
-### Neovim Config
-
-```bash
-make -C dotfiles/nvim/.config/nvim lint    # luacheck
-stylua --check dotfiles/nvim/.config/nvim/init.lua  # format check
-```
-
-### CI (GitHub Actions)
-
-Three jobs run on push/PR to master: `format-and-lint-check` (pre-commit), `nvim-lint` (luacheck), `nvim-format` (stylua). Use `ci-monitor` skill after pushing to watch results.
+CI runs three jobs on push/PR to master: `format-and-lint-check`, `nvim-lint`, `nvim-format`. Use `ci-monitor` skill after pushing.
 
 ## Interaction
 
