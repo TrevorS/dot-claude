@@ -1,5 +1,5 @@
 {
-  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "$schema": "https:\/\/json.schemastore.org\/claude-code-settings.json",
   "alwaysThinkingEnabled": true,
   "enabledPlugins": {
     "clangd-lsp@claude-plugins-official": true,
@@ -26,7 +26,7 @@
       {
         "hooks": [
           {
-            "command": "~/.claude/hooks/claude-notify.sh",
+            "command": "~\/.claude\/hooks\/claude-notify.sh",
             "type": "command"
           }
         ],
@@ -37,7 +37,7 @@
       {
         "hooks": [
           {
-            "command": "~/.claude/hooks/journal-reminder.sh",
+            "command": "~\/.claude\/hooks\/journal-reminder.sh",
             "type": "command"
           }
         ],
@@ -48,7 +48,7 @@
       {
         "hooks": [
           {
-            "command": "~/.claude/hooks/branch_protection.sh",
+            "command": "~\/.claude\/hooks\/branch_protection.sh",
             "type": "command"
           }
         ],
@@ -59,7 +59,7 @@
       {
         "hooks": [
           {
-            "command": "~/.claude/hooks/stop.sh",
+            "command": "~\/.claude\/hooks\/stop.sh",
             "type": "command"
           }
         ],
@@ -68,7 +68,7 @@
       {
         "hooks": [
           {
-            "command": "~/.claude/hooks/claude-notify.sh",
+            "command": "~\/.claude\/hooks\/claude-notify.sh",
             "type": "command"
           }
         ],
@@ -79,7 +79,7 @@
       {
         "hooks": [
           {
-            "command": "~/.claude/hooks/user-prompt-submit/project-context.sh",
+            "command": "~\/.claude\/hooks\/user-prompt-submit\/project-context.sh",
             "type": "command"
           }
         ],
@@ -129,11 +129,11 @@
       "Bash(gsed:*)",
       "Bash(osascript:*)",
       "Bash(tailscale:*)",
-      "Read(~/.local/**)",
-      "Read(~/.config/**)",
-      "Read(~/Library/**)",
-      "Read(/usr/local/**)",
-      "Read(/opt/**)",
+      "Read(~\/.local\/**)",
+      "Read(~\/.config\/**)",
+      "Read(~\/Library\/**)",
+      "Read(\/usr\/local\/**)",
+      "Read(\/opt\/**)",
       "WebFetch(domain:github.com)",
       "WebFetch(domain:docs.github.com)",
       "WebFetch(domain:gist.github.com)",
@@ -156,21 +156,21 @@
     ],
     "defaultMode": "default",
     "deny": [
-      "Read(./.env)",
-      "Read(./.env.*)",
-      "Read(./.aws/credentials)",
-      "Read(./.aws/config)",
-      "Read(./.ssh/**)",
-      "Read(./.gitconfig)",
-      "Read(./.netrc)",
-      "Read(./id_rsa*)",
-      "Read(./id_ed25519*)",
-      "Read(./*.pem)"
+      "Read(.\/.env)",
+      "Read(.\/.env.*)",
+      "Read(.\/.aws\/credentials)",
+      "Read(.\/.aws\/config)",
+      "Read(.\/.ssh\/**)",
+      "Read(.\/.gitconfig)",
+      "Read(.\/.netrc)",
+      "Read(.\/id_rsa*)",
+      "Read(.\/id_ed25519*)",
+      "Read(.\/*.pem)"
     ]
   },
   "skipDangerousModePermissionPrompt": true,
   "statusLine": {
-    "command": "~/.claude/hooks/status.sh",
+    "command": "~\/.claude\/hooks\/status.sh",
     "type": "command"
   }
 }
