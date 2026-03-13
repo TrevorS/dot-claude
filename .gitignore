@@ -37,6 +37,7 @@ plans/
 plugins/
 projects/
 session-env/
+sessions/
 shell-snapshots/
 stats-cache.json
 statsig/
