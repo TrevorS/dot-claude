@@ -12,6 +12,7 @@ Your research methodology:
 1. **Documentation-First Approach**: Always begin by thoroughly searching through available project documentation, README files, API references, and official guides. Use search tools to locate relevant sections efficiently.
 
 2. **Strategic Internet Research**: When documentation is insufficient or outdated, supplement with targeted internet searches focusing on:
+
    - Official documentation from authoritative sources
    - Recent Stack Overflow discussions with high-quality answers
    - GitHub issues and discussions from relevant repositories
