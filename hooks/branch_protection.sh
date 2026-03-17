@@ -30,7 +30,14 @@ fi
 
 # Block if on protected branch
 if [[ "$current_branch" =~ ^(main|master|dev)$ ]]; then
-  echo "Blocked: committing directly to protected branch '$current_branch'. Use a feature branch instead." >&2
+  cat >&2 <<MSG
+Blocked: committing directly to protected branch '$current_branch'.
+
+Options:
+  1. Use a feature branch instead (recommended)
+  2. Ask the user if direct commits are OK for this project. If yes, add this line to ./CLAUDE.md:
+     direct-commits-allowed: true
+MSG
   exit 2
 fi
 
