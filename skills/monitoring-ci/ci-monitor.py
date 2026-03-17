@@ -31,10 +31,14 @@ def repo_name() -> str:
 
 
 def current_branch() -> str:
-    r = run("jj log -r @ --no-graph -T 'bookmarks'")
-    if r.returncode == 0 and r.stdout.strip():
-        raw = r.stdout.strip().split()[0]
-        return raw.split("@")[0].rstrip("*")
+    # In jj, check @ first, then @- (bookmark is usually on parent after push)
+    for rev in ("@", "@-"):
+        r = run(f"jj log -r '{rev}' --no-graph -T 'bookmarks'")
+        if r.returncode == 0 and r.stdout.strip():
+            raw = r.stdout.strip().split()[0]
+            branch = raw.split("@")[0].rstrip("*")
+            if branch:
+                return branch
     r = run("git branch --show-current")
     return r.stdout.strip()
 

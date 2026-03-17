@@ -19,10 +19,13 @@ if [ -f "./CLAUDE.md" ] && grep -qi "direct-commits-allowed: true" ./CLAUDE.md 2
   exit 0
 fi
 
-# Get current branch (try jj first, then git)
+# Get current branch (try jj first — check @ then @-, then fall back to git)
 current_branch=""
 if command -v jj &>/dev/null && jj root &>/dev/null; then
   current_branch=$(jj log -r @ --no-graph -T 'bookmarks' 2>/dev/null | tr ',' '\n' | head -1 | xargs)
+  if [ -z "$current_branch" ]; then
+    current_branch=$(jj log -r '@-' --no-graph -T 'bookmarks' 2>/dev/null | tr ',' '\n' | head -1 | xargs)
+  fi
 fi
 if [ -z "$current_branch" ]; then
   current_branch=$(git branch --show-current 2>/dev/null || echo "")
