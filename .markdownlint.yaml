@@ -16,8 +16,14 @@ MD014: false
 # Allow trailing punctuation in headings (for FAQ style)
 MD026: false
 
-# Allow fenced code blocks without language (prettier doesn't add them)
-MD040: false
+# Defer whitespace/formatting rules to prettier (prevents conflicts)
+MD009: false # trailing spaces
+MD010: false # hard tabs
+MD030: false # list marker spacing
+MD032: false # blanks around lists
+MD040: false # fenced code block language
+MD049: false # emphasis style
+MD050: false # strong style
 
 # Allow first line to not be a top-level heading (for command templates)
 MD041: false
