@@ -16,5 +16,8 @@ MD014: false
 # Allow trailing punctuation in headings (for FAQ style)
 MD026: false
 
+# Allow fenced code blocks without language (prettier doesn't add them)
+MD040: false
+
 # Allow first line to not be a top-level heading (for command templates)
 MD041: false
