@@ -8,7 +8,7 @@ argument-hint: "<mode> [file-or-args]"
 
 Multi-mode skill for the full project planning pipeline:
 
-```
+```text
 spec -> requirements -> tasks -> issues -> team
 ```
 
