@@ -36,7 +36,20 @@ Auto-detect project type and run: format -> lint -> typecheck. Stop on failure.
 
 ### 5. Craft Commit Message
 
-Analyze diff and recent commit history for context. Focus on the "why" not the "what". Keep summary under 50 chars, use action words.
+Use **conventional commits** format: `type(scope): description`
+
+Valid types: `feat`, `fix`, `refactor`, `docs`, `style`, `perf`, `test`, `build`, `ci`, `chore`.
+
+Choose type from the diff:
+
+- New functionality → `feat`
+- Bug fix → `fix`
+- Code restructuring without behavior change → `refactor`
+- CI/CD config → `ci`
+- Build system, deps → `build`
+- Documentation → `docs`
+
+Scope is optional but encouraged for multi-module repos. Keep subject under 50 chars, use imperative mood ("add" not "added"). Focus on the "why" not the "what".
 
 ### 6. Commit
 

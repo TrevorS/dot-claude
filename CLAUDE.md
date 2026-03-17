@@ -1,5 +1,7 @@
 # CLAUDE.md
 
+direct-commits-allowed: true
+
 ## Development Commands
 
 ```bash

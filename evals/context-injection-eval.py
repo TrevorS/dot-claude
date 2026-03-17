@@ -34,11 +34,11 @@ from pathlib import Path
 EVAL_CASES = [
     # === using-jj: should load in jj-colocated repos ===
     {
-        "name": "jj-colocated-generic-prompt",
-        "query": "what files have I changed?",
+        "name": "jj-colocated-absorb-conflicts",
+        "query": "I have conflicts from a rebase, help me resolve them and then absorb my fixups into the right commits",
         "expected_skill": "using-jj",
         "repo_type": "jj-colocated",
-        "description": "Generic VCS query in jj-colocated repo should auto-load using-jj",
+        "description": "Complex jj conflict resolution + absorb in jj-colocated repo should auto-load using-jj",
     },
     {
         "name": "jj-colocated-describe-change",
@@ -48,19 +48,19 @@ EVAL_CASES = [
         "description": "jj-specific action in jj-colocated repo",
     },
     {
-        "name": "jj-colocated-non-vcs-prompt",
-        "query": "read the README.md file and summarize it",
+        "name": "jj-colocated-rebase-stack",
+        "query": "rebase my current stack of changes onto main and squash the fixup commits",
         "expected_skill": "using-jj",
         "repo_type": "jj-colocated",
-        "description": "Even non-VCS prompts should auto-load using-jj in jj repos (it's always-on)",
+        "description": "Complex jj operation in jj-colocated repo should auto-load using-jj",
     },
     # === using-git: should load in git-only repos ===
     {
-        "name": "git-only-generic-prompt",
-        "query": "what files have I changed?",
+        "name": "git-only-interactive-rebase",
+        "query": "I need to squash the last 5 commits on this feature branch and reword them before opening a PR",
         "expected_skill": "using-git",
         "repo_type": "git-only",
-        "description": "Generic VCS query in git-only repo should auto-load using-git",
+        "description": "Complex git rebase in git-only repo should auto-load using-git",
     },
     {
         "name": "git-only-commit-prompt",
