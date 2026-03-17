@@ -1,0 +1,82 @@
+[
+  {
+    "query": "I want to create a new skill for working with terraform, help me write the SKILL.md",
+    "should_trigger": true
+  },
+  {
+    "query": "audit my claude code setup and tell me if there are any issues with my skill descriptions",
+    "should_trigger": true
+  },
+  {
+    "query": "the hook in ~/.claude/hooks/pre-commit.sh isn't firing, can you help me debug it?",
+    "should_trigger": true
+  },
+  {
+    "query": "I need to add a new rule that applies only to .go files in my project, what's the best approach?",
+    "should_trigger": true
+  },
+  {
+    "query": "my CLAUDE.md is getting really long, should I split some of it into rules or skills?",
+    "should_trigger": true
+  },
+  {
+    "query": "help me improve the description on my code-review skill so it triggers more reliably",
+    "should_trigger": true
+  },
+  {
+    "query": "I want to add a PostToolUse hook that logs every file edit to a journal, how do I set that up?",
+    "should_trigger": true
+  },
+  {
+    "query": "check if any of my skills have overlapping trigger words that might cause conflicts",
+    "should_trigger": true
+  },
+  {
+    "query": "I'm building a new skill for database migrations, should I use context: fork or keep it inline?",
+    "should_trigger": true
+  },
+  {
+    "query": "review my settings.json and tell me if the hook configuration looks correct",
+    "should_trigger": true
+  },
+  {
+    "query": "help me refactor this React component to use hooks instead of class-based state",
+    "should_trigger": false
+  },
+  {
+    "query": "I need to set up a new Python project with fastapi, create the directory structure for me",
+    "should_trigger": false
+  },
+  {
+    "query": "can you review this pull request and check for any security vulnerabilities?",
+    "should_trigger": false
+  },
+  {
+    "query": "write a bash script that backs up my postgres database to S3 every night",
+    "should_trigger": false
+  },
+  {
+    "query": "the TypeScript compiler is throwing a weird error about circular type references, help me fix it",
+    "should_trigger": false
+  },
+  {
+    "query": "help me write unit tests for the payment processing module, aim for 90% coverage",
+    "should_trigger": false
+  },
+  {
+    "query": "I want to configure neovim to use LSP for Go, can you help me set up gopls?",
+    "should_trigger": false
+  },
+  {
+    "query": "optimize this SQL query that's doing a full table scan on the orders table",
+    "should_trigger": false
+  },
+  {
+    "query": "help me set up markdown linting for my documentation site using markdownlint",
+    "should_trigger": false
+  },
+  {
+    "query": "I need to write a CLAUDE.md for my new project, what should I put in it?",
+    "should_trigger": true
+  }
+]

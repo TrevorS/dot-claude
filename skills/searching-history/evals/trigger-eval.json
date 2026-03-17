@@ -1,0 +1,82 @@
+[
+  {
+    "query": "have I set up a Docker compose file for postgres before? I feel like I did this a few months ago",
+    "should_trigger": true
+  },
+  {
+    "query": "how did I fix that weird CORS error last time? I remember spending a whole session on it",
+    "should_trigger": true
+  },
+  {
+    "query": "what command did I run to deploy to staging? I know we figured it out in a previous conversation",
+    "should_trigger": true
+  },
+  {
+    "query": "search my past sessions for anything related to configuring nginx reverse proxy",
+    "should_trigger": true
+  },
+  {
+    "query": "did I ever write a migration script for converting the user table? check my history",
+    "should_trigger": true
+  },
+  {
+    "query": "I solved this exact same typescript generics issue before, can you find what I did?",
+    "should_trigger": true
+  },
+  {
+    "query": "last week we worked on the auth middleware, find that session so I can pick up where we left off",
+    "should_trigger": true
+  },
+  {
+    "query": "remind me how I configured the CI pipeline for the rust project, I know we discussed it",
+    "should_trigger": true
+  },
+  {
+    "query": "check if there's a past session where I set up tailwind with the custom color palette",
+    "should_trigger": true
+  },
+  {
+    "query": "what approach did we take for the database connection pooling? I want to do the same thing here",
+    "should_trigger": true
+  },
+  {
+    "query": "search the web for best practices for kubernetes horizontal pod autoscaling",
+    "should_trigger": false
+  },
+  {
+    "query": "look up the MDN docs for the Intersection Observer API, I need the callback signature",
+    "should_trigger": false
+  },
+  {
+    "query": "search github for open source implementations of a bloom filter in rust",
+    "should_trigger": false
+  },
+  {
+    "query": "find all TODO comments in the codebase that mention 'refactor'",
+    "should_trigger": false
+  },
+  {
+    "query": "search this repo for where the database connection string is configured",
+    "should_trigger": false
+  },
+  {
+    "query": "can you look through the git log and find when the login endpoint was last modified?",
+    "should_trigger": false
+  },
+  {
+    "query": "search npm for a good library to handle PDF generation in node",
+    "should_trigger": false
+  },
+  {
+    "query": "grep the project for any usage of the deprecated createStore API",
+    "should_trigger": false
+  },
+  {
+    "query": "find the file where the User model is defined, I think it's somewhere in src/models/",
+    "should_trigger": false
+  },
+  {
+    "query": "what does the error 'ECONNREFUSED 127.0.0.1:5432' mean? how do I fix it?",
+    "should_trigger": false
+  }
+]

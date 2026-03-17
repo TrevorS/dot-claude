@@ -1,0 +1,78 @@
+[
+  {
+    "query": "I just pushed to the feature branch, can you keep an eye on the CI run and let me know if it passes?",
+    "should_trigger": true
+  },
+  {
+    "query": "watch the github actions pipeline for my latest push, tell me if any jobs fail",
+    "should_trigger": true
+  },
+  {
+    "query": "check the CI status on my PR, I pushed a fix for the failing test about 5 minutes ago",
+    "should_trigger": true
+  },
+  {
+    "query": "the build is running on github actions right now, monitor it and show me the failed logs if anything breaks",
+    "should_trigger": true
+  },
+  {
+    "query": "did the CI pass on the last push? I see it's still running in the github actions tab",
+    "should_trigger": true
+  },
+  {
+    "query": "I pushed the hotfix, please watch the pipeline and tell me when it's green so I can merge",
+    "should_trigger": true
+  },
+  {
+    "query": "can you check what happened with the CI run on the deploy branch? it's been running for 20 minutes",
+    "should_trigger": true
+  },
+  {
+    "query": "monitor the github actions workflow after I push this, I want to know immediately if the linter fails",
+    "should_trigger": true
+  },
+  {
+    "query": "push this to origin and then watch CI, let me know the results",
+    "should_trigger": true
+  },
+  {
+    "query": "what's in our CI configuration? I want to understand what jobs run and in what order",
+    "should_trigger": false
+  },
+  {
+    "query": "help me write a github actions workflow that deploys to AWS on merge to main",
+    "should_trigger": false
+  },
+  {
+    "query": "the CI is failing because of a flaky test, can you look at the test code and figure out why?",
+    "should_trigger": false
+  },
+  {
+    "query": "I need to add a new job to our github actions that runs the integration tests in a docker container",
+    "should_trigger": false
+  },
+  {
+    "query": "can you set up dependabot for this repo to keep our npm dependencies updated?",
+    "should_trigger": false
+  },
+  {
+    "query": "our CI takes 45 minutes, help me optimize the github actions workflow to run faster",
+    "should_trigger": false
+  },
+  {
+    "query": "what's the syntax for github actions matrix strategy? I want to test on multiple node versions",
+    "should_trigger": false
+  },
+  {
+    "query": "help me debug why the docker build step in our CI keeps running out of memory",
+    "should_trigger": false
+  },
+  {
+    "query": "I want to add code coverage reporting to our CI pipeline, what tool should I use?",
+    "should_trigger": false
+  },
+  {
+    "query": "can you look at .github/workflows/ci.yml and tell me if there are any security issues?",
+    "should_trigger": false
+  }
+]

@@ -1,0 +1,82 @@
+[
+  {
+    "query": "I need to rebase my current change onto the latest main, can you help me do that with jj?",
+    "should_trigger": true
+  },
+  {
+    "query": "squash the last 3 changes in my stack into one, keep the description from the top one",
+    "should_trigger": true
+  },
+  {
+    "query": "how do I split a commit that has both frontend and backend changes? I'm using jujutsu",
+    "should_trigger": true
+  },
+  {
+    "query": "I accidentally described the wrong change, can you undo my last jj operation?",
+    "should_trigger": true
+  },
+  {
+    "query": "push my current bookmark to origin and set up tracking, I think the command is jj git push but I'm not sure about the flags",
+    "should_trigger": true
+  },
+  {
+    "query": "show me the diff of my working copy against its parent, I want to see what I've changed today",
+    "should_trigger": true
+  },
+  {
+    "query": "I have a conflict in src/main.rs after rebasing, walk me through resolving it in jj",
+    "should_trigger": true
+  },
+  {
+    "query": "create a new change on top of main with the description 'feat: add user auth' and move my current work into it",
+    "should_trigger": true
+  },
+  {
+    "query": "my coworker force-pushed and now my local jj repo is out of sync, how do I recover?",
+    "should_trigger": true
+  },
+  {
+    "query": "I want to absorb my fixup changes into the right commits in my stack automatically",
+    "should_trigger": true
+  },
+  {
+    "query": "set up a new git repository for my project and push it to github, I've never done this before",
+    "should_trigger": false
+  },
+  {
+    "query": "what's the git command to cherry-pick a commit from another branch? I need to backport a fix",
+    "should_trigger": false
+  },
+  {
+    "query": "can you help me write a pre-commit hook that runs eslint before each git commit?",
+    "should_trigger": false
+  },
+  {
+    "query": "I need to do an interactive rebase in git to clean up my feature branch before merging",
+    "should_trigger": false
+  },
+  {
+    "query": "help me resolve this merge conflict in package-lock.json, git is showing these weird markers",
+    "should_trigger": false
+  },
+  {
+    "query": "configure my .gitignore to exclude node_modules, .env files, and the build directory",
+    "should_trigger": false
+  },
+  {
+    "query": "how do I set up git-lfs for tracking large binary assets in my game project?",
+    "should_trigger": false
+  },
+  {
+    "query": "I want to version control my dotfiles, should I use a bare git repo or GNU stow?",
+    "should_trigger": false
+  },
+  {
+    "query": "what's the difference between git merge and git rebase? which one should I use for feature branches?",
+    "should_trigger": false
+  },
+  {
+    "query": "help me write a GitHub Actions workflow that runs tests on every push to main",
+    "should_trigger": false
+  }
+]

@@ -1,12 +1,14 @@
 ---
 name: searching-history
 description: >-
-  Search Claude Code conversation history and tool logs to find past solutions,
-  recall commands, and discover related work. Use when the user mentions past
-  sessions, asks "have I done this before", "how did I", "what command did I
-  run", or needs to find previous implementations, error resolutions, debugging
-  approaches, or configuration changes. Also use proactively before proposing
-  solutions — check if a similar problem was already solved.
+  Search past Claude Code conversation history and tool logs to recall previous
+  solutions, commands, and approaches. Use when the user references a prior
+  session, says "have I done this before", "how did I fix", "what command did I
+  run", "remind me how", "last time we", "find that session", or wants to look
+  up previous implementations, error resolutions, or configuration changes from
+  earlier conversations. Do NOT use for searching the current codebase, the web,
+  npm, GitHub repos, git log, or documentation — only for recalling past Claude
+  Code session history.
 allowed-tools: Bash
 argument-hint: "<search-query>"
 ---

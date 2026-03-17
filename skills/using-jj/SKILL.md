@@ -1,6 +1,6 @@
 ---
 name: using-jj
-description: Jujutsu (jj) version control, load skill when hook output shows vcs=jj-colocated or vcs=jj in the system-reminder.
+description: Jujutsu (jj) version control workflows including rebasing, squashing, splitting, absorbing, and resolving conflicts. Use when working with jj commands, managing change stacks, pushing bookmarks, undoing operations via oplog, or doing any version control in a jj-colocated repository. Also auto-loads when hook output shows vcs=jj-colocated or vcs=jj.
 ---
 
 # jj Workflow
