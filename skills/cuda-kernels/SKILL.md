@@ -145,7 +145,7 @@ Run with: `cargo test --lib -- fused_silu_mul`
 
 ---
 
-# Optimization & Profiling
+## Optimization & Profiling
 
 **One change per cycle:** baseline → profile → classify → optimize → verify → compare → loop. Multiple simultaneous changes make it impossible to attribute improvement. Revert on regression.
 
