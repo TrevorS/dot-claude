@@ -5,15 +5,33 @@ set -euo pipefail
 input=$(cat)
 command=$(echo "$input" | jq -r '.tool_input.command // empty' 2>/dev/null || echo "")
 
-# Only check git commit commands
-[[ "$command" =~ ^git[[:space:]]+(commit|add) ]] || { echo "$input"; exit 0; }
+# Only check git/jj commit-related commands
+if [[ "$command" =~ ^git[[:space:]]+(commit|add) ]] || [[ "$command" =~ ^jj[[:space:]]+(describe|new|commit) ]]; then
+  : # fall through to protection check
+else
+  echo "$input"
+  exit 0
+fi
 
-# Get current branch
-current_branch=$(git branch --show-current 2>/dev/null || echo "")
+# Check for project-level override
+if [ -f "./CLAUDE.md" ] && grep -qi "direct-commits-allowed: true" ./CLAUDE.md 2>/dev/null; then
+  echo "$input"
+  exit 0
+fi
 
-# Warn if on protected branch
+# Get current branch (try jj first, then git)
+current_branch=""
+if command -v jj &>/dev/null && jj root &>/dev/null; then
+  current_branch=$(jj log -r @ --no-graph -T 'bookmarks' 2>/dev/null | tr ',' '\n' | head -1 | xargs)
+fi
+if [ -z "$current_branch" ]; then
+  current_branch=$(git branch --show-current 2>/dev/null || echo "")
+fi
+
+# Block if on protected branch
 if [[ "$current_branch" =~ ^(main|master|dev)$ ]]; then
-    echo "⚠️  On protected branch '$current_branch' - consider using a feature branch" >&2
+  echo "Blocked: committing directly to protected branch '$current_branch'. Use a feature branch instead." >&2
+  exit 2
 fi
 
 echo "$input"

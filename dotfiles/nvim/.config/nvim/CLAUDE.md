@@ -15,19 +15,16 @@ This is a **single-file Neovim 0.11.4 configuration** (`init.lua`) with zero ext
 ### Plugin Stack
 
 1. **mini.nvim** (18+ modules) - Core editing and workflow tools
-
    - Text editing: basics, comment, surround, pairs, ai, snippets
    - UI: icons, indentscope, statusline, notify, trailspace, tabline
    - Navigation: pick (fuzzy finder), git, bracketed, move, extra, visits
    - Completion: mini.completion with Tab-to-confirm workflow
 
 2. **oil.nvim** - File explorer (replaces mini.files)
-
    - Edit directories like buffers
    - Press `-` to open parent, `-` again to navigate up
 
 3. **nvim-treesitter** - Syntax highlighting with explicit parsers
-
    - Installed: lua, rust, typescript, javascript, json, toml, markdown
    - No auto-install to keep it predictable
 

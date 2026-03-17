@@ -32,7 +32,7 @@ tpm:
 	@"$(TPM_DIR)/bin/install_plugins"
 
 typecheck:
-	@uv run ty check skills/book-reader/book.py skills/ci-monitor/ci-monitor.py skills/whisper-test/transcribe.py
+	@uv run ty check skills/reading-books/book.py skills/monitoring-ci/ci-monitor.py skills/testing-whisper/transcribe.py
 
 validate:
 	@uv run pre-commit run --all-files

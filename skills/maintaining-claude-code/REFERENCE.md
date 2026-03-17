@@ -2,6 +2,102 @@
 
 Detailed examples and troubleshooting for Claude Code configuration.
 
+## Creating Skills
+
+### Design Process
+
+Before building, clarify:
+
+- **What**: What specific problem does this skill solve?
+- **When**: What triggers would tell Claude to use it? (3-5 concrete phrases)
+- **Scope**: Single capability or multiple related features?
+- **Location**: Personal (`~/.claude/skills/`) or project (`.claude/skills/`)?
+
+### Description Formula
+
+`<What it does>. Use when <trigger1>, <trigger2>, or <trigger3>.`
+
+- Name max 64 chars, Description max 1024 chars
+- Action verbs: extract, analyze, generate, review, validate, debug, migrate
+- Include file types, domain terms, and concrete trigger phrases
+
+### Directory Structure
+
+Minimal (single task):
+
+```text
+my-skill/
+  SKILL.md
+```
+
+With reference docs:
+
+```text
+my-skill/
+  SKILL.md              (main instructions - keep <200 lines)
+  REFERENCE.md          (detailed patterns, examples)
+```
+
+### SKILL.md Template
+
+```markdown
+---
+name: your-skill-name
+description: What it does. Use when trigger1, trigger2, or trigger3.
+---
+
+# Skill Name
+
+## Quick Start
+
+[One-paragraph overview]
+
+## Instructions
+
+1. [Core steps]
+
+## Examples
+
+[2-3 concrete examples]
+
+## Best Practices
+
+- [Key guidelines]
+```
+
+### Frontmatter Options
+
+- `name:` — display name (max 64 chars)
+- `description:` — discovery text with triggers (max 1024 chars)
+- `context: fork` — runs in isolated subprocess (use for heavy/destructive workflows)
+- `argument-hint:` — hint for skill arguments
+- `model:` — model override (e.g., `claude-sonnet-4-5`)
+- `allowed-tools:` — restrict available tools
+
+### Validation Checklist
+
+- [ ] YAML frontmatter valid (`---` on line 1 and before content)
+- [ ] Description includes 3-5 trigger phrases covering "what" + "when"
+- [ ] Description could NOT describe a different skill
+- [ ] Instructions are step-by-step and clear
+- [ ] Examples are concrete, not abstract
+- [ ] No nested references (only one level deep: SKILL.md -> REFERENCE.md)
+
+### Common Patterns
+
+**Single-capability skill**: One specific task (commit messages, PDF extraction)
+
+**Multi-mode skill**: Related capabilities under one umbrella (e.g., SwiftUI: architecture, review, debugging). Keep main file 150-200 lines, use REFERENCE.md for detailed patterns.
+
+### Anti-Patterns
+
+- Overloaded: "Does commits, reviews code, analyzes data, generates docs..." -> Split
+- Vague triggers: "Helps with stuff" -> Add 3-5 specific domain terms
+- Nested references: SKILL.md -> REF.md -> DETAILS.md -> Keep flat
+- Marketing language: "Amazing tool for awesome results!" -> Be specific
+
+---
+
 ## Entity Type Comparison
 
 ### CLAUDE.md

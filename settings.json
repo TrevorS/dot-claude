@@ -59,16 +59,29 @@
       {
         "hooks": [
           {
-            "command": "~\/.claude\/hooks\/stop.sh",
+            "command": "~\/.claude\/hooks\/claude-notify.sh",
             "type": "command"
           }
         ],
         "matcher": ""
-      },
+      }
+    ],
+    "PostCompact": [
       {
         "hooks": [
           {
-            "command": "~\/.claude\/hooks\/claude-notify.sh",
+            "command": "~\/.claude\/hooks\/post-compact.sh",
+            "type": "command"
+          }
+        ],
+        "matcher": ""
+      }
+    ],
+    "PostToolUseFailure": [
+      {
+        "hooks": [
+          {
+            "command": "~\/.claude\/hooks\/post-tool-failure.sh",
             "type": "command"
           }
         ],

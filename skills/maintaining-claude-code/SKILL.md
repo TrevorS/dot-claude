@@ -1,6 +1,6 @@
 ---
 name: maintaining-claude-code
-description: Validate and improve Claude Code configurations (CLAUDE.md, skills, commands, hooks). Auto-load when working in ~/.claude/ on skills, rules, hooks, or commands. Use when auditing config quality, checking skill discoverability, or deciding which entity type to use.
+description: Validate and improve Claude Code configurations (CLAUDE.md, skills, rules, hooks). Auto-load when working in ~/.claude/ on skills, rules, hooks, or settings. Use when auditing config quality, checking skill discoverability, building skills, creating new skills, or deciding which entity type to use.
 ---
 
 # Maintaining Claude Code
@@ -37,8 +37,8 @@ Guidelines:
 Decision tree:
 
 - Needs to run automatically before/after actions? -> **Hook**
-- User explicitly triggers with /command? -> **Command**
 - Claude should auto-detect and use? -> **Skill**
+- Needs isolated context for heavy work? -> **Skill with `context: fork`**
 - Always-on behavioral guidance? -> **CLAUDE.md**
 - Path-specific rules? -> **.claude/rules/**
 
@@ -46,15 +46,14 @@ Decision tree:
 
 ### Entity Type Decision Matrix
 
-| Need                       | Best Entity    | Alternative                    |
-| -------------------------- | -------------- | ------------------------------ |
-| Global behavior guidelines | CLAUDE.md      | Rules if >150 lines            |
-| Path-specific rules        | .claude/rules/ | CLAUDE.md if universal         |
-| User-invoked workflows     | Commands       | Skill if auto-detection wanted |
-| Auto-detected capabilities | Skills         | Command if user should control |
-| Pre/post action validation | Hooks          | Nothing else does this         |
-| External API integration   | MCP Servers    | Bash calls if simple           |
-| Task-specific personas     | Agents         | Skills for simpler cases       |
+| Need                       | Best Entity            | Alternative            |
+| -------------------------- | ---------------------- | ---------------------- |
+| Global behavior guidelines | CLAUDE.md              | Rules if >150 lines    |
+| Path-specific rules        | .claude/rules/         | CLAUDE.md if universal |
+| Auto-detected capabilities | Skills                 | Rules if always-on     |
+| Heavy isolated workflows   | Skills (context: fork) | Regular skill          |
+| Pre/post action validation | Hooks                  | Nothing else does this |
+| External API integration   | MCP Servers            | Bash calls if simple   |
 
 ### Skill Description Formula
 
