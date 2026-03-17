@@ -1,4 +1,6 @@
 #!/bin/bash
+# Hook: statusLine — Render starship prompt + context remaining % for the status bar.
+# Falls back to directory + git branch if starship is unavailable.
 
 # Read JSON input from stdin and extract workspace directory + Claude Code metrics
 input=$(cat)

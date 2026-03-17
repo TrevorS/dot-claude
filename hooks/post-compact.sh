@@ -1,4 +1,5 @@
 #!/bin/bash
+# Hook: PostCompact — Log context compaction events to the journal.
 
 set -euo pipefail
 

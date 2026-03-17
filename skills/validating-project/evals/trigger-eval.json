@@ -1,0 +1,26 @@
+{
+  "positive": [
+    "validate the project",
+    "run all the checks",
+    "check code quality before I commit",
+    "make sure the build passes",
+    "run formatting, linting, and tests",
+    "verify everything is green",
+    "run the full validation pipeline",
+    "check if my changes pass all linters and type checks",
+    "validate before pushing",
+    "run pre-commit checks on the whole project"
+  ],
+  "negative": [
+    "run just the unit tests",
+    "fix the linting error on line 42",
+    "set up prettier for this project",
+    "add eslint to the project",
+    "configure the CI pipeline",
+    "write a test for this function",
+    "what does this test failure mean",
+    "install the project dependencies",
+    "build the Docker image",
+    "deploy to staging"
+  ]
+}

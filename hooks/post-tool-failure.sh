@@ -1,4 +1,5 @@
 #!/bin/bash
+# Hook: PostToolUseFailure — Log tool failures to the journal for debugging.
 
 set -euo pipefail
 

@@ -1,0 +1,26 @@
+{
+  "positive": [
+    "implement issue #42",
+    "work on ticket TEAM-123",
+    "start building the feature from this GitHub issue",
+    "pick up issue #15 and create a PR for it",
+    "I want to implement this Linear ticket end to end",
+    "take this issue and do TDD on it",
+    "create a feature branch for issue #88 and implement it",
+    "build what's described in this ticket",
+    "work through the requirements in issue #200",
+    "implement the acceptance criteria from this issue"
+  ],
+  "negative": [
+    "create a new GitHub issue for this bug",
+    "file an issue about the memory leak",
+    "list all open issues assigned to me",
+    "triage the bug reports",
+    "write a spec for the new feature",
+    "review this pull request",
+    "check the CI status",
+    "plan out the architecture for this project",
+    "close issue #42 as won't fix",
+    "add a comment to this issue"
+  ]
+}

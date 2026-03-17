@@ -1,4 +1,6 @@
 #!/bin/bash
+# Hook: PreToolUse (Bash) — Block git/jj commits to protected branches (main, master, dev).
+# Allows override via "direct-commits-allowed: true" in ./CLAUDE.md.
 
 set -euo pipefail
 

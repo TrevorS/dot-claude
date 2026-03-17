@@ -1,15 +1,15 @@
 ---
-name: developing-cuda-kernels
-description: Develop and test custom CUDA kernels in the candle framework for qwen3-tts-rs. Use when writing CUDA kernels, debugging GPU code, or integrating kernels with candle.
+name: cuda-kernels
+description: Develop, test, and optimize custom CUDA kernels in the candle framework for qwen3-tts-rs. Use when writing CUDA kernels, debugging GPU code, integrating kernels with candle, optimizing throughput, profiling with nsys/ncu, analyzing roofline, or investigating register pressure and occupancy.
 ---
 
-# cuda-kernel-dev
+# CUDA Kernel Development & Optimization
 
-Skill for developing and testing custom CUDA kernels in the candle framework for `qwen3-tts-rs`.
+Skill for developing and optimizing custom CUDA kernels in the candle framework for `qwen3-tts-rs`.
 
 ## Trigger Words
 
-cuda kernel, custom kernel, fused op, write kernel, ptx, kernel launch, CustomOp
+cuda kernel, custom kernel, fused op, write kernel, ptx, kernel launch, CustomOp, nsys, ncu, profiling, roofline, occupancy, register pressure
 
 ## Candle Custom Op Patterns
 
@@ -133,23 +133,6 @@ fn test_fused_vs_sequential() {
 
 Run with: `cargo test --lib -- fused_silu_mul`
 
-## Benchmarking
-
-```bash
-# Tight-loop kernel test
-make test-kernel NAME=fused_rmsnorm
-
-# E2E with chrome trace
-make profile-chrome MODEL_DIR=test_data/models/1.7B-CustomVoice
-
-# Count kernel launches
-make count-kernels
-
-# Full e2e bench
-cargo run --release --features cuda,cli --bin e2e_bench -- \
-  --model-dir test_data/models/1.7B-CustomVoice --iterations 3 --warmup 2
-```
-
 ## Project-Specific Notes
 
 - Compute dtype: BF16 on CUDA, F32 on CPU
@@ -159,3 +142,11 @@ cargo run --release --features cuda,cli --bin e2e_bench -- \
 - Kernel plan: `docs/CUSTOM_CUDA_KERNELS_PLAN.md`
 - 33 layers total per frame (28 talker + 5 code predictor)
 - Target: reduce ~700 kernel launches/frame to ~545
+
+---
+
+# Optimization & Profiling
+
+**One change per cycle:** baseline → profile → classify → optimize → verify → compare → loop. Multiple simultaneous changes make it impossible to attribute improvement. Revert on regression.
+
+See `REFERENCE.md` for the full profiling reference (nsys, ncu, SASS inspection, bottleneck classification, optimization strategies).

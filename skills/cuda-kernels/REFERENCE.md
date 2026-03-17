@@ -1,11 +1,4 @@
----
-name: refining-cuda-kernels
-description: Iterative CUDA kernel optimization using NVIDIA profiling tools (nsys, ncu). Use when optimizing kernels, improving throughput, reducing bandwidth, analyzing roofline, comparing benchmarks, or investigating register pressure and occupancy.
----
-
-# CUDA Kernel Refinement Loop
-
-**One change per cycle:** baseline → profile → classify → optimize → verify → compare → loop. Multiple simultaneous changes make it impossible to attribute improvement. Revert on regression.
+# CUDA Kernel Optimization Reference
 
 ## 1. Establish Baseline
 
@@ -168,15 +161,11 @@ From ncu `SpeedOfLight` section (or infer from kernel type if ncu unavailable):
 
 ### Bandwidth utilization (memory-bound kernels)
 
-For inference workloads, compute bandwidth utilization directly — this is more actionable than abstract roofline:
-
 ```text
 data_per_step = weight_bytes + activation_bytes + KV_cache_bytes  (read + write)
 theoretical_min_time = data_per_step / hw_bandwidth
 utilization = theoretical_min_time / actual_time
 ```
-
-Example: FP4 weights read 5.1 GB/token on 273 GB/s → theoretical min 18.7ms, actual 24ms → 78% utilization. The 22% gap is your optimization headroom.
 
 ### Without ncu
 
@@ -191,63 +180,53 @@ If no counter permissions, infer from kernel behavior:
 
 Not all overhead lives in GPU kernels. Check for:
 
-- **D2H synchronization points**: search for device-to-host copies in the codebase — `cudaMemcpy(..., DeviceToHost)`, `cudaStreamSynchronize`, and framework-specific equivalents (PyTorch: `.item()`, `.cpu()`, `.numpy()`; Candle: `.to_vec1()`; CUDA C++: `cudaMemcpyAsync` with sync). Each one stalls the GPU pipeline. Count them per inference step — eliminating unnecessary D2H syncs is often the single biggest win.
-- **Excessive allocations**: check `cudaMalloc` count in `nsys stats -r cuda_api_sum`. ML frameworks (Candle, PyTorch eager) often allocate fresh GPU buffers for every intermediate tensor. Hundreds of allocations per step is a sign of framework overhead.
-- **CPU-side compute**: sampling, tokenization, or postprocessing running on CPU while GPU idles. Shows up as gaps between kernel launches in the nsys timeline.
+- **D2H synchronization points**: search for device-to-host copies in the codebase
+- **Excessive allocations**: check `cudaMalloc` count in `nsys stats -r cuda_api_sum`
+- **CPU-side compute**: sampling, tokenization, or postprocessing running on CPU while GPU idles
 
 ## 6. Optimization Strategies
 
 ### Memory-bound
 
-Goal: reduce bytes moved per operation.
-
-- **Kernel fusion** (see latency-bound for prioritization): every intermediate tensor written to global memory and read back is wasted bandwidth
-- **Vectorized loads**: `uint4` (128-bit) = 8 BF16 or 4 FP32 per load. Requires pointer alignment. Verify with SASS (`LDG.E.128`).
+- **Kernel fusion**: every intermediate tensor written to global memory and read back is wasted bandwidth
+- **Vectorized loads**: `uint4` (128-bit) = 8 BF16 or 4 FP32 per load. Requires pointer alignment.
 - **Shared memory reuse**: cache data accessed by multiple threads (use stride D+1 to avoid bank conflicts)
-- **Reduce precision**: FP8/FP4 weights cut memory traffic 2-4x with minimal accuracy loss. Keep accumulation in FP32.
+- **Reduce precision**: FP8/FP4 weights cut memory traffic 2-4x with minimal accuracy loss
 
 ### Compute-bound
 
-Goal: do more useful math per cycle.
-
-- **Fast math intrinsics**: `__expf()`, `__rsqrtf()`, `__fdividef()` — lower precision but 2-4x faster than full-precision equivalents
-- **Warp shuffle**: `__shfl_down_sync(0xffffffff, val, offset)` for intra-warp reductions — avoids shared memory round-trip
-- **ILP**: interleave independent operations so the scheduler can hide latency. `#pragma unroll` for known-trip-count loops.
-- **Tensor cores**: WMMA/MMA for matrix ops — 8-16x throughput over FP32 CUDA cores but requires specific data layouts and alignment
+- **Fast math intrinsics**: `__expf()`, `__rsqrtf()`, `__fdividef()`
+- **Warp shuffle**: `__shfl_down_sync(0xffffffff, val, offset)` for intra-warp reductions
+- **ILP**: interleave independent operations. `#pragma unroll` for known-trip-count loops.
+- **Tensor cores**: WMMA/MMA for matrix ops — 8-16x throughput over FP32 CUDA cores
 
 ### Latency-bound (launch overhead)
 
-- **Kernel fusion** — the primary remedy. Prioritize candidates by:
-  1. `launches_per_step × layers` — a 3-kernel sequence in a 32-layer model eliminates 96 launches when fused
-  2. Memory traffic eliminated — fusing `residual_add + rmsnorm` saves one full tensor round-trip per layer
-  3. Implementation complexity — simple elementwise fusions (sigmoid×mul, silu×mul) are easy wins; attention-level fusions require careful shared memory management
-- **Eliminate D2H sync points** — move computation to GPU, batch device-to-host transfers to end of step (see section 5 "host-side bottlenecks" for how to find them)
-- **Increase occupancy** — `__launch_bounds__(maxThreads, minBlocks)` when ncu shows low occupancy limiting throughput
+- **Kernel fusion** — prioritize by `launches_per_step × layers`
+- **Eliminate D2H sync points** — move computation to GPU, batch transfers
+- **Increase occupancy** — `__launch_bounds__(maxThreads, minBlocks)`
 
 ## 7. SASS Inspection (optional)
-
-Use when profiling shows an unexplained gap between expected and actual performance, or to verify the compiler is generating what you intended (vectorized loads, no spills, etc.).
 
 ```bash
 cuobjdump -sass /tmp/kernel.cubin     # SASS disassembly
 nvdisasm /tmp/kernel.cubin            # SASS with control flow
 ```
 
-Quick checks (you don't need to read every instruction):
+Quick checks:
 
-- **Grep for `STL`/`LDL`** — local memory access means register spills. If present, reduce register pressure.
-- **Grep for `LDG.E.128`/`STG.E.128`** — confirms vectorized 128-bit loads/stores are being generated. If you wrote `uint4` loads but see `LDG.E.32`, alignment or type issues prevented vectorization.
-- **Count `BAR.SYNC`** — compare to your `__syncthreads()` count. More barriers than expected means the compiler inserted extra synchronization.
+- **Grep for `STL`/`LDL`** — local memory access means register spills
+- **Grep for `LDG.E.128`/`STG.E.128`** — confirms vectorized 128-bit loads/stores
+- **Count `BAR.SYNC`** — compare to your `__syncthreads()` count
 
 ## 8. Verify Correctness
 
-**Always verify before benchmarking.** A faster kernel that produces wrong results is not an optimization.
+**Always verify before benchmarking.**
 
 ```bash
-# Project tests
 cargo test / pytest / make test
 
-# Memory errors (out-of-bounds, leaks, misaligned access)
+# Memory errors
 compute-sanitizer --tool memcheck ./app [args]
 
 # Shared memory data races
@@ -256,53 +235,30 @@ compute-sanitizer --tool racecheck ./app [args]
 # Uninitialized device memory reads
 compute-sanitizer --tool initcheck ./app [args]
 
-# Sync hazards (divergent __syncthreads)
+# Sync hazards
 compute-sanitizer --tool synccheck ./app [args]
 ```
 
-`compute-sanitizer` has significant overhead (10-100x). Use small inputs for correctness checks, full inputs for benchmarks.
-
 ## 9. Compare Results
 
-Run the **same benchmark** as baseline — same workload, same iteration count, same GPU state (no other processes competing for bandwidth).
-
-```bash
-./benchmark --iterations 5 --json-output /tmp/bench-after.json
-```
-
-Compare against the baseline numbers you recorded in step 1:
-
-```text
-Metric           Baseline    After       Delta
-─────────────    ────────    ────────    ──────
-Throughput       37.1 tok/s  39.8 tok/s  +7.3%
-Stddev           ±0.4        ±0.5
-Launches/token   622         478         -23%
-GPU ms/token     26.2        24.1        -8.0%
-```
+Run the **same benchmark** as baseline — same workload, same iteration count, same GPU state.
 
 Decision framework:
 
-- **Delta < stddev of either run** → indistinguishable from noise. Run more iterations (10+) or use a longer workload before concluding.
-- **Delta > stddev and > 3%** → real improvement, accept the change
-- **Any regression in throughput** → revert, then analyze why (check if a different kernel got slower — fusion can shift pressure)
-
-Also check for side effects:
-
-- Peak GPU memory (fusion can increase shared memory or register usage)
-- Correctness (re-run tests if not done in step 8)
-- Performance at different workloads (a prefill optimization might hurt decode, or vice versa)
+- **Delta < stddev of either run** → indistinguishable from noise
+- **Delta > stddev and > 3%** → real improvement, accept
+- **Any regression in throughput** → revert, then analyze why
 
 ## Common Pitfalls
 
-- **Grid dimension limits**: y and z max at 65535; only x supports 2^31-1. Use `blockIdx.x` for sequence/batch dimensions that can exceed 65535.
+- **Grid dimension limits**: y and z max at 65535; only x supports 2^31-1
 - **Shared memory bank conflicts**: 32 banks x 4 bytes. Power-of-2 column strides cause conflicts. Pad to stride D+1.
-- **Divergent `__syncthreads()`**: undefined behavior. All threads in a block must reach the same barrier. Use `compute-sanitizer --tool synccheck` to detect.
-- **Vectorized load alignment**: `uint4` loads require 16-byte aligned pointers. Verify alignment before using wide loads.
-- **Profiling overhead**: nsys adds ~5-10% overhead, ncu adds 10-50x. Profile numbers are relative (compare before/after), not absolute production performance.
-- **`__launch_bounds__` vs `--maxrregcount`**: `--maxrregcount` is per-file (all kernels); `__launch_bounds__` is per-kernel. Prefer per-kernel control.
-- **Occupancy chasing**: >60% occupancy is usually sufficient. Maximizing occupancy by forcing lower register counts can cause spills that hurt more than the occupancy helps.
-- **Unified memory systems** (Grace Hopper, DGX Spark): no PCIe transfer overhead, but bandwidth can be 3-7x lower than discrete GDDR7. This means batch=1 decode is almost always memory-bound — prioritize weight compression (FP8/FP4) and fusion over compute optimizations.
-- **Hidden D2H syncs in hot loops**: check section 5 "host-side bottlenecks" — a single unnecessary GPU→CPU sync per layer × 32 layers = 32 pipeline stalls per step. Often the biggest win before touching any kernel code.
-- **Framework allocator overhead**: eager-mode ML frameworks allocate/free GPU buffers for every intermediate tensor. At 600+ allocations per inference step, `cudaMalloc` overhead itself becomes measurable. Check `cuda_api_sum` for `cudaMalloc` call counts.
-- **Fusing the wrong thing**: profile first. A kernel taking 0.1% of GPU time isn't worth fusing no matter how many launches it has. Focus on the top-3 time consumers and the top launch-count contributors.
+- **Divergent `__syncthreads()`**: undefined behavior. Use `compute-sanitizer --tool synccheck`.
+- **Vectorized load alignment**: `uint4` loads require 16-byte aligned pointers
+- **Profiling overhead**: nsys ~5-10%, ncu 10-50x. Numbers are relative, not absolute.
+- **`__launch_bounds__` vs `--maxrregcount`**: prefer per-kernel `__launch_bounds__`
+- **Occupancy chasing**: >60% is usually sufficient
+- **Unified memory systems** (Grace Hopper, DGX Spark): prioritize weight compression over compute optimizations
+- **Hidden D2H syncs in hot loops**: a single unnecessary sync per layer × 32 layers = 32 pipeline stalls
+- **Framework allocator overhead**: check `cuda_api_sum` for `cudaMalloc` call counts
+- **Fusing the wrong thing**: profile first, focus on top-3 time consumers
