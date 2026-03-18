@@ -9,6 +9,9 @@ dir=$(echo "$input" | jq -r '.workspace.current_dir // .cwd // ""')
 # Extract context remaining percentage
 remaining=$(echo "$input" | jq -r '.context_window.remaining_percentage // empty' 2>/dev/null)
 
+# Extract rate limit usage (5-hour window)
+rate_used=$(echo "$input" | jq -r '.rate_limits[0].used_percentage // empty' 2>/dev/null)
+
 # Change to the workspace directory, fallback to current directory if needed
 if [ -n "$dir" ] && [ -d "$dir" ]; then
     cd "$dir"
@@ -22,6 +25,7 @@ if [ ! -x "/opt/homebrew/bin/starship" ]; then
     if [ -z "$starship_path" ]; then
         result="$(basename "$(pwd)") on $(git branch --show-current 2>/dev/null || echo "no-git")"
         [ -n "$remaining" ] && result="$result | ctx:${remaining}%"
+        [ -n "$rate_used" ] && result="$result | rl:${rate_used}%"
         echo "$result"
         exit 0
     fi
@@ -43,7 +47,8 @@ if [ -z "$result" ]; then
     result="$(basename "$(pwd)") on $(git branch --show-current 2>/dev/null || echo "no-git")"
 fi
 
-# Append context remaining
+# Append context remaining and rate limit
 [ -n "$remaining" ] && result="$result | ctx:${remaining}%"
+[ -n "$rate_used" ] && result="$result | rl:${rate_used}%"
 
 echo "$result" | head -c 120

@@ -33,7 +33,10 @@ jj restore --from @- <path>          # Undo file to parent state
 jj restore --from <id> <path>        # Restore from any change
 jj diff <path>                       # Diff specific file
 jj file show -r <id> <path>          # Show file at revision
+jj file untrack <path>               # Stop tracking file (keeps on disk)
 ```
+
+**Untracking files**: If jj snapshotted a file before it was added to `.gitignore`, jj keeps tracking it even after the ignore rule exists. Use `jj file untrack <path>` to remove it from jj's tree while keeping it on disk. Do NOT use `jj restore --from <parent> <path>` — that deletes the file.
 
 ## Bookmarks & Push
 
@@ -117,3 +120,4 @@ xyz/1       Previous version of change xyz
 | "Immutable" error         | You're trying to modify a pushed commit; work on a descendant    |
 | Bookmark didn't move      | Bookmarks don't auto-advance; `jj bookmark set X -r @-`          |
 | New bookmark push refused | `jj config set --user 'remotes.origin.auto-track-bookmarks' '*'` |
+| File tracked w/ gitignore | `jj file untrack <path>` (snapshotted before ignore rule)        |

@@ -2,13 +2,19 @@
 name: searching-history
 description: >-
   Search past Claude Code conversation history and tool logs to recall previous
-  solutions, commands, and approaches. Use when the user references a prior
-  session, says "have I done this before", "how did I fix", "what command did I
-  run", "remind me how", "last time we", "find that session", or wants to look
-  up previous implementations, error resolutions, or configuration changes from
-  earlier conversations. Do NOT use for searching the current codebase, the web,
-  npm, GitHub repos, git log, or documentation — only for recalling past Claude
-  Code session history.
+  solutions, commands, and approaches. ALWAYS load this skill when the user
+  mentions anything about past sessions, previous conversations, or prior work
+  done in Claude Code. Trigger phrases include: "have I done this before", "how
+  did I fix", "what command did I run", "remind me how", "last time we", "find
+  that session", "pick up where we left off", "check my history", "I did this
+  before", "previous conversation", "a few months ago", "we figured it out",
+  "can you find what I did", or any reference to recalling, remembering, or
+  looking up something from a past Claude Code session. Also trigger when the
+  user asks about past implementations, error resolutions, configuration changes,
+  or commands from earlier conversations — even if they don't explicitly say
+  "search history". Do NOT use for searching the current codebase, the web, npm,
+  GitHub repos, git log, or documentation — only for recalling past Claude Code
+  session history.
 allowed-tools: Bash
 argument-hint: "<search-query>"
 ---
@@ -52,7 +58,7 @@ glhf session abc123 --limit 50
 | `recent`   | List recent sessions                 |
 | `projects` | List all indexed projects            |
 | `status`   | Show index stats                     |
-| `index`    | Rebuild the search index             |
+| `index`    | Update index (incremental by default)|
 
 ## Key Search Flags
 
@@ -132,4 +138,5 @@ glhf search "deploy" -X stable -X dotfiles --compact
 5. **Current project/session auto-excluded** when running inside Claude Code — use `--include-this-project` or `--include-this-session` to override
 6. **Use `-p .`** to filter to current project when you want to include it
 7. **Use `--json`** when piping to other tools or processing programmatically
-8. **Index with `--skip-embeddings`** for fast text-only reindex
+8. **Index is incremental** — `glhf index` only re-processes changed files (~0.1s). Use `--full` to rebuild from scratch
+9. **Search shows staleness hints** — if the index is behind, it prints how many files changed and when last indexed. Run `glhf index` to update

@@ -187,5 +187,6 @@
   },
   "forceLoginMethod": "claudeai",
   "alwaysThinkingEnabled": true,
+  "voiceEnabled": true,
   "skipDangerousModePermissionPrompt": true
 }
