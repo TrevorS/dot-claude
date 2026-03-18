@@ -1,6 +1,6 @@
 [
   {
-    "query": "I need to rebase my current change onto the latest main, can you help me do that with jj?",
+    "query": "write a revset to find all my commits between trunk and the current change",
     "should_trigger": true
   },
   {
@@ -16,19 +16,7 @@
     "should_trigger": true
   },
   {
-    "query": "push my current bookmark to origin and set up tracking, I think the command is jj git push but I'm not sure about the flags",
-    "should_trigger": true
-  },
-  {
-    "query": "show me the diff of my working copy against its parent, I want to see what I've changed today",
-    "should_trigger": true
-  },
-  {
     "query": "I have a conflict in src/main.rs after rebasing, walk me through resolving it in jj",
-    "should_trigger": true
-  },
-  {
-    "query": "create a new change on top of main with the description 'feat: add user auth' and move my current work into it",
     "should_trigger": true
   },
   {
@@ -40,11 +28,35 @@
     "should_trigger": true
   },
   {
-    "query": "set up a new git repository for my project and push it to github, I've never done this before",
+    "query": "I need to rewrite a commit that's protected by immutable_heads, how do I temporarily disable it?",
+    "should_trigger": true
+  },
+  {
+    "query": "show me how this change evolved over time, I think I lost some work during a squash",
+    "should_trigger": true
+  },
+  {
+    "query": "I want to try two different approaches in parallel and compare them before picking one",
+    "should_trigger": true
+  },
+  {
+    "query": "commit my current changes with a good message",
     "should_trigger": false
   },
   {
-    "query": "what's the git command to cherry-pick a commit from another branch? I need to backport a fix",
+    "query": "push my changes to origin",
+    "should_trigger": false
+  },
+  {
+    "query": "create a new bookmark and push it",
+    "should_trigger": false
+  },
+  {
+    "query": "rebase onto the latest main",
+    "should_trigger": false
+  },
+  {
+    "query": "what's the git command to cherry-pick a commit from another branch?",
     "should_trigger": false
   },
   {
@@ -52,31 +64,19 @@
     "should_trigger": false
   },
   {
-    "query": "I need to do an interactive rebase in git to clean up my feature branch before merging",
-    "should_trigger": false
-  },
-  {
-    "query": "help me resolve this merge conflict in package-lock.json, git is showing these weird markers",
-    "should_trigger": false
-  },
-  {
-    "query": "configure my .gitignore to exclude node_modules, .env files, and the build directory",
-    "should_trigger": false
-  },
-  {
-    "query": "how do I set up git-lfs for tracking large binary assets in my game project?",
-    "should_trigger": false
-  },
-  {
-    "query": "I want to version control my dotfiles, should I use a bare git repo or GNU stow?",
-    "should_trigger": false
-  },
-  {
-    "query": "what's the difference between git merge and git rebase? which one should I use for feature branches?",
+    "query": "configure my .gitignore to exclude node_modules and .env files",
     "should_trigger": false
   },
   {
     "query": "help me write a GitHub Actions workflow that runs tests on every push to main",
+    "should_trigger": false
+  },
+  {
+    "query": "show me the diff of my working copy against its parent",
+    "should_trigger": false
+  },
+  {
+    "query": "describe the current change as 'feat: add user auth'",
     "should_trigger": false
   }
 ]

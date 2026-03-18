@@ -1,6 +1,6 @@
 ---
 name: using-jj
-description: Jujutsu (jj) version control workflows including rebasing, squashing, splitting, absorbing, and resolving conflicts. Use when working with jj commands, managing change stacks, pushing bookmarks, undoing operations via oplog, or doing any version control in a jj-colocated repository. Also auto-loads when hook output shows vcs=jj-colocated or vcs=jj.
+description: Jujutsu (jj) version control reference for revsets, absorb, oplog recovery, conflict resolution, immutable heads, splitting commits, and parallel experiments. Load this skill whenever the user mentions jj, jujutsu, revsets, absorb, evolog, oplog, or conflicts in a jj repo — even if the task seems simple, this skill has critical context the model lacks about jj's unique workflows.
 ---
 
 # jj Workflow

@@ -1,6 +1,6 @@
 ---
 name: using-git
-description: Git version control workflows. Load when hook output shows vcs=git (not jj). Use when squashing commits, rebasing feature branches, or doing git operations in non-jj repos.
+description: Git version control reference for squashing commits, rebasing, cherry-picking, conflict resolution, reflog recovery, and pre-commit hook issues. Load this skill whenever the user asks about squashing, rebasing, resolving merge conflicts, recovering lost commits, or fixing git state problems — this skill has safe, non-interactive approaches the model should prefer over guessing.
 ---
 
 # Git Workflow

@@ -1,0 +1,74 @@
+[
+  {
+    "query": "I need to squash the last 5 commits on my feature branch into one clean commit",
+    "should_trigger": true
+  },
+  {
+    "query": "rebase my feature branch onto the latest dev branch, there might be conflicts",
+    "should_trigger": true
+  },
+  {
+    "query": "I accidentally committed to main and pushed, how do I recover without force pushing?",
+    "should_trigger": true
+  },
+  {
+    "query": "my pre-commit hook modified files during the commit and now things are in a weird state",
+    "should_trigger": true
+  },
+  {
+    "query": "I need to use git reflog to find a commit I lost after a bad reset",
+    "should_trigger": true
+  },
+  {
+    "query": "cherry-pick a range of commits from another branch onto my feature branch",
+    "should_trigger": true
+  },
+  {
+    "query": "help me do a non-interactive squash of my branch before opening a PR",
+    "should_trigger": true
+  },
+  {
+    "query": "my rebase has conflicts in 3 files, walk me through resolving them",
+    "should_trigger": true
+  },
+  {
+    "query": "commit these changes with a good message",
+    "should_trigger": false
+  },
+  {
+    "query": "push my branch to origin",
+    "should_trigger": false
+  },
+  {
+    "query": "check git status and show me what's changed",
+    "should_trigger": false
+  },
+  {
+    "query": "create a new branch called feature/auth and switch to it",
+    "should_trigger": false
+  },
+  {
+    "query": "help me write a GitHub Actions workflow for CI",
+    "should_trigger": false
+  },
+  {
+    "query": "configure my .gitignore for a Python project",
+    "should_trigger": false
+  },
+  {
+    "query": "I need to rebase my current change onto the latest main with jj",
+    "should_trigger": false
+  },
+  {
+    "query": "how do I set up git-lfs for large files?",
+    "should_trigger": false
+  },
+  {
+    "query": "show me the diff between my branch and main",
+    "should_trigger": false
+  },
+  {
+    "query": "add a remote for my fork and fetch from it",
+    "should_trigger": false
+  }
+]

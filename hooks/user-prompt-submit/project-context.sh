@@ -1,73 +1,78 @@
 #!/bin/bash
 # Outputs project context for Claude on each prompt
 # Input: JSON on stdin (ignored)
-# Output: key=value pairs, space-separated
+# Output: JSON with additionalContext
 
 # Drain stdin to prevent blocking
 cat > /dev/null
 
-out="time=$(date '+%Y-%m-%d %H:%M %z') cwd=$PWD"
+ctx="time=$(date '+%Y-%m-%d %H:%M %z') cwd=$PWD"
 
 if [[ -d .jj ]]; then
   if [[ -d .git ]]; then
-    out+=" vcs=jj-colocated"
+    ctx+=" vcs=jj-colocated"
   else
-    out+=" vcs=jj"
+    ctx+=" vcs=jj"
   fi
 
-  change=$(jj log -r @ --no-graph -T 'change_id.short()' 2>/dev/null) && out+=" change=$change"
+  change=$(jj log -r @ --no-graph -T 'change_id.short()' 2>/dev/null) && ctx+=" change=$change"
   bookmarks=$(jj log -r @ --no-graph -T 'bookmarks.join(",")' 2>/dev/null)
-  [[ -n "$bookmarks" ]] && out+=" bookmark=$bookmarks"
+  [[ -n "$bookmarks" ]] && ctx+=" bookmark=$bookmarks"
+
+  ctx+=" | For advanced jj workflows (revsets, absorb, oplog), load the using-jj skill."
 
 elif [[ -d .git ]]; then
-  out+=" vcs=git"
+  ctx+=" vcs=git"
 
   branch=$(git branch --show-current 2>/dev/null)
   if [[ -n "$branch" ]]; then
-    out+=" branch=$branch"
+    ctx+=" branch=$branch"
   else
     hash=$(git rev-parse --short HEAD 2>/dev/null)
-    [[ -n "$hash" ]] && out+=" head=$hash"
+    [[ -n "$hash" ]] && ctx+=" head=$hash"
   fi
 
   if [[ -n $(git status --porcelain 2>/dev/null) ]]; then
-    out+=" dirty=yes"
+    ctx+=" dirty=yes"
   else
-    out+=" dirty=no"
+    ctx+=" dirty=no"
   fi
 
+  ctx+=" | For advanced git workflows (squashing, rebasing), load the using-git skill."
+
 else
-  out+=" vcs=none"
+  ctx+=" vcs=none"
 fi
 
 # Package manager detection (from lockfile)
 if [[ -f bun.lockb || -f bun.lock ]]; then
-  out+=" pkg=bun"
+  ctx+=" pkg=bun"
 elif [[ -f pnpm-lock.yaml ]]; then
-  out+=" pkg=pnpm"
+  ctx+=" pkg=pnpm"
 elif [[ -f yarn.lock ]]; then
-  out+=" pkg=yarn"
+  ctx+=" pkg=yarn"
 elif [[ -f package-lock.json ]]; then
-  out+=" pkg=npm"
+  ctx+=" pkg=npm"
 elif [[ -f uv.lock ]]; then
-  out+=" pkg=uv"
+  ctx+=" pkg=uv"
 elif [[ -f Cargo.lock ]]; then
-  out+=" pkg=cargo"
+  ctx+=" pkg=cargo"
 elif [[ -f go.sum ]]; then
-  out+=" pkg=go"
+  ctx+=" pkg=go"
 else
-  out+=" pkg=none"
+  ctx+=" pkg=none"
 fi
 
 # CI/CD detection
 if [[ -d .github/workflows ]]; then
-  out+=" ci=github-actions"
+  ctx+=" ci=github-actions"
 elif [[ -f .gitlab-ci.yml ]]; then
-  out+=" ci=gitlab"
+  ctx+=" ci=gitlab"
 elif [[ -d .circleci ]]; then
-  out+=" ci=circleci"
+  ctx+=" ci=circleci"
 else
-  out+=" ci=none"
+  ctx+=" ci=none"
 fi
 
-echo "$out"
+json_ctx=$(printf '%s' "$ctx" | sed 's/\\/\\\\/g; s/"/\\"/g')
+printf '{"hookSpecificOutput":{"hookEventName":"UserPromptSubmit","additionalContext":"%s"}}\n' "$json_ctx"

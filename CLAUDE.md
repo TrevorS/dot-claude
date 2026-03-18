@@ -61,18 +61,6 @@ Key patterns:
 2. **Agents for research** -- Explore agents for codebase questions, Plan agents for architecture
 3. **Direct tools last** -- Read, Edit, Bash for simple operations
 
-### Auto-Load Skills
-
-| Context                                | Skill                     | Trigger                        |
-| -------------------------------------- | ------------------------- | ------------------------------ |
-| `vcs=jj` or `vcs=jj-colocated` in hook | `using-jj`                | Every prompt in jj repos       |
-| `vcs=git` in hook (not jj)             | `using-git`               | Every prompt in git-only repos |
-| `.svelte` files in project             | `writing-svelte5`         | Working with Svelte components |
-| `.swift` files in project              | `building-swiftui`        | Working with SwiftUI code      |
-| `ci=github-actions` in hook            | `monitoring-ci`           | After push, monitor CI runs    |
-| Working in `~/.claude/`                | `maintaining-claude-code` | Modifying skills/rules/hooks   |
-| User mentions past sessions            | `searching-history`       | Search conversation history    |
-
 ### Core Principles
 
 - Prefer simple, clean, maintainable solutions over clever or complex ones
