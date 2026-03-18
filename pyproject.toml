@@ -5,12 +5,16 @@ description = "Claude Code configuration — skills, commands, agents, hooks, ru
 requires-python = ">=3.13"
 dependencies = [
     "anthropic>=0.85.0",
-    "claude-agent-sdk>=0.1.49",
+    "claude-agent-sdk>=0.1.49; sys_platform == 'darwin'",
     "pre-commit>=4.2.0",
 ]
 
 [tool.uv]
 package = false
+required-environments = [
+    "sys_platform == 'linux' and platform_machine == 'x86_64'",
+    "sys_platform == 'darwin' and platform_machine == 'arm64'",
+]
 
 [dependency-groups]
 dev = [
