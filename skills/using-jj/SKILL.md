@@ -1,6 +1,6 @@
 ---
 name: using-jj
-description: Jujutsu (jj) version control reference for revsets, absorb, oplog recovery, conflict resolution, immutable heads, splitting commits, and parallel experiments. Load this skill whenever the user mentions jj, jujutsu, revsets, absorb, evolog, oplog, or conflicts in a jj repo — even if the task seems simple, this skill has critical context the model lacks about jj's unique workflows.
+description: Use this skill for ANY task involving jj or jujutsu version control. ALWAYS trigger when the user mentions jj, jujutsu, revsets, change IDs, bookmarks, or oplog. Also trigger when the user wants to squash, split, or reorder commits in a stack, write a revset query, absorb fixup changes, undo or restore a previous operation, resolve conflicts after rebasing, recover from force-pushes, rewrite protected/immutable commits, view change evolution (evolog), or try parallel approaches. Trigger even if "jj" is not explicitly said — "changes" instead of "commits", "stack" instead of "branch", "absorb", "squash into the right commit", "undo my last operation", "conflict after rebase", or "compare approaches in parallel" are strong jj signals. This skill contains critical non-obvious rules (like always using -m flags) that prevent broken workflows.
 ---
 
 # jj Workflow

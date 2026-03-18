@@ -4,6 +4,8 @@ version = "0.1.0"
 description = "Claude Code configuration — skills, commands, agents, hooks, rules, and dotfiles"
 requires-python = ">=3.13"
 dependencies = [
+    "anthropic>=0.85.0",
+    "claude-agent-sdk>=0.1.49",
     "pre-commit>=4.2.0",
 ]
 

@@ -1,0 +1,42 @@
+[
+  {
+    "query": "help me set up tmux with vim-style keybindings and a nice status bar",
+    "should_trigger": true
+  },
+  {
+    "query": "my tmux prefix key isn't working after I changed it in tmux.conf",
+    "should_trigger": true
+  },
+  {
+    "query": "how do I install TPM and add the catppuccin theme to tmux",
+    "should_trigger": true
+  },
+  {
+    "query": "I want tmux and neovim to share the same clipboard, how do I set that up",
+    "should_trigger": true
+  },
+  {
+    "query": "create a tmux.conf from scratch with sensible defaults for a developer",
+    "should_trigger": true
+  },
+  {
+    "query": "write a Python function to parse CSV files",
+    "should_trigger": false
+  },
+  {
+    "query": "help me configure my zsh prompt with starship",
+    "should_trigger": false
+  },
+  {
+    "query": "set up neovim with LSP support for TypeScript",
+    "should_trigger": false
+  },
+  {
+    "query": "how do I use screen to keep a process running after SSH disconnect",
+    "should_trigger": false
+  },
+  {
+    "query": "configure my git aliases for faster workflow",
+    "should_trigger": false
+  }
+]
