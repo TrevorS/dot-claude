@@ -1,26 +1,6 @@
 [
   {
-    "query": "write a revset to find all my commits between trunk and the current change",
-    "should_trigger": true
-  },
-  {
-    "query": "squash the last 3 changes in my stack into one, keep the description from the top one",
-    "should_trigger": true
-  },
-  {
-    "query": "how do I split a commit that has both frontend and backend changes? I'm using jujutsu",
-    "should_trigger": true
-  },
-  {
-    "query": "I accidentally described the wrong change, can you undo my last jj operation?",
-    "should_trigger": true
-  },
-  {
-    "query": "I have a conflict in src/main.rs after rebasing, walk me through resolving it in jj",
-    "should_trigger": true
-  },
-  {
-    "query": "my coworker force-pushed and now my local jj repo is out of sync, how do I recover?",
+    "query": "write a revset expression to find all commits by me that aren't on trunk yet",
     "should_trigger": true
   },
   {
@@ -28,15 +8,35 @@
     "should_trigger": true
   },
   {
-    "query": "I need to rewrite a commit that's protected by immutable_heads, how do I temporarily disable it?",
+    "query": "show me how this change evolved over time with evolog, I think I lost some work during a squash",
     "should_trigger": true
   },
   {
-    "query": "show me how this change evolved over time, I think I lost some work during a squash",
+    "query": "my coworker force-pushed and now my local jj repo is out of sync, how do I use jj op restore to recover?",
     "should_trigger": true
   },
   {
-    "query": "I want to try two different approaches in parallel and compare them before picking one",
+    "query": "I have a conflict in src/main.rs after rebasing in jj, walk me through resolving it",
+    "should_trigger": true
+  },
+  {
+    "query": "I need to rewrite a commit that's protected by immutable_heads in jj, how do I temporarily disable it?",
+    "should_trigger": true
+  },
+  {
+    "query": "how do I split a change in jujutsu that has both frontend and backend modifications?",
+    "should_trigger": true
+  },
+  {
+    "query": "I accidentally described the wrong change, show me how to use jj undo to fix it",
+    "should_trigger": true
+  },
+  {
+    "query": "I want to try two different implementations in parallel using jj new from the same parent and compare them",
+    "should_trigger": true
+  },
+  {
+    "query": "what's the jj revset syntax for finding all divergent changes in my repo?",
     "should_trigger": true
   },
   {
@@ -56,11 +56,11 @@
     "should_trigger": false
   },
   {
-    "query": "what's the git command to cherry-pick a commit from another branch?",
+    "query": "squash the last 3 changes into one",
     "should_trigger": false
   },
   {
-    "query": "can you help me write a pre-commit hook that runs eslint before each git commit?",
+    "query": "what's the git command to cherry-pick a commit from another branch?",
     "should_trigger": false
   },
   {

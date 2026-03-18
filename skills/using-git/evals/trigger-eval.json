@@ -1,34 +1,34 @@
 [
   {
-    "query": "I need to squash the last 5 commits on my feature branch into one clean commit",
+    "query": "I need to use git reflog to find a commit I lost after doing git reset --hard by accident",
     "should_trigger": true
   },
   {
-    "query": "rebase my feature branch onto the latest dev branch, there might be conflicts",
+    "query": "cherry-pick a range of commits from the release branch onto my feature branch, some might conflict",
     "should_trigger": true
   },
   {
-    "query": "I accidentally committed to main and pushed, how do I recover without force pushing?",
+    "query": "I accidentally committed secrets to main and pushed, how do I use git revert to fix this without rewriting shared history?",
     "should_trigger": true
   },
   {
-    "query": "my pre-commit hook modified files during the commit and now things are in a weird state",
+    "query": "my pre-commit hook reformatted files and now git shows half-staged changes after a failed commit, how do I fix this state?",
     "should_trigger": true
   },
   {
-    "query": "I need to use git reflog to find a commit I lost after a bad reset",
+    "query": "I need to use git reset --soft to squash 12 commits into one clean commit non-interactively before opening a PR",
     "should_trigger": true
   },
   {
-    "query": "cherry-pick a range of commits from another branch onto my feature branch",
+    "query": "my rebase has conflicts in 3 files, I tried resolving but got confused with ours vs theirs, how do I abort and start over safely?",
     "should_trigger": true
   },
   {
-    "query": "help me do a non-interactive squash of my branch before opening a PR",
+    "query": "I did a bad git reset --hard and lost 3 days of work, how do I use the reflog to get it back?",
     "should_trigger": true
   },
   {
-    "query": "my rebase has conflicts in 3 files, walk me through resolving them",
+    "query": "I need to rebase my feature branch onto dev but preserve the committer dates so the history looks clean, what flags do I use?",
     "should_trigger": true
   },
   {
