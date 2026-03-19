@@ -1,0 +1,16 @@
+# Homebrew packages (macOS)
+# One package per line. Comments and blank lines are ignored.
+bat
+coreutils
+fd
+fzf
+gh
+git
+git-delta
+gnu-sed
+jq
+neovim
+ripgrep
+stow
+tmux
+zoxide

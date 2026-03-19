@@ -1,0 +1,15 @@
+# System packages (Ubuntu/Debian)
+# One package per line. Comments and blank lines are ignored.
+bat
+curl
+fd-find
+fzf
+git
+jq
+luarocks
+neovim
+ripgrep
+stow
+tmux
+unzip
+zoxide

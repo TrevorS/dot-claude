@@ -1,0 +1,3 @@
+# LuaRocks packages
+# One package per line. Comments and blank lines are ignored.
+luacheck
