@@ -75,11 +75,16 @@ deps:
 	esac
 	@if command -v luarocks >/dev/null 2>&1; then \
 		echo "Installing LuaRocks packages..."; \
+		lua_dir="$$(brew --prefix lua@5.4 2>/dev/null)"; \
+		lr_flags=""; \
+		if [ -n "$$lua_dir" ] && [ -d "$$lua_dir" ]; then \
+			lr_flags="--lua-dir=$$lua_dir"; \
+		fi; \
 		for pkg in $(call pkg_list,packages/luarocks.txt); do \
-			if luarocks show $$pkg >/dev/null 2>&1; then \
+			if luarocks $$lr_flags show $$pkg >/dev/null 2>&1; then \
 				echo "  $$pkg already installed"; \
 			else \
-				sudo luarocks install $$pkg; \
+				sudo luarocks $$lr_flags install $$pkg; \
 			fi; \
 		done; \
 	else \
