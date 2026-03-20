@@ -183,7 +183,9 @@
     "typescript-lsp@claude-plugins-official": true,
     "skill-creator@claude-plugins-official": true,
     "pyright-lsp@claude-plugins-official": true,
-    "telegram-enhanced@trevor-plugins": true
+    "telegram-enhanced@trevor-plugins": true,
+    "house@trevor-plugins": true,
+    "dev@trevor-plugins": true
   },
   "extraKnownMarketplaces": {
     "trevor-plugins": {

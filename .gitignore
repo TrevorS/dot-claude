@@ -45,6 +45,14 @@ tasks/
 teams/
 todos/
 
+# ML models
+models/
+
+# Channel runtime state
+channels/dev/
+channels/house/
+channels/telegram/inbox/
+
 # Channel secrets
 channels/telegram/.env
 channels/telegram/access.json
