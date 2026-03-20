@@ -45,6 +45,10 @@ tasks/
 teams/
 todos/
 
+# Channel secrets
+channels/telegram/.env
+channels/telegram/access.json
+
 # Data files
 *.db
 *.jsonl

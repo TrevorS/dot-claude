@@ -5,7 +5,6 @@
     "DISABLE_BUG_COMMAND": "true",
     "DISABLE_COST_WARNINGS": "true",
     "DISABLE_ERROR_REPORTING": "true",
-    "DISABLE_TELEMETRY": "true",
     "ENABLE_LSP_TOOL": "1"
   },
   "includeCoAuthoredBy": false,
@@ -183,7 +182,17 @@
     "swift-lsp@claude-plugins-official": true,
     "typescript-lsp@claude-plugins-official": true,
     "skill-creator@claude-plugins-official": true,
-    "pyright-lsp@claude-plugins-official": true
+    "pyright-lsp@claude-plugins-official": true,
+    "fakechat@claude-plugins-official": true,
+    "telegram-enhanced@trevor-plugins": true
+  },
+  "extraKnownMarketplaces": {
+    "trevor-plugins": {
+      "source": {
+        "source": "github",
+        "repo": "TrevorS/claude-code-plugins"
+      }
+    }
   },
   "forceLoginMethod": "claudeai",
   "alwaysThinkingEnabled": true,
