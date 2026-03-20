@@ -183,7 +183,6 @@
     "typescript-lsp@claude-plugins-official": true,
     "skill-creator@claude-plugins-official": true,
     "pyright-lsp@claude-plugins-official": true,
-    "fakechat@claude-plugins-official": true,
     "telegram-enhanced@trevor-plugins": true
   },
   "extraKnownMarketplaces": {
