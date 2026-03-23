@@ -1,0 +1,82 @@
+[
+  {
+    "query": "what issues are assigned to me in Linear?",
+    "should_trigger": true
+  },
+  {
+    "query": "create a Linear issue for the API timeout bug we discussed, priority 1 on the backend team",
+    "should_trigger": true
+  },
+  {
+    "query": "update ENG-123 to In Progress",
+    "should_trigger": true
+  },
+  {
+    "query": "check my Linear work for today, I want to see what's on my plate",
+    "should_trigger": true
+  },
+  {
+    "query": "add a comment to ENG-456 saying the fix shipped in v2.1.0",
+    "should_trigger": true
+  },
+  {
+    "query": "what's the status of ENG-789? is it still blocked?",
+    "should_trigger": true
+  },
+  {
+    "query": "show me all high priority issues assigned to the platform team in Linear",
+    "should_trigger": true
+  },
+  {
+    "query": "I need to file a bug in Linear for the broken search feature on mobile",
+    "should_trigger": true
+  },
+  {
+    "query": "move that Linear ticket to Done and leave a comment that it's deployed",
+    "should_trigger": true
+  },
+  {
+    "query": "list all my open Linear tickets so I can plan my afternoon",
+    "should_trigger": true
+  },
+  {
+    "query": "create a GitHub issue for the flaky test in the auth module",
+    "should_trigger": false
+  },
+  {
+    "query": "help me build a script that syncs Linear issues to our Postgres database using their GraphQL API",
+    "should_trigger": false
+  },
+  {
+    "query": "can you check the Jira board for outstanding sprint items?",
+    "should_trigger": false
+  },
+  {
+    "query": "what's on my todo list for this week?",
+    "should_trigger": true
+  },
+  {
+    "query": "help me plan the sprint for next week, we need to estimate these features",
+    "should_trigger": false
+  },
+  {
+    "query": "file a bug report for the memory leak we found in production",
+    "should_trigger": false
+  },
+  {
+    "query": "check if there are any open PRs that need review",
+    "should_trigger": false
+  },
+  {
+    "query": "set up project tracking for the new payments feature",
+    "should_trigger": true
+  },
+  {
+    "query": "write a webhook handler that listens for Linear issue updates and posts to Slack",
+    "should_trigger": false
+  },
+  {
+    "query": "how do I authenticate with the Linear API in my Node.js app?",
+    "should_trigger": false
+  }
+]
