@@ -44,6 +44,8 @@ statsig/
 tasks/
 teams/
 todos/
+backups/
+telemetry/
 
 # ML models
 models/
@@ -61,6 +63,3 @@ channels/telegram/access.json
 *.db
 *.jsonl
 .credentials.json
-
-# Backups
-backups/
