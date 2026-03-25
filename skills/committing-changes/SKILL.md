@@ -89,7 +89,9 @@ git push -u origin HEAD
 If `.github/workflows/` exists and `ci=github-actions` in hook output:
 
 ```bash
-uv run ~/.claude/skills/monitoring-ci/ci-monitor.py --branch <branch-name>
+# Resolve SHA before launching background monitor (avoids watching stale runs)
+SHA=$(jj log -r '@-' --no-graph -T 'commit_id' 2>/dev/null || git rev-parse HEAD)
+uv run ~/.claude/skills/monitoring-ci/ci-monitor.py --branch <branch-name> --sha "$SHA"
 ```
 
 Run in background. Tell user: "CI monitor running in background."

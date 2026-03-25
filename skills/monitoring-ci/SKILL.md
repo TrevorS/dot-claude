@@ -23,13 +23,19 @@ uv run ~/.claude/skills/monitoring-ci/ci-monitor.py --branch my-feature
 
 ## How to Invoke from Claude
 
-After a push, run as a background Bash command:
+After a push, resolve the HEAD SHA *before* launching the background command, then pass it via `--sha`:
 
 ```bash
-uv run ~/.claude/skills/monitoring-ci/ci-monitor.py --branch <branch-name>
+# Get the SHA that was just pushed (jj or git)
+SHA=$(jj log -r '@-' --no-graph -T 'commit_id' 2>/dev/null || git rev-parse HEAD)
+
+# Run in background with SHA pinning
+uv run ~/.claude/skills/monitoring-ci/ci-monitor.py --branch <branch-name> --sha "$SHA"
 ```
 
 Use `run_in_background: true` so it doesn't block the conversation. Tell the user: "CI monitor running in background — you'll be notified when it completes."
+
+**IMPORTANT**: Always pass `--sha` to avoid watching a stale run from a previous push. The monitor matches runs by SHA, so it will wait for the correct run to appear.
 
 ## Features
 

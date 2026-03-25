@@ -47,18 +47,34 @@ def sentinel_path(name: str) -> Path:
     return Path(f"/tmp/{name}-ci-monitor")
 
 
-def find_run(branch: str, max_wait: int = 60) -> str | None:
-    """Poll for a CI run on the branch, return run ID or None."""
+def head_sha(branch: str) -> str | None:
+    """Get the commit SHA that the branch currently points to."""
+    # Try jj first (bookmark may be on @-)
+    for rev in ("@", "@-"):
+        r = run(f"jj log -r '{rev}' --no-graph -T 'commit_id'")
+        if r.returncode == 0 and r.stdout.strip():
+            return r.stdout.strip()
+    # Fallback to git
+    r = run(f"git rev-parse {branch}")
+    if r.returncode == 0 and r.stdout.strip():
+        return r.stdout.strip()
+    return None
+
+
+def find_run(branch: str, max_wait: int = 60, expected_sha: str | None = None) -> str | None:
+    """Poll for a CI run on the branch matching expected_sha, return run ID or None."""
     for _ in range(max_wait // 5):
         r = run(
-            f"gh run list --branch {branch} --limit 1 "
-            f"--json databaseId,status --jq '.[0]'"
+            f"gh run list --branch {branch} --limit 5 "
+            f"--json databaseId,status,headSha --jq '.[]'"
         )
         if r.returncode == 0 and r.stdout.strip():
-            data = json.loads(r.stdout.strip())
-            run_id = str(data.get("databaseId", ""))
-            if run_id:
-                return run_id
+            for line in r.stdout.strip().split("\n"):
+                data = json.loads(line)
+                run_id = str(data.get("databaseId", ""))
+                run_sha = data.get("headSha", "")
+                if run_id and (not expected_sha or run_sha == expected_sha):
+                    return run_id
         time.sleep(5)
     return None
 
@@ -80,6 +96,7 @@ def fetch_failed_logs(run_id: str) -> str:
 def main() -> int:
     parser = argparse.ArgumentParser(description="Monitor GitHub Actions CI run")
     parser.add_argument("--branch", help="Branch to monitor (auto-detected if omitted)")
+    parser.add_argument("--sha", help="Expected HEAD SHA to match (avoids watching stale runs)")
     parser.add_argument("--timeout", type=int, default=600, help="Max seconds to wait (default: 600)")
     args = parser.parse_args()
 
@@ -98,9 +115,10 @@ def main() -> int:
     sentinel.write_text(str(time.time()))
 
     try:
-        print(f"Watching CI for {name} @ {branch} ...")
+        sha = args.sha or head_sha(branch)
+        print(f"Watching CI for {name} @ {branch} (sha: {sha or 'unknown'}) ...")
 
-        run_id = find_run(branch)
+        run_id = find_run(branch, expected_sha=sha)
         if not run_id:
             print(f"No CI run found for branch {branch} after polling")
             return 0
