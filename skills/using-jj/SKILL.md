@@ -224,6 +224,21 @@ jj config set --repo 'revset-aliases."immutable_heads()"' 'builtin_immutable_hea
 
 **CRITICAL: Always ask the user before disabling immutable protection.** Rewriting remote bookmarks means force-pushing, which rewrites shared history. Confirm with the user before proceeding — never silently disable immutability.
 
+## Creating PRs (jj + gh)
+
+In jj-colocated repos, git HEAD is detached — `gh pr create` fails with "not on any branch". Always specify `--head`:
+
+```bash
+# Ensure bookmark exists and is pushed
+jj bookmark set feature-x -r @-
+jj git push
+
+# Create PR with explicit --head
+gh pr create --head feature-x --title "..." --body "..."
+```
+
+**CRITICAL:** Always pass `--head <bookmark-name>` to `gh pr create` in jj-colocated repos. Never rely on git detecting the current branch.
+
 ## Recovery
 
 The operation log records every mutation. Nothing is ever truly lost.

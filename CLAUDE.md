@@ -41,6 +41,10 @@ This repo is the user's Claude Code configuration -- skills, hooks, rules, and d
 - **`skills/`** -- On-demand capabilities loaded via description matching. Each has a `SKILL.md`.
 - **`hooks/`** -- Shell scripts triggered by Claude Code events, wired in `settings.json`
 - **`dotfiles/`** -- GNU Stow packages mirroring `$HOME` structure, managed via `make dotfiles`. Includes a `scripts` package for standalone shell scripts (`~/.local/bin`).
+- **`packages/`** -- System dependency lists (`brew.txt`, `apt.txt`, `cargo.txt`, `luarocks.txt`) installed via `make deps`
+- **`evals/`** -- Skill trigger and context-injection evaluation scripts
+- **`scripts/`** -- Tooling scripts (eval runners, description improvers)
+- **`teams/`** -- Agent team configurations
 - **`settings.json`** -- Permissions, hooks config, enabled plugins, environment variables
 - **Python scripts** -- Some skills include Python (`skills/reading-books/book.py`, `skills/monitoring-ci/ci-monitor.py`); deps managed via `uv` (`pyproject.toml`)
 
