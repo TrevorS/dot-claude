@@ -168,6 +168,19 @@
           {
             "type": "command",
             "command": "~/.claude/hooks/branch_protection.sh"
+          },
+          {
+            "type": "command",
+            "command": "python3 ~/.claude/hooks/banned-words.py"
+          }
+        ]
+      },
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 ~/.claude/hooks/banned-words.py"
           }
         ]
       }
