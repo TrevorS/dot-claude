@@ -26,7 +26,6 @@ alias pip=pip3
 alias gst="git status"
 alias gaa="git add --all"
 alias gc="git commit --verbose"
-alias gd="git diff"
 alias gdc="git diff --cached"
 alias gb="git branch"
 alias gco="git checkout"

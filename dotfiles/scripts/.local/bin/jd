@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+# Interactive jj diff browser using fzf + delta.
+#
+# All arguments pass through to jj diff. The special --side flag enables
+# delta's side-by-side mode.
+#
+# Examples:
+#   jd
+#   jd --side
+#   jd -r @-
+#   jd --from main@origin --to @
+
+set -o errexit
+set -o pipefail
+set -o nounset
+
+JJ_ARGS=("--color=always")
+
+for arg in "${@:+"${@}"}"; do
+  if [ "${arg}" = "--side" ]; then
+    export DELTA_FEATURES="${DELTA_FEATURES:-} side-by-side"
+  else
+    JJ_ARGS+=("${arg}")
+  fi
+done
+
+jj diff "${JJ_ARGS[@]}" --name-only |
+  fzf \
+    --preview "jj diff ${JJ_ARGS[*]} -- {-1} | delta --width=\${FZF_PREVIEW_COLUMNS}" \
+    --preview-window="right,75%" || true

@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+# Interactive git diff browser using fzf + delta.
+#
+# All arguments pass through to git diff. The special --side flag enables
+# delta's side-by-side mode.
+#
+# Examples:
+#   gd
+#   gd --side
+#   gd --staged
+#   gd HEAD~3
+
+set -o errexit
+set -o pipefail
+set -o nounset
+
+GIT_ARGS=("--color=always")
+
+for arg in "${@:+"${@}"}"; do
+  if [ "${arg}" = "--side" ]; then
+    export DELTA_FEATURES="${DELTA_FEATURES:-} side-by-side"
+  else
+    GIT_ARGS+=("${arg}")
+  fi
+done
+
+git diff "${GIT_ARGS[@]}" --name-only |
+  fzf \
+    --preview "git diff ${GIT_ARGS[*]} -- {-1} | delta --width=\${FZF_PREVIEW_COLUMNS}" \
+    --preview-window="right,75%" || true
