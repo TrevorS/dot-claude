@@ -1,5 +1,5 @@
--- ABOUTME: Minimal Neovim 0.11.4 config with custom plugin bootstrap
--- Single-file configuration using mini.nvim modules and catppuccin theme
+-- ABOUTME: Minimal Neovim 0.12.0 config with vim.pack and catppuccin theme
+-- Single-file configuration using mini.nvim modules
 
 ---@diagnostic disable: inject-field, undefined-field, assign-type-mismatch, param-type-mismatch
 -- Disable unused language providers
@@ -7,84 +7,15 @@ vim.g.loaded_node_provider = 0
 vim.g.loaded_python3_provider = 0
 
 -- ============================================================================
--- PLUGIN BOOTSTRAP
+-- PLUGIN MANAGEMENT (vim.pack)
 -- ============================================================================
 
-local function ensure_plugin(user, repo)
-	local install_path = vim.fn.stdpath("data") .. "/site/pack/vendor/start/" .. repo
-
-	if vim.fn.isdirectory(install_path) == 0 then
-		vim.notify("Installing " .. repo .. "...", vim.log.levels.INFO)
-		local url = string.format("https://github.com/%s/%s.git", user, repo)
-		vim.fn.system({ "git", "clone", "--depth=1", url, install_path })
-		vim.notify("Installed " .. repo, vim.log.levels.INFO)
-		return true
-	end
-	return false
-end
-
-local function bootstrap_plugins()
-	local installed_any = false
-
-	-- Install mini.nvim
-	if ensure_plugin("nvim-mini", "mini.nvim") then
-		installed_any = true
-	end
-
-	-- Install catppuccin
-	if ensure_plugin("catppuccin", "nvim") then
-		installed_any = true
-	end
-
-	-- Install oil.nvim
-	if ensure_plugin("stevearc", "oil.nvim") then
-		installed_any = true
-	end
-
-	-- Install nvim-treesitter
-	if ensure_plugin("nvim-treesitter", "nvim-treesitter") then
-		installed_any = true
-	end
-
-	if installed_any then
-		vim.notify("Run :PluginUpdate to update plugins", vim.log.levels.INFO)
-		vim.cmd("packloadall! | helptags ALL")
-	end
-end
-
--- Bootstrap on first run
-bootstrap_plugins()
-
--- Create update command (async to avoid UI hang)
-vim.api.nvim_create_user_command("PluginUpdate", function()
-	local data_path = vim.fn.stdpath("data") .. "/site/pack/vendor/start/"
-	local plugins = vim.fn.readdir(data_path)
-	local completed = 0
-	local total = #plugins
-
-	vim.notify("Plugin updates started (running in background)...", vim.log.levels.INFO)
-
-	for _, plugin in ipairs(plugins) do
-		local plugin_path = data_path .. plugin
-		vim.notify("Updating " .. plugin .. "...", vim.log.levels.INFO)
-
-		vim.system({ "git", "-C", plugin_path, "pull" }, {}, function(obj)
-			completed = completed + 1
-			if obj.code == 0 then
-				vim.notify("Updated " .. plugin, vim.log.levels.INFO)
-			else
-				vim.notify("Failed to update " .. plugin, vim.log.levels.WARN)
-			end
-
-			if completed == total then
-				vim.schedule(function()
-					vim.cmd("packloadall! | helptags ALL")
-					vim.notify("All plugins updated!", vim.log.levels.INFO)
-				end)
-			end
-		end)
-	end
-end, {})
+vim.pack.add({
+	"https://github.com/nvim-mini/mini.nvim",
+	"https://github.com/catppuccin/nvim",
+	"https://github.com/stevearc/oil.nvim",
+	"https://github.com/nvim-treesitter/nvim-treesitter",
+})
 
 -- ============================================================================
 -- CORE SETTINGS
@@ -99,18 +30,26 @@ vim.g.loaded_ruby_provider = 0
 vim.g.loaded_perl_provider = 0
 
 -- Settings not covered by mini.basics
-vim.opt.termguicolors = true
 vim.opt.expandtab = true
 vim.opt.tabstop = 2
 vim.opt.shiftwidth = 2
 vim.opt.softtabstop = 2
-vim.opt.inccommand = "nosplit"
-vim.opt.completeopt = { "menuone", "noinsert" } -- Different from mini.basics 'noselect'
-vim.opt.shortmess:append("c")
 vim.opt.updatetime = 250
 vim.opt.timeoutlen = 300
-vim.opt.virtualedit = "onemore" -- Different from mini.basics 'block'
+vim.opt.virtualedit = "onemore"
 vim.opt.wildmode = { "longest", "list:longest" }
+
+-- built-in completion
+vim.opt.autocomplete = true
+vim.opt.completeopt = { "menuone", "noinsert", "popup", "fuzzy" }
+vim.opt.complete = ".,w,b,u,o"
+
+-- UI borders
+vim.opt.winborder = "rounded"
+vim.opt.pumborder = "rounded"
+
+-- ui2
+require("vim._core.ui2").enable({ msg = { targets = "cmd" } })
 
 -- Custom fillchars (overrides mini.basics default)
 vim.opt.fillchars = {
@@ -122,10 +61,6 @@ vim.opt.fillchars = {
 	vertright = "┣",
 	verthoriz = "╋",
 }
-
--- ============================================================================
--- NEOVIM 0.11 BUILT-IN LSP
--- ============================================================================
 
 -- Configure LSP servers (examples - install servers separately)
 -- lua_ls
@@ -180,15 +115,17 @@ vim.lsp.config("vtsls", {
 -- Enable LSP servers
 vim.lsp.enable({ "lua_ls", "rust_analyzer", "vtsls" })
 
--- LSP keymaps
+-- LSP keymaps and built-in completion
+-- 0.12 defaults: K (hover), grn (rename), gra (code action), grr (references),
+-- gri (implementation), gO (document symbols), grt (type definition), grx (codelens)
 vim.api.nvim_create_autocmd("LspAttach", {
 	callback = function(args)
-		local opts = { buffer = args.buf }
-		vim.keymap.set("n", "gd", vim.lsp.buf.definition, opts)
-		vim.keymap.set("n", "gr", vim.lsp.buf.references, opts)
-		vim.keymap.set("n", "K", vim.lsp.buf.hover, opts)
-		vim.keymap.set("n", "<leader>rn", vim.lsp.buf.rename, opts)
-		vim.keymap.set("n", "<leader>ca", vim.lsp.buf.code_action, opts)
+		local client = vim.lsp.get_client_by_id(args.data.client_id)
+		if client then
+			vim.lsp.completion.enable(true, client.id, args.buf)
+		end
+
+		vim.keymap.set("n", "gd", vim.lsp.buf.definition, { buffer = args.buf })
 	end,
 })
 
@@ -261,7 +198,7 @@ local function setup_diagnostic_float()
 				return
 			end
 
-			vim.diagnostic.open_float(nil, { focus = false })
+			vim.diagnostic.open_float({ focus = false })
 			diagnostic_float_state.win_id = find_diagnostic_float()
 		end,
 	})
@@ -320,27 +257,10 @@ require("mini.basics").setup({
 	autocommands = { basic = true, relnum_in_visual_mode = false },
 })
 
-require("mini.comment").setup()
 require("mini.surround").setup()
 require("mini.pairs").setup()
 require("mini.ai").setup()
 require("mini.snippets").setup()
-
--- Completion
--- ----------------------------------------------------------------------------
-
-require("mini.completion").setup({
-	lsp_completion = { source_func = "omnifunc", auto_setup = true },
-	window = {
-		info = { height = 25, width = 80, border = "none" },
-		signature = { height = 25, width = 80, border = "none" },
-	},
-})
-
--- Tab to confirm completion
-vim.keymap.set("i", "<Tab>", function()
-	return vim.fn.pumvisible() == 1 and "<C-y>" or "<Tab>"
-end, { expr = true, desc = "Confirm completion or insert tab" })
 
 -- UI & Appearance
 -- ----------------------------------------------------------------------------
@@ -351,27 +271,6 @@ require("mini.trailspace").setup()
 require("mini.tabline").setup()
 require("mini.notify").setup()
 vim.notify = require("mini.notify").make_notify()
-
-require("mini.statusline").setup({
-	content = {
-		active = function()
-			local mode, mode_hl = MiniStatusline.section_mode({ trunc_width = 120 })
-			local git = MiniStatusline.section_git({ trunc_width = 75 })
-			local diagnostics = MiniStatusline.section_diagnostics({ trunc_width = 75 })
-			local lsp = MiniStatusline.section_lsp({ trunc_width = 75 })
-			local filename = MiniStatusline.section_filename({ trunc_width = 140 })
-
-			return MiniStatusline.combine_groups({
-				{ hl = mode_hl, strings = { mode } },
-				{ hl = "MiniStatuslineFilename", strings = { filename } },
-				"%<",
-				{ hl = "MiniStatuslineDevinfo", strings = { git, lsp, diagnostics } },
-				"%=",
-			})
-		end,
-	},
-	use_icons = true,
-})
 
 -- Navigation & Workflow
 -- ----------------------------------------------------------------------------
@@ -392,8 +291,22 @@ require("oil").setup({
 	},
 })
 
-require("nvim-treesitter").setup({
-	ensure_installed = { "lua", "rust", "typescript", "javascript", "json", "toml", "markdown" },
+require("nvim-treesitter").setup()
+require("nvim-treesitter").install({
+	"lua",
+	"rust",
+	"typescript",
+	"javascript",
+	"json",
+	"toml",
+	"markdown",
+	"python",
+	"go",
+	"elixir",
+	"elm",
+	"gleam",
+	"zig",
+	"ruby",
 })
 
 require("mini.clue").setup({
@@ -437,6 +350,16 @@ require("catppuccin").setup({
 			indentscope_color = "",
 		},
 	},
+	custom_highlights = {
+		-- 0.12 highlight groups not yet in catppuccin
+		PmenuBorder = { link = "FloatBorder" },
+		PmenuShadow = { link = "FloatShadow" },
+		PmenuShadowThrough = { link = "FloatShadowThrough" },
+		DiffTextAdd = { link = "DiffAdd" },
+		OkMsg = { link = "DiagnosticOk" },
+		StderrMsg = { link = "ErrorMsg" },
+		StdoutMsg = { link = "ModeMsg" },
+	},
 })
 
 vim.cmd.colorscheme("catppuccin")
@@ -444,6 +367,15 @@ vim.cmd.colorscheme("catppuccin")
 -- ============================================================================
 -- KEYMAPS
 -- ============================================================================
+
+-- Tab/S-Tab to navigate completion menu
+vim.keymap.set("i", "<Tab>", function()
+	return vim.fn.pumvisible() == 1 and "<C-n>" or "<Tab>"
+end, { expr = true, desc = "Next completion or insert tab" })
+
+vim.keymap.set("i", "<S-Tab>", function()
+	return vim.fn.pumvisible() == 1 and "<C-p>" or "<S-Tab>"
+end, { expr = true, desc = "Prev completion or unindent" })
 
 -- Splits
 vim.keymap.set("n", "<leader>v", "<cmd>vsplit<cr><c-w>l", { desc = "Vertical split" })
@@ -505,7 +437,7 @@ vim.keymap.set("n", "<leader>d", function()
 		diagnostic_float_state.dismissed_buf = current_buf
 	else
 		-- Open and clear dismissed state
-		vim.diagnostic.open_float(nil, { focus = false })
+		vim.diagnostic.open_float({ focus = false })
 		diagnostic_float_state.win_id = find_diagnostic_float()
 		diagnostic_float_state.dismissed_line = nil
 		diagnostic_float_state.dismissed_buf = nil

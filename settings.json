@@ -247,7 +247,8 @@
     "pyright-lsp@claude-plugins-official": true,
     "telegram-enhanced@trevor-plugins": true,
     "house@trevor-plugins": true,
-    "dev@trevor-plugins": true
+    "dev@trevor-plugins": true,
+    "lua-lsp@claude-plugins-official": true
   },
   "extraKnownMarketplaces": {
     "trevor-plugins": {
