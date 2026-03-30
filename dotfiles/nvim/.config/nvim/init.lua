@@ -350,19 +350,123 @@ require("catppuccin").setup({
 			indentscope_color = "",
 		},
 	},
-	custom_highlights = {
-		-- 0.12 highlight groups not yet in catppuccin
-		PmenuBorder = { link = "FloatBorder" },
-		PmenuShadow = { link = "FloatShadow" },
-		PmenuShadowThrough = { link = "FloatShadowThrough" },
-		DiffTextAdd = { link = "DiffAdd" },
-		OkMsg = { link = "DiagnosticOk" },
-		StderrMsg = { link = "ErrorMsg" },
-		StdoutMsg = { link = "ModeMsg" },
-	},
+	custom_highlights = function(colors)
+		return {
+			-- 0.12 highlight groups not yet in catppuccin
+			PmenuBorder = { link = "FloatBorder" },
+			PmenuShadow = { link = "FloatShadow" },
+			PmenuShadowThrough = { link = "FloatShadowThrough" },
+			DiffTextAdd = { link = "DiffAdd" },
+			OkMsg = { link = "DiagnosticOk" },
+			StderrMsg = { link = "ErrorMsg" },
+			StdoutMsg = { link = "ModeMsg" },
+			-- jj diamond highlights
+			StJJDirty = { fg = colors.green, bg = colors.surface1, bold = true },
+			StJJEmpty = { fg = colors.overlay0, bg = colors.surface1 },
+		}
+	end,
 })
 
 vim.cmd.colorscheme("catppuccin")
+
+-- ============================================================================
+-- JJ INTEGRATION
+-- ============================================================================
+
+-- Cache jj info per buffer (nil = not checked, false = not a jj repo)
+-- Access via vim.b.jj or jj_get(buf)
+local jj_cache = {}
+
+local jj_tmpl = 'change_id.shortest() ++ "\\n"'
+	.. ' ++ bookmarks.filter(|b| b.remote() == "").map(|b| b.name()).join(" ") ++ "\\n"'
+	.. ' ++ description.first_line() ++ "\\n"'
+	.. ' ++ if(empty, "empty", "dirty")'
+
+local function jj_refresh(buf)
+	local file = vim.api.nvim_buf_get_name(buf)
+	if file == "" or file:find("^%w+://") then
+		return
+	end
+	local dir = vim.fn.fnamemodify(file, ":h")
+	vim.system(
+		{ "jj", "log", "-r", "@", "--no-graph", "-T", jj_tmpl, "--ignore-working-copy" },
+		{ cwd = dir },
+		vim.schedule_wrap(function(result)
+			if result.code == 0 and result.stdout and result.stdout ~= "" then
+				local lines = vim.split(result.stdout, "\n")
+				local info = {
+					id = (lines[1] or ""):match("^%S+") or "",
+					bookmark = (lines[2] or ""):match("^%S+") or "",
+					desc = ((lines[3] or ""):gsub("%s+$", "")),
+					empty = (lines[4] or ""):match("^empty") ~= nil,
+				}
+				jj_cache[buf] = info
+				vim.b[buf].jj = info
+			else
+				jj_cache[buf] = false
+				vim.b[buf].jj = nil
+			end
+		end)
+	)
+end
+
+local function jj_get(buf)
+	buf = buf or vim.api.nvim_get_current_buf()
+	return jj_cache[buf]
+end
+
+vim.api.nvim_create_autocmd({ "BufEnter", "BufWritePost" }, {
+	callback = function(args)
+		jj_refresh(args.buf)
+	end,
+})
+
+-- ============================================================================
+-- STATUSLINE
+-- ============================================================================
+
+require("mini.statusline").setup({
+	content = {
+		active = function()
+			local mode, mode_hl = MiniStatusline.section_mode({ trunc_width = 120 })
+			local git = MiniStatusline.section_git({ trunc_width = 75 })
+			local diagnostics = MiniStatusline.section_diagnostics({ trunc_width = 75 })
+			local lsp = MiniStatusline.section_lsp({ trunc_width = 75 })
+			local filename = MiniStatusline.section_filename({ trunc_width = 140 })
+
+			-- jj: show change info instead of git when in a jj repo
+			local jj_info = jj_get()
+			local jj = ""
+			if jj_info and jj_info ~= false then
+				local diamond = jj_info.empty and "%#StJJEmpty#◇" or "%#StJJDirty#◆"
+				local parts = { diamond .. "%#MiniStatuslineDevinfo# " .. jj_info.id }
+				if jj_info.bookmark ~= "" then
+					parts[#parts + 1] = " " .. jj_info.bookmark
+				end
+				if jj_info.desc ~= "" then
+					local desc = jj_info.desc
+					if #desc > 30 then
+						desc = desc:sub(1, 27) .. "..."
+					end
+					parts[#parts + 1] = " " .. desc
+				end
+				jj = table.concat(parts)
+			end
+
+			-- In colocated repos, show jj instead of git
+			local vcs = jj ~= "" and jj or git
+
+			return MiniStatusline.combine_groups({
+				{ hl = mode_hl, strings = { mode } },
+				{ hl = "MiniStatuslineFilename", strings = { filename } },
+				"%<",
+				{ hl = "MiniStatuslineDevinfo", strings = { vcs, lsp, diagnostics } },
+				"%=",
+			})
+		end,
+	},
+	use_icons = true,
+})
 
 -- ============================================================================
 -- KEYMAPS
