@@ -8,7 +8,10 @@ input=$(cat)
 command=$(echo "$input" | jq -r '.tool_input.command // empty' 2>/dev/null || echo "")
 
 # Only check git/jj commit-related commands
-if [[ "$command" =~ ^git[[:space:]]+(commit|add) ]] || [[ "$command" =~ ^jj[[:space:]]+(describe|new|commit) ]]; then
+is_jj=false
+if [[ "$command" =~ ^jj[[:space:]]+(describe|new|commit|squash) ]]; then
+  is_jj=true
+elif [[ "$command" =~ ^git[[:space:]]+(commit|add) ]]; then
   : # fall through to protection check
 else
   echo "$input"
@@ -21,21 +24,34 @@ if [ -f "./CLAUDE.md" ] && grep -qi "direct-commits-allowed: true" ./CLAUDE.md 2
   exit 0
 fi
 
-# Get current branch (try jj first — check @ then @-, then fall back to git)
+# Get current branch
 current_branch=""
-if command -v jj &>/dev/null && jj root &>/dev/null; then
+if $is_jj; then
+  # In jj, only check @'s bookmarks. @ is always a separate change from @-.
+  # If @ has no protected bookmark, you're on an unnamed branch — that's fine,
+  # even if @- is a protected branch.
+  current_branch=$(jj log -r @ --no-graph -T 'bookmarks' 2>/dev/null | tr ',' '\n' | head -1 | xargs)
+elif command -v jj &>/dev/null && jj root &>/dev/null; then
+  # git command in a jj-colocated repo — check both @ and @-
   current_branch=$(jj log -r @ --no-graph -T 'bookmarks' 2>/dev/null | tr ',' '\n' | head -1 | xargs)
   if [ -z "$current_branch" ]; then
     current_branch=$(jj log -r '@-' --no-graph -T 'bookmarks' 2>/dev/null | tr ',' '\n' | head -1 | xargs)
   fi
-fi
-if [ -z "$current_branch" ]; then
+else
   current_branch=$(git branch --show-current 2>/dev/null || echo "")
 fi
 
 # Block if on protected branch
 if [[ "$current_branch" =~ ^(main|master|dev)$ ]]; then
-  cat >&2 <<MSG
+  if $is_jj; then
+    cat >&2 <<MSG
+Blocked: @ has the '$current_branch' bookmark — you're editing the protected branch directly.
+
+Fix: create a feature bookmark on @ first, then retry:
+  jj bookmark create <feature-name> -r @
+MSG
+  else
+    cat >&2 <<MSG
 Blocked: committing directly to protected branch '$current_branch'.
 
 Options:
@@ -43,6 +59,7 @@ Options:
   2. Ask the user if direct commits are OK for this project. If yes, add this line to ./CLAUDE.md:
      direct-commits-allowed: true
 MSG
+  fi
   exit 2
 fi
 
