@@ -17,6 +17,11 @@ vim.pack.add({
 	"https://github.com/nvim-treesitter/nvim-treesitter",
 })
 
+vim.api.nvim_create_user_command("PackUpdate", function(args)
+	local names = #args.fargs > 0 and args.fargs or nil
+	vim.pack.update(names)
+end, { nargs = "*" })
+
 -- ============================================================================
 -- CORE SETTINGS
 -- ============================================================================
@@ -384,10 +389,13 @@ local jj_tmpl = 'change_id.shortest() ++ "\\n"'
 
 local function jj_refresh(buf)
 	local file = vim.api.nvim_buf_get_name(buf)
-	if file == "" or file:find("^%w+://") then
+	if file == "" or file:find("^%w+:") then
 		return
 	end
 	local dir = vim.fn.fnamemodify(file, ":h")
+	if vim.fn.isdirectory(dir) == 0 then
+		return
+	end
 	vim.system(
 		{ "jj", "log", "-r", "@", "--no-graph", "-T", jj_tmpl, "--ignore-working-copy" },
 		{ cwd = dir },

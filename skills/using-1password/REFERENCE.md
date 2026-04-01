@@ -54,6 +54,7 @@ op item delete "Acme - API Keys" --vault "Engineering"
 ## Vault IDs vs Names
 
 Both work interchangeably:
+
 ```bash
 --vault "Engineering"
 --vault "js4hbjnzh3ly27nyz44cbo3v6a"
