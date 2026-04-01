@@ -3,11 +3,13 @@
   "env": {
     "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1",
     "CLAUDE_CODE_NO_FLICKER": "1",
-    "DISABLE_BUG_COMMAND": "true",
-    "DISABLE_COST_WARNINGS": "true",
-    "DISABLE_ERROR_REPORTING": "true",
+    "DISABLE_BUG_COMMAND": "1",
+    "DISABLE_COST_WARNINGS": "1",
+    "DISABLE_ERROR_REPORTING": "1",
     "CLAUDE_NOTIFY_SOUND": "",
-    "ENABLE_LSP_TOOL": "1"
+    "ENABLE_LSP_TOOL": "1",
+    "MCP_CONNECTION_NONBLOCKING": "1",
+    "CLAUDE_CODE_SUBPROCESS_ENV_SCRUB": "1"
   },
   "includeCoAuthoredBy": false,
   "permissions": {
@@ -160,11 +162,18 @@
     "PreToolUse": [
       {
         "matcher": "Bash",
+        "if": "Bash(git commit*) || Bash(git add*) || Bash(jj describe*) || Bash(jj new*) || Bash(jj commit*) || Bash(jj squash*)",
         "hooks": [
           {
             "type": "command",
             "command": "~/.claude/hooks/branch_protection.sh"
-          },
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "if": "Bash(git commit*) || Bash(jj describe*) || Bash(jj commit*) || Bash(jj squash*) || Bash(jj new*) || Bash(gh pr create*)",
+        "hooks": [
           {
             "type": "command",
             "command": "python3 ~/.claude/hooks/banned-words.py"
@@ -256,6 +265,7 @@
   },
   "forceLoginMethod": "claudeai",
   "alwaysThinkingEnabled": true,
+  "showThinkingSummaries": true,
   "voiceEnabled": true,
   "skipDangerousModePermissionPrompt": true
 }
