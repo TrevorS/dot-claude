@@ -8,6 +8,11 @@ export PATH="$HOME/.cargo/bin:$PATH"
 export PATH="$HOME/.local/bin:$PATH"
 export MANPATH="/opt/homebrew/opt/coreutils/libexec/gnuman:$MANPATH"
 export LIBRARY_PATH=/opt/homebrew/lib:$LIBRARY_PATH
+export HOMEBREW_NO_AUTO_UPDATE=1
+export HOMEBREW_NO_ENV_HINTS=1
+export HOMEBREW_NO_ANALYTICS=1
+export HOMEBREW_AUTOREMOVE=1
+export HOMEBREW_BAT=1
 
 # editor
 export EDITOR="nvim"
@@ -53,6 +58,9 @@ autoload -Uz compinit && compinit
 
 # python debugging
 export PYTHONBREAKPOINT=ipdb.set_trace
+export BAT_THEME="Catppuccin Mocha"
+export FZF_DEFAULT_COMMAND="fd --type f --hidden --exclude .git"
+export FZF_DEFAULT_OPTS="--height 40% --layout=reverse"
 
 # ls colors
 [ -f ~/.local/share/lscolors.sh ] && source ~/.local/share/lscolors.sh
@@ -68,6 +76,7 @@ if command -v atuin >/dev/null; then
   bindkey '^N' down-line-or-history
 fi
 command -v uv       >/dev/null && eval "$(uv generate-shell-completion zsh)"
+command -v zoxide   >/dev/null && eval "$(zoxide init zsh)"
 
 # bun
 if [ -d "$HOME/.bun" ]; then
