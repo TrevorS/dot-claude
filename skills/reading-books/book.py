@@ -1,12 +1,12 @@
 # /// script
 # requires-python = ">=3.11"
 # dependencies = [
-#     "PyMuPDF",
-#     "ebooklib",
-#     "beautifulsoup4",
-#     "mobi",
-#     "rank-bm25",
-#     "click",
+#     "PyMuPDF==1.27.2.2",
+#     "ebooklib==0.20",
+#     "beautifulsoup4==4.14.3",
+#     "mobi==0.4.1",
+#     "rank-bm25==0.2.2",
+#     "click==8.3.1",
 # ]
 # ///
 """
