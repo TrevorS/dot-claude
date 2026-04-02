@@ -283,7 +283,7 @@
   },
   "forceLoginMethod": "claudeai",
   "alwaysThinkingEnabled": true,
-  "showThinkingSummaries": true,
   "voiceEnabled": true,
+  "showThinkingSummaries": true,
   "skipDangerousModePermissionPrompt": true
 }

@@ -19,11 +19,9 @@ paths:
 - Use `vim.fn` for calling Vimscript functions
 - Prefer `vim.notify()` over `print()` for user-facing messages
 
-## lazy.nvim Plugin Specs
+## vim.pack Plugin Management (Neovim 0.12)
 
-- Each plugin is a table: `{ "author/repo", opts = {}, config = function() end }`
-- Use `opts` for simple configuration (auto-calls `setup(opts)`)
-- Use `config` only when `opts` is insufficient
-- Use `event`, `ft`, `cmd`, `keys` for lazy-loading
-- Dependencies go in `dependencies = { "dep/repo" }`
-- Keep one plugin per file in `lua/plugins/`
+- Add plugins in `vim.pack.add()` with full GitHub URLs
+- Configure plugins with `require('plugin').setup({})` after the `vim.pack.add()` call
+- Update plugins with `:PackUpdate` (or `:PackUpdate name` for a single plugin)
+- No lazy-loading DSL — plugins load at startup. Keep the list small and intentional

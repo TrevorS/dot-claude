@@ -6,6 +6,7 @@ direct-commits-allowed: true
 
 ```bash
 make install              # Install deps (uv sync), stow dotfiles, install TPM
+make deps                 # Install system packages from packages/*.txt (brew, apt, cargo, luarocks)
 make validate             # Run all checks: formatting, linting, type checking, stylua, luacheck (also: make pre-commit)
 make typecheck            # Type check Python scripts (ty)
 make dotfiles             # Stow all dotfile packages into ~
@@ -71,10 +72,6 @@ Key patterns:
 - Make the smallest reasonable changes to achieve the desired outcome
 - Write tests before implementation (TDD)
 - Handle errors at the appropriate abstraction level
-
-### Integrations
-
-- **Journal**: Use `mcp__cj__journal_add` throughout work -- decisions, progress, blockers, and reflections
 
 ## Thinking Patterns
 
