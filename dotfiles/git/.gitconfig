@@ -8,6 +8,7 @@
 [delta]
 	navigate = true
 	light = false
+	syntax-theme = base16-256
 
 [merge]
 	conflictstyle = diff3
