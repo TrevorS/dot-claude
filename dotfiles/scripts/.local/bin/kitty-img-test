@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+# Generate a test image and display it via kitty-img popup.
+set -euo pipefail
+
+tmpfile=$(mktemp /tmp/kitty-test-XXXXXX.png)
+trap 'rm -f "$tmpfile"' EXIT
+
+magick -size 200x100 gradient:'#89b4fa-#f38ba8' "$tmpfile"
+
+kitty-img "$tmpfile" 40

@@ -1,0 +1,287 @@
+#!/usr/bin/env python3
+"""Display an image using the Kitty graphics protocol.
+
+In tmux: opens a split pane (default) or popup (--popup).
+Outside tmux: renders inline.
+
+Usage: kitty-img [--popup] <image-file> [max-width-cols]
+"""
+
+import argparse
+import base64
+import os
+import subprocess
+import sys
+
+CHUNK_SIZE = 4096
+
+
+def image_dimensions(filepath: str) -> tuple[int, int]:
+    try:
+        result = subprocess.run(
+            ["magick", "identify", "-format", "%w %h", filepath],
+            capture_output=True,
+            text=True,
+        )
+        if result.returncode == 0:
+            w, h = result.stdout.strip().split()
+            return int(w), int(h)
+    except (FileNotFoundError, ValueError):
+        pass
+    return 800, 600
+
+
+def tmux_dimensions() -> tuple[int, int]:
+    result = subprocess.run(
+        ["tmux", "display-message", "-p", "#{window_width} #{window_height}"],
+        capture_output=True,
+        text=True,
+    )
+    w, h = result.stdout.strip().split()
+    return int(w), int(h)
+
+
+def get_client_tty() -> str | None:
+    if not os.environ.get("TMUX"):
+        return None
+    try:
+        result = subprocess.run(
+            ["tmux", "display-message", "-p", "#{client_tty}"],
+            capture_output=True,
+            text=True,
+        )
+        return result.stdout.strip() or None
+    except FileNotFoundError:
+        return None
+
+
+def convert_to_png(filepath: str, max_px: int = 800) -> bytes:
+    try:
+        result = subprocess.run(
+            ["magick", filepath, "-resize", f"{max_px}x{max_px}>", "PNG:-"],
+            capture_output=True,
+        )
+        if result.returncode == 0:
+            return result.stdout
+    except FileNotFoundError:
+        pass
+    with open(filepath, "rb") as f:
+        return f.read()
+
+
+def write_to(tty_path: str | None, data: bytes):
+    if tty_path:
+        with open(tty_path, "wb") as f:
+            f.write(data)
+    else:
+        sys.stdout.buffer.write(data)
+        sys.stdout.buffer.flush()
+
+
+def send_image_passthrough(
+    png_data: bytes, max_cols: int, in_tmux: bool, max_rows: int = 0
+):
+    """Render via DCS passthrough (for split pane or bare terminal)."""
+    b64 = base64.b64encode(png_data).decode("ascii")
+    total = len(b64)
+    offset = 0
+    out = sys.stdout.buffer
+
+    # Build placement params
+    place = f"c={max_cols}"
+    if max_rows > 0:
+        place += f",r={max_rows}"
+
+    while offset < total:
+        chunk = b64[offset : offset + CHUNK_SIZE]
+        is_first = offset == 0
+        is_last = offset + CHUNK_SIZE >= total
+        m = 0 if is_last else 1
+
+        if is_first:
+            inner = f"\x1b_Gf=100,a=T,t=d,q=2,{place},m={m};{chunk}\x1b\\"
+        else:
+            inner = f"\x1b_Gm={m},q=2;{chunk}\x1b\\"
+
+        if in_tmux:
+            escaped = inner.replace("\x1b", "\x1b\x1b")
+            payload = f"\x1bPtmux;{escaped}\x1b\\"
+        else:
+            payload = inner
+
+        out.write(payload.encode())
+        out.flush()
+        offset += CHUNK_SIZE
+
+
+def send_image_direct(
+    png_data: bytes, max_cols: int, tty_path: str, max_rows: int = 0
+):
+    """Render via direct pty write (for popup mode)."""
+    b64 = base64.b64encode(png_data).decode("ascii")
+    total = len(b64)
+    offset = 0
+
+    place = f"c={max_cols}"
+    if max_rows > 0:
+        place += f",r={max_rows}"
+
+    while offset < total:
+        chunk = b64[offset : offset + CHUNK_SIZE]
+        is_first = offset == 0
+        is_last = offset + CHUNK_SIZE >= total
+        m = 0 if is_last else 1
+
+        if is_first:
+            payload = f"\x1b_Gf=100,a=T,t=d,q=2,{place},m={m};{chunk}\x1b\\"
+        else:
+            payload = f"\x1b_Gm={m},q=2;{chunk}\x1b\\"
+
+        write_to(tty_path, payload.encode())
+        offset += CHUNK_SIZE
+
+
+def wait_for_dismiss():
+    if sys.stdin.isatty():
+        import termios
+        import tty
+
+        fd = sys.stdin.fileno()
+        old = termios.tcgetattr(fd)
+        try:
+            tty.setraw(fd)
+            sys.stdin.read(1)
+        finally:
+            termios.tcsetattr(fd, termios.TCSADRAIN, old)
+    else:
+        import time
+
+        time.sleep(30)
+
+
+def launch_split(filepath: str, max_cols: int):
+    from shlex import quote
+
+    img_w, img_h = image_dimensions(filepath)
+    aspect = img_w / max(img_h, 1)
+    win_w, win_h = tmux_dimensions()
+
+    display_cols = max_cols if max_cols > 0 else min(win_w - 4, 100)
+    img_rows = int(display_cols / aspect / 2)
+    pane_height = max(min(img_rows + 2, win_h - 5), 6)  # +2 for title + padding
+
+    subprocess.Popen(
+        [
+            "tmux",
+            "split-window",
+            "-v",
+            "-l",
+            str(pane_height),
+            f"KITTY_IMG_PANE=1 kitty-img {quote(filepath)} {display_cols}",
+        ],
+        start_new_session=True,
+    )
+
+
+def launch_popup(filepath: str, max_cols: int):
+    from shlex import quote
+
+    img_w, img_h = image_dimensions(filepath)
+    aspect = img_w / max(img_h, 1)
+    win_w, win_h = tmux_dimensions()
+
+    # Popup size: fit image with border padding
+    max_popup_w = min(int(win_w * 0.8), win_w - 4)
+    max_popup_h = min(int(win_h * 0.8), win_h - 4)
+
+    # Image display size in cols/rows (terminal cells are ~2:1 tall)
+    display_cols = max_cols if max_cols > 0 else max_popup_w - 4
+    display_rows = int(display_cols / aspect / 2)
+
+    # Constrain to fit popup height (leave room for border + status line)
+    if display_rows > max_popup_h - 4:
+        display_rows = max_popup_h - 4
+        display_cols = int(display_rows * aspect * 2)
+
+    # +2 for popup border
+    popup_w = display_cols + 2
+    popup_h = display_rows + 2
+
+    subprocess.Popen(
+        [
+            "tmux",
+            "display-popup",
+            "-w",
+            str(popup_w),
+            "-h",
+            str(popup_h),
+            "-E",
+            f"KITTY_IMG_PANE=1 KITTY_IMG_ROWS={display_rows} kitty-img --popup {quote(filepath)} {display_cols}",
+        ],
+        start_new_session=True,
+    )
+
+
+def main():
+    parser = argparse.ArgumentParser(description="Display images via Kitty graphics protocol")
+    parser.add_argument("--popup", action="store_true", help="Use tmux popup instead of split pane")
+    parser.add_argument("file", help="Image file to display")
+    parser.add_argument("cols", nargs="?", type=int, default=0, help="Display width in columns")
+    args = parser.parse_args()
+
+    filepath = os.path.abspath(args.file)
+    max_cols = args.cols
+    use_popup = args.popup
+
+    if not os.path.isfile(filepath):
+        print(f"File not found: {filepath}", file=sys.stderr)
+        sys.exit(1)
+
+    in_tmux = bool(os.environ.get("TMUX"))
+
+    # If in tmux and not already inside the viewer pane, relaunch
+    if in_tmux and not os.environ.get("KITTY_IMG_PANE"):
+        if use_popup:
+            launch_popup(filepath, max_cols)
+        else:
+            launch_split(filepath, max_cols)
+        return
+
+    # --- Rendering (inside split/popup or bare terminal) ---
+
+    if max_cols <= 0:
+        try:
+            max_cols = os.get_terminal_size().columns - 2
+        except OSError:
+            max_cols = 80
+
+    png_data = convert_to_png(filepath)
+    max_rows = int(os.environ.get("KITTY_IMG_ROWS", 0))
+    name = os.path.basename(filepath)
+
+    if use_popup and in_tmux:
+        # Popup: direct pty write, with cleanup on exit
+        import atexit
+
+        tty_path = get_client_tty()
+        if tty_path:
+            send_image_direct(png_data, max_cols, tty_path, max_rows)
+
+            def cleanup():
+                write_to(tty_path, b"\x1b_Ga=d,q=2;\x1b\\")
+
+            atexit.register(cleanup)
+
+        pass
+    else:
+        # Split pane or bare terminal: DCS passthrough
+        # Print title first, then image renders above it
+        sys.stdout.buffer.write(f"{name} — press q to close\n".encode())
+        sys.stdout.buffer.flush()
+        send_image_passthrough(png_data, max_cols, in_tmux, max_rows)
+
+    wait_for_dismiss()
+
+
+if __name__ == "__main__":
+    main()
