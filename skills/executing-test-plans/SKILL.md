@@ -4,14 +4,7 @@ description: Execute a structured test plan and emit a concise, comprehensive re
 context: fork
 argument-hint: "[plan-file] [env-profile] [out-dir]"
 model: claude-sonnet-4-5
-allowed-tools:
-  - "Bash(curl:*)"
-  - "Bash(docker:*)"
-  - "Bash(aws sqs:*)"
-  - "Bash(mysql:*)"
-  - "Bash(jq:*)"
-  - "Bash(grep:*)"
-  - "Bash(watch:*)"
+allowed-tools: "Bash(curl:*), Bash(docker:*), Bash(aws sqs:*), Bash(mysql:*), Bash(jq:*), Bash(grep:*), Bash(watch:*)"
 ---
 
 # Executing Test Plans

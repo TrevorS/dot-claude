@@ -60,39 +60,21 @@ go vet ./...
 go test ./...
 ```
 
-## Auto-Discovery Logic
+## Auto-Discovery Priority
 
-```bash
-# Priority order
-if [ -f "Makefile" ]; then
-  # Check for make validate/format/lint/test targets
-elif [ -f "pyproject.toml" ]; then
-  # Python -- check for uv, poetry
-elif [ -f "package.json" ]; then
-  # Node.js -- check for pnpm, npm, yarn
-elif [ -f "Cargo.toml" ]; then
-  # Rust
-elif [ -f "go.mod" ]; then
-  # Go
-fi
-```
+Detect project type by checking for config files in this order: `Makefile` → `pyproject.toml` → `package.json` → `Cargo.toml` → `go.mod`. Use the first match to select the tool commands above.
 
-## Error Handling
+## Failure Recovery
 
-- **Tool not found**: Provide installation instructions
-- **Configuration missing**: Suggest minimal setup
-- **Validation failures**: Show specific fix recommendations
-- **Dependency conflicts**: Suggest resolution strategies
+When a validation step fails:
 
-## CLAUDE.md Integration
-
-Cache discovered validation info in the project's CLAUDE.md:
-
-```markdown
-## Project Validation Tools
-
-- **Format**: make format
-- **Lint**: make lint
-- **Type Check**: make typecheck
-- **Test**: make test
-```
+1. Show the specific error output
+2. Fix the reported issue (auto-fix if formatter, manual if lint/type error)
+3. Re-run **from the failed step** — not the entire pipeline
+4. If a tool is missing, install it first:
+   ```bash
+   # Python example
+   uv pip install ruff ty
+   # Node.js example
+   pnpm add -D prettier eslint typescript
+   ```

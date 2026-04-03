@@ -24,7 +24,14 @@ Analyze a spec file and produce structured `requirements.md`:
 - **Non-Functional Requirements**: Performance, security, usability, reliability
 - **Requirement Dependencies**: Prerequisites, interdependencies, optional links
 
-Each requirement gets clear acceptance criteria.
+Each requirement gets clear acceptance criteria. Example entry:
+
+```markdown
+### FR-1: User Authentication
+Users can sign in via email/password or OAuth providers.
+**Acceptance Criteria**: Login succeeds with valid credentials; invalid attempts show error; OAuth redirects work for Google and GitHub.
+**Dependencies**: None
+```
 
 ### requirements-to-tasks
 
@@ -67,6 +74,8 @@ EOF
 
 Apply labels: component (frontend, backend), type (feature, refactor), complexity (small, medium, large).
 
+**Error recovery**: If `gh issue create` fails (rate limit, auth), retry after 30s. Check for duplicates before retrying: `gh issue list --search "title" --json number`.
+
 ### setup-github-project
 
 **Trigger**: "set up project", "create project board", references to `issues.md`
@@ -78,7 +87,8 @@ Create complete GitHub project infrastructure:
 3. Set up milestones with due dates
 4. Create project board with custom fields
 5. Generate all issues with proper labels and milestones
-6. Link issue dependencies
+6. Verify creation: `gh issue list --limit 50 --json number,title | jq length` matches expected count
+7. Link issue dependencies
 
 ### tasks-to-team
 

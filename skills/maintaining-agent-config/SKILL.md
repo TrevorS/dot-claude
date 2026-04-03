@@ -1,6 +1,6 @@
 ---
-name: maintaining-claude-code
-description: Create, validate, and improve Claude Code configuration — SKILL.md files, CLAUDE.md, rules, hooks, and settings.json. Use when creating a new skill, writing a SKILL.md, adding a hook, editing rules, auditing skill descriptions, checking config quality, debugging hook behavior, or deciding between skills vs rules vs CLAUDE.md. Also auto-loads when working in ~/.claude/ on skills, rules, hooks, or settings.
+name: maintaining-agent-config
+description: "Create, validate, and improve agent configuration — SKILL.md files, CLAUDE.md, rules, hooks, and settings.json. Use when creating a new skill, writing a SKILL.md, adding a hook, editing rules, auditing skill descriptions, checking config quality, debugging hook behavior, or deciding between skills vs rules vs CLAUDE.md. Also auto-loads when working in ~/.claude/ on skills, rules, hooks, or settings."
 ---
 
 # Maintaining Claude Code
