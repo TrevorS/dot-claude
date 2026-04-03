@@ -53,8 +53,10 @@ vim.opt.complete = ".,w,b,u,o"
 vim.opt.winborder = "rounded"
 vim.opt.pumborder = "rounded"
 
--- ui2
-require("vim._core.ui2").enable({ msg = { targets = "cmd" } })
+-- ui2 (private API in 0.12 — no public path yet, pcall for safety)
+pcall(function()
+	require("vim._core.ui2").enable({ msg = { targets = "cmd" } })
+end)
 
 -- Custom fillchars (overrides mini.basics default)
 vim.opt.fillchars = {
@@ -117,8 +119,24 @@ vim.lsp.config("vtsls", {
 	root_markers = { "package.json", "tsconfig.json", "jsconfig.json", ".git" },
 })
 
+-- basedpyright (Python)
+vim.lsp.config("basedpyright", {
+	cmd = { "basedpyright-langserver", "--stdio" },
+	filetypes = { "python" },
+	root_markers = { "pyproject.toml", "setup.py", "setup.cfg", "requirements.txt", ".git" },
+	settings = {
+		basedpyright = {
+			analysis = {
+				autoSearchPaths = true,
+				useLibraryCodeForTypes = true,
+				diagnosticMode = "openFilesOnly",
+			},
+		},
+	},
+})
+
 -- Enable LSP servers
-vim.lsp.enable({ "lua_ls", "rust_analyzer", "vtsls" })
+vim.lsp.enable({ "lua_ls", "rust_analyzer", "vtsls", "basedpyright" })
 
 -- LSP keymaps and built-in completion
 -- 0.12 defaults: K (hover), grn (rename), gra (code action), grr (references),
@@ -608,6 +626,47 @@ vim.keymap.set("n", "<leader>ts", function()
 	require("mini.trailspace").trim()
 	vim.notify("Trimmed trailing whitespace", vim.log.levels.INFO)
 end, { desc = "Trim trailing whitespace" })
+
+-- Toggle inlay hints
+vim.keymap.set("n", "<leader>ih", function()
+	local enabled = vim.lsp.inlay_hint.is_enabled()
+	vim.lsp.inlay_hint.enable(not enabled)
+	vim.notify("Inlay hints " .. (enabled and "off" or "on"), vim.log.levels.INFO)
+end, { desc = "Toggle inlay hints" })
+
+-- ============================================================================
+-- TEST RUNNER
+-- ============================================================================
+
+local test_commands = {
+	rust = "cargo test",
+	python = "pytest",
+	javascript = "npm test",
+	typescript = "npm test",
+	go = "go test ./...",
+	lua = "make test",
+}
+
+vim.keymap.set("n", "<leader>tt", function()
+	local cmd = test_commands[vim.bo.filetype] or "make test"
+	vim.cmd("botright split | terminal " .. cmd)
+end, { desc = "Run tests" })
+
+vim.keymap.set("n", "<leader>tf", function()
+	local ft = vim.bo.filetype
+	local file = vim.fn.expand("%")
+	local cmd
+	if ft == "rust" then
+		cmd = "cargo test"
+	elseif ft == "python" then
+		cmd = "pytest " .. file
+	elseif ft == "go" then
+		cmd = "go test -run . " .. vim.fn.expand("%:h")
+	else
+		cmd = test_commands[ft] or "make test"
+	end
+	vim.cmd("botright split | terminal " .. cmd)
+end, { desc = "Run tests for current file" })
 
 -- Better indenting
 vim.keymap.set("v", "<", "<gv", { desc = "Indent left" })

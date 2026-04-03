@@ -34,7 +34,7 @@ tpm:
 	@"$(TPM_DIR)/bin/install_plugins"
 
 typecheck:
-	@uv run ty check skills/reading-books/book.py skills/monitoring-ci/ci-monitor.py skills/testing-whisper/transcribe.py
+	@uv run ty check $$(find skills -name '*.py' -not -path '*/evals/*')
 
 validate:
 	@uv run pre-commit run --all-files

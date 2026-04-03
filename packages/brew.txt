@@ -6,11 +6,11 @@ fd
 fzf
 gh
 git
-git-delta
 gnu-sed
 jq
 neovim
 ripgrep
 stow
 tmux
+uv
 zoxide

@@ -27,4 +27,4 @@ scrollback-limit = 100000
 keybind = shift+enter=text:\n
 
 # Machine-local overrides (fonts, window size, etc.)
-config-file = ?~/local/ghostty-overrides
+config-file = ?~/.local/ghostty-overrides

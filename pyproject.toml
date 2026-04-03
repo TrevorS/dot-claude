@@ -18,6 +18,7 @@ required-environments = [
 
 [dependency-groups]
 dev = [
+    "basedpyright>=1.29.0",
     "ty==0.0.22",
 ]
 

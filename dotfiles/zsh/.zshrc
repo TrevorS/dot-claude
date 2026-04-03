@@ -60,6 +60,7 @@ export PYTHONBREAKPOINT=ipdb.set_trace
 export BAT_THEME="Catppuccin Mocha"
 export FZF_DEFAULT_COMMAND="fd --type f --hidden --exclude .git"
 export FZF_DEFAULT_OPTS="--height 40% --layout=reverse"
+export RIPGREP_CONFIG_PATH="$HOME/.config/ripgrep/config"
 
 # ls colors
 [ -f ~/.local/share/lscolors.sh ] && source ~/.local/share/lscolors.sh

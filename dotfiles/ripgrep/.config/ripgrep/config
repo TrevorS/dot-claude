@@ -1,0 +1,20 @@
+# Smart case: case-insensitive unless pattern has uppercase
+--smart-case
+
+# Follow symlinks
+--follow
+
+# Hidden files (respect .gitignore)
+--hidden
+
+# Global globs to exclude
+--glob=!.git/
+--glob=!.jj/
+--glob=!node_modules/
+--glob=!target/
+--glob=!.venv/
+--glob=!__pycache__/
+--glob=!*.min.js
+--glob=!*.min.css
+--glob=!package-lock.json
+--glob=!uv.lock
