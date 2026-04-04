@@ -5,6 +5,7 @@ curl
 fd-find
 fzf
 git
+imagemagick
 jq
 luarocks
 neovim

@@ -4,7 +4,7 @@
 In tmux: opens a split pane (default) or popup (--popup).
 Outside tmux: renders inline.
 
-Usage: kitty-img [--popup] <image-file> [max-width-cols]
+Usage: kitty-img [--popup] [--scale N] <image-file> [max-width-cols]
 """
 
 import argparse
@@ -31,14 +31,20 @@ def image_dimensions(filepath: str) -> tuple[int, int]:
     return 800, 600
 
 
-def tmux_dimensions() -> tuple[int, int]:
+def tmux_dimensions() -> tuple[int, int, int, int]:
+    """Returns (cols, rows, cell_width_px, cell_height_px)."""
     result = subprocess.run(
-        ["tmux", "display-message", "-p", "#{window_width} #{window_height}"],
+        [
+            "tmux",
+            "display-message",
+            "-p",
+            "#{window_width} #{window_height} #{client_cell_width} #{client_cell_height}",
+        ],
         capture_output=True,
         text=True,
     )
-    w, h = result.stdout.strip().split()
-    return int(w), int(h)
+    parts = result.stdout.strip().split()
+    return int(parts[0]), int(parts[1]), int(parts[2]), int(parts[3])
 
 
 def get_client_tty() -> str | None:
@@ -55,7 +61,7 @@ def get_client_tty() -> str | None:
         return None
 
 
-def convert_to_png(filepath: str, max_px: int = 800) -> bytes:
+def convert_to_png(filepath: str, max_px: int = 3200) -> bytes:
     try:
         result = subprocess.run(
             ["magick", filepath, "-resize", f"{max_px}x{max_px}>", "PNG:-"],
@@ -78,53 +84,13 @@ def write_to(tty_path: str | None, data: bytes):
         sys.stdout.buffer.flush()
 
 
-def send_image_passthrough(
-    png_data: bytes, max_cols: int, in_tmux: bool, max_rows: int = 0
-):
-    """Render via DCS passthrough (for split pane or bare terminal)."""
-    b64 = base64.b64encode(png_data).decode("ascii")
-    total = len(b64)
-    offset = 0
-    out = sys.stdout.buffer
-
-    # Build placement params
-    place = f"c={max_cols}"
-    if max_rows > 0:
-        place += f",r={max_rows}"
-
-    while offset < total:
-        chunk = b64[offset : offset + CHUNK_SIZE]
-        is_first = offset == 0
-        is_last = offset + CHUNK_SIZE >= total
-        m = 0 if is_last else 1
-
-        if is_first:
-            inner = f"\x1b_Gf=100,a=T,t=d,q=2,{place},m={m};{chunk}\x1b\\"
-        else:
-            inner = f"\x1b_Gm={m},q=2;{chunk}\x1b\\"
-
-        if in_tmux:
-            escaped = inner.replace("\x1b", "\x1b\x1b")
-            payload = f"\x1bPtmux;{escaped}\x1b\\"
-        else:
-            payload = inner
-
-        out.write(payload.encode())
-        out.flush()
-        offset += CHUNK_SIZE
-
-
-def send_image_direct(
-    png_data: bytes, max_cols: int, tty_path: str, max_rows: int = 0
-):
-    """Render via direct pty write (for popup mode)."""
+def send_image_direct(png_data: bytes, max_cols: int, tty_path: str):
+    """Render via direct pty write."""
     b64 = base64.b64encode(png_data).decode("ascii")
     total = len(b64)
     offset = 0
 
     place = f"c={max_cols}"
-    if max_rows > 0:
-        place += f",r={max_rows}"
 
     while offset < total:
         chunk = b64[offset : offset + CHUNK_SIZE]
@@ -138,6 +104,31 @@ def send_image_direct(
             payload = f"\x1b_Gm={m},q=2;{chunk}\x1b\\"
 
         write_to(tty_path, payload.encode())
+        offset += CHUNK_SIZE
+
+
+def send_image_stdout(png_data: bytes, max_cols: int):
+    """Render via stdout (bare terminal, no tmux)."""
+    b64 = base64.b64encode(png_data).decode("ascii")
+    total = len(b64)
+    offset = 0
+    out = sys.stdout.buffer
+
+    place = f"c={max_cols}"
+
+    while offset < total:
+        chunk = b64[offset : offset + CHUNK_SIZE]
+        is_first = offset == 0
+        is_last = offset + CHUNK_SIZE >= total
+        m = 0 if is_last else 1
+
+        if is_first:
+            payload = f"\x1b_Gf=100,a=T,t=d,q=2,{place},m={m};{chunk}\x1b\\"
+        else:
+            payload = f"\x1b_Gm={m},q=2;{chunk}\x1b\\"
+
+        out.write(payload.encode())
+        out.flush()
         offset += CHUNK_SIZE
 
 
@@ -159,16 +150,22 @@ def wait_for_dismiss():
         time.sleep(30)
 
 
-def launch_split(filepath: str, max_cols: int):
+def cols_to_rows(cols: int, img_w: int, img_h: int, cell_w: int, cell_h: int) -> int:
+    """Convert display columns to display rows preserving image aspect ratio."""
+    img_px_w = cols * cell_w
+    img_px_h = int(img_px_w * img_h / max(img_w, 1))
+    return max(-(-img_px_h // cell_h), 1)  # ceil division
+
+
+def launch_split(filepath: str, max_cols: int, scale: int):
     from shlex import quote
 
     img_w, img_h = image_dimensions(filepath)
-    aspect = img_w / max(img_h, 1)
-    win_w, win_h = tmux_dimensions()
+    win_w, win_h, cell_w, cell_h = tmux_dimensions()
 
-    display_cols = max_cols if max_cols > 0 else min(win_w - 4, 100)
-    img_rows = int(display_cols / aspect / 2)
-    pane_height = max(min(img_rows + 2, win_h - 5), 6)  # +2 for title + padding
+    display_cols = max_cols if max_cols > 0 else int(win_w * scale / 100)
+    img_rows = cols_to_rows(display_cols, img_w, img_h, cell_w, cell_h)
+    pane_height = max(min(img_rows + 2, win_h - 5), 6)
 
     subprocess.Popen(
         [
@@ -183,29 +180,27 @@ def launch_split(filepath: str, max_cols: int):
     )
 
 
-def launch_popup(filepath: str, max_cols: int):
+def launch_popup(filepath: str, max_cols: int, scale: int):
     from shlex import quote
 
     img_w, img_h = image_dimensions(filepath)
-    aspect = img_w / max(img_h, 1)
-    win_w, win_h = tmux_dimensions()
+    win_w, win_h, cell_w, cell_h = tmux_dimensions()
 
-    # Popup size: fit image with border padding
-    max_popup_w = min(int(win_w * 0.8), win_w - 4)
-    max_popup_h = min(int(win_h * 0.8), win_h - 4)
+    max_popup_w = win_w - 4
+    max_popup_h = win_h - 4
 
-    # Image display size in cols/rows (terminal cells are ~2:1 tall)
-    display_cols = max_cols if max_cols > 0 else max_popup_w - 4
-    display_rows = int(display_cols / aspect / 2)
+    display_cols = max_cols if max_cols > 0 else min(int(win_w * scale / 100), max_popup_w)
+    display_rows = cols_to_rows(display_cols, img_w, img_h, cell_w, cell_h)
 
-    # Constrain to fit popup height (leave room for border + status line)
-    if display_rows > max_popup_h - 4:
-        display_rows = max_popup_h - 4
-        display_cols = int(display_rows * aspect * 2)
+    # Constrain to fit popup height
+    if display_rows > max_popup_h:
+        display_rows = max_popup_h
+        img_px_h = display_rows * cell_h
+        img_px_w = int(img_px_h * img_w / max(img_h, 1))
+        display_cols = int(img_px_w / cell_w)
 
-    # +2 for popup border
     popup_w = display_cols + 2
-    popup_h = display_rows + 2
+    popup_h = display_rows
 
     subprocess.Popen(
         [
@@ -216,7 +211,7 @@ def launch_popup(filepath: str, max_cols: int):
             "-h",
             str(popup_h),
             "-E",
-            f"KITTY_IMG_PANE=1 KITTY_IMG_ROWS={display_rows} kitty-img --popup {quote(filepath)} {display_cols}",
+            f"KITTY_IMG_PANE=1 kitty-img --popup {quote(filepath)} {display_cols}",
         ],
         start_new_session=True,
     )
@@ -225,12 +220,14 @@ def launch_popup(filepath: str, max_cols: int):
 def main():
     parser = argparse.ArgumentParser(description="Display images via Kitty graphics protocol")
     parser.add_argument("--popup", action="store_true", help="Use tmux popup instead of split pane")
+    parser.add_argument("--scale", type=int, default=50, help="Display size as percent of window (default: 50)")
     parser.add_argument("file", help="Image file to display")
-    parser.add_argument("cols", nargs="?", type=int, default=0, help="Display width in columns")
+    parser.add_argument("cols", nargs="?", type=int, default=0, help="Display width in columns (overrides --scale)")
     args = parser.parse_args()
 
     filepath = os.path.abspath(args.file)
     max_cols = args.cols
+    scale = max(10, min(100, args.scale))
     use_popup = args.popup
 
     if not os.path.isfile(filepath):
@@ -242,9 +239,9 @@ def main():
     # If in tmux and not already inside the viewer pane, relaunch
     if in_tmux and not os.environ.get("KITTY_IMG_PANE"):
         if use_popup:
-            launch_popup(filepath, max_cols)
+            launch_popup(filepath, max_cols, scale)
         else:
-            launch_split(filepath, max_cols)
+            launch_split(filepath, max_cols, scale)
         return
 
     # --- Rendering (inside split/popup or bare terminal) ---
@@ -256,29 +253,29 @@ def main():
             max_cols = 80
 
     png_data = convert_to_png(filepath)
-    max_rows = int(os.environ.get("KITTY_IMG_ROWS", 0))
     name = os.path.basename(filepath)
 
-    if use_popup and in_tmux:
-        # Popup: direct pty write, with cleanup on exit
+    tty_path = get_client_tty() if in_tmux else None
+
+    if tty_path:
+        # Direct pty write — works for both split pane and popup in tmux
         import atexit
 
-        tty_path = get_client_tty()
-        if tty_path:
-            send_image_direct(png_data, max_cols, tty_path, max_rows)
+        if not use_popup:
+            sys.stdout.buffer.write(f"{name} — press q to close\n".encode())
+            sys.stdout.buffer.flush()
 
-            def cleanup():
-                write_to(tty_path, b"\x1b_Ga=d,q=2;\x1b\\")
+        send_image_direct(png_data, max_cols, tty_path)
 
-            atexit.register(cleanup)
+        def cleanup():
+            write_to(tty_path, b"\x1b_Ga=d,q=2;\x1b\\")
 
-        pass
+        atexit.register(cleanup)
     else:
-        # Split pane or bare terminal: DCS passthrough
-        # Print title first, then image renders above it
+        # Bare terminal (no tmux): render inline
         sys.stdout.buffer.write(f"{name} — press q to close\n".encode())
         sys.stdout.buffer.flush()
-        send_image_passthrough(png_data, max_cols, in_tmux, max_rows)
+        send_image_stdout(png_data, max_cols)
 
     wait_for_dismiss()
 

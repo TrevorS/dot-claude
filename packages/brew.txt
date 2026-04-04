@@ -6,6 +6,7 @@ fd
 fzf
 gh
 git
+imagemagick
 gnu-sed
 jq
 neovim

@@ -5,37 +5,41 @@ description: Display images in the terminal using the Kitty graphics protocol vi
 
 # Image Display Skill
 
-Display images inline in the terminal using the Kitty graphics protocol. Works in Ghostty, Kitty, and WezTerm. In tmux, opens a popup overlay with automatic cleanup.
+Display images inline in the terminal using the Kitty graphics protocol. Works in Ghostty, Kitty, and WezTerm. In tmux, uses direct pty writes to bypass DCS passthrough entirely.
 
 **Triggers:** show image, display image, view image, preview image, render image, kitty-img, kitty protocol
 
 ## Usage
 
-Run `kitty-img` via Bash to display any image file:
+**Always use `--popup`** when calling from Claude Code — it's the most reliable mode.
 
 ```bash
-kitty-img [--popup] <image-file> [max-width-cols]
+kitty-img --popup <image-file> [max-width-cols]
 ```
 
-- `--popup` — use a tmux popup overlay instead of a split pane (popup uses direct pty writes)
 - `image-file` — path to any image (PNG, JPG, GIF, SVG, WebP, etc.). ImageMagick handles conversion.
-- `max-width-cols` — display width in terminal columns (default: auto-fit)
+- `max-width-cols` — display width in terminal columns (default: auto-fit to 80% of window)
+
+Split pane mode (without `--popup`) also works but shows a title bar and dismiss prompt.
 
 ## How It Works
 
-- **Split pane (default)**: Opens an auto-sized tmux split pane at the bottom. Uses DCS passthrough — tmux manages the image lifecycle. Title shown above image. Press any key to dismiss.
-- **Popup (`--popup`)**: Opens an auto-sized tmux popup overlay. Uses direct pty write to the outer terminal. Cleans up image on dismiss.
-- **Outside tmux**: Renders the image inline at the cursor position.
+- **In tmux (both modes)**: Writes Kitty escape sequences directly to the client tty, bypassing tmux entirely. No `allow-passthrough` needed.
+- **Outside tmux**: Renders the image inline at the cursor position via stdout.
 - **Over SSH**: Works transparently — the local terminal (Ghostty) does the rendering regardless of where the tmux session originated.
+- **Aspect ratio**: Only the column width is sent to the Kitty protocol (`c=N`). The terminal calculates the correct height from the image's native aspect ratio. Popup/pane sizing uses actual cell pixel dimensions from tmux.
 
 ## Examples
 
 ```bash
-# Show a screenshot
-kitty-img /tmp/screenshot.png
+# Show a screenshot (popup, auto-sized)
+kitty-img --popup /tmp/screenshot.png
 
-# Preview a generated diagram at 40 columns wide
-kitty-img diagram.svg 40
+# Preview at a specific width
+kitty-img --popup diagram.svg 40
+
+# Split pane mode (has title + dismiss prompt)
+kitty-img /tmp/screenshot.png
 
 # Quick test that the protocol works
 kitty-img-test
@@ -45,10 +49,9 @@ kitty-img-test
 
 - Terminal with Kitty graphics protocol support (Ghostty, Kitty, WezTerm)
 - `magick` (ImageMagick) for format conversion and resizing
-- `tmux` 3.3a+ with `allow-passthrough on` for popup mode
+- `tmux` 3.3a+ for popup/split pane modes
 
 ## Limitations
 
-- Claude Code's Bash tool captures stdout, so images cannot render inline in Claude Code output. The tmux popup is the workaround.
-- Popup mode writes to the outer terminal pty at calculated coordinates — positioning is approximate.
-- tmux `display-popup` does not support DCS passthrough, so the popup uses direct pty writes instead.
+- Claude Code's Bash tool captures stdout, so images cannot render inline in Claude Code output. The tmux popup/split is the workaround.
+- Popup mode writes to the outer terminal pty — positioning is approximate.
