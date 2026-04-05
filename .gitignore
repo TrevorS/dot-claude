@@ -46,6 +46,7 @@ teams/
 todos/
 backups/
 telemetry/
+certs/
 
 # ML models
 models/
