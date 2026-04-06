@@ -55,6 +55,7 @@ models/
 channels/dev/
 channels/house/
 channels/telegram/inbox/
+channels/telegram/.last-context-restore
 
 # Channel secrets
 channels/telegram/.env
@@ -62,5 +63,7 @@ channels/telegram/access.json
 
 # Data files
 *.db
+*.db-shm
+*.db-wal
 *.jsonl
 .credentials.json
