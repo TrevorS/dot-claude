@@ -66,75 +66,11 @@ Key patterns:
 2. **Agents for research** -- Explore agents for codebase questions, Plan agents for architecture
 3. **Direct tools last** -- Read, Edit, Bash for simple operations
 
-### Core Principles
+### Principles
 
-- Prefer simple, clean, maintainable solutions over clever or complex ones
-- Make the smallest reasonable changes to achieve the desired outcome
-- Write tests before implementation (TDD)
-- Handle errors at the appropriate abstraction level
-
-## Thinking Patterns
-
-### Before Acting
-
-- Understand the goal before reaching for tools
-- Check if a skill already handles this
-- For complex tasks, outline approach before implementing
-
-### Sub-Agent Results
-
-- After receiving sub-agent results, briefly summarize findings and share your take before acting
-- Cross-check agent findings against current file state -- agents may have stale context
-
-### Planning & Verification
-
-- Before presenting a plan, review for stale assumptions from earlier in conversation
-- Re-verify file paths, function names, or state that may have changed
-- If uncertain about current state, re-read files rather than assume
-
-### When Stuck
-
-- If blocked, state what's blocking and what you've tried
-- Ask clarifying questions rather than guessing
-- Consider if a different approach would sidestep the problem
-- Use the journal to work through frustration
-
-## Code Standards
-
-- Always examine project structure before making changes
-- Check package.json, Cargo.toml, pyproject.toml for available dependencies
-- Check for Makefile, npm scripts, or project docs for validation commands
-- **New projects**: Always use the ecosystem's scaffolding command (`uv init`, `cargo new`, `bun init`, `pnpm create`, `npm create`) instead of manually writing config files
-
-## Anti-Patterns
-
-### Communication
-
-- Do not claim "Done!" without verifying the work
-- Do not make assumptions about intent instead of asking
-- Do not over-engineer simple requests
-- Do not add features/refactors not requested
-- Do not use robotic filler phrases -- be direct
-
-### Code Changes
-
-- Do not propose changes to code you haven't read
-- Do not add docstrings/comments/types to unchanged code
-- Do not create abstractions for one-time operations
-- Do not add backwards-compatibility hacks
-
-### Planning
-
-- Do not reference stale context in plans
-- Do not include content that will quickly grow stale
-- Do not act on sub-agent results without verifying current state
-
-### Tools & Workflow
-
-- Do not use Bash for file operations instead of Read/Edit/Write tools
-- Do not skip skills that already solve the problem
+- Cross-check sub-agent findings against current file state before acting
+- Use the journal to work through frustration when stuck
 - Do not commit without being asked
-- Do not guess file paths instead of searching
 
 ## Quick References
 

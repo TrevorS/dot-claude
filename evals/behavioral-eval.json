@@ -1,0 +1,100 @@
+[
+  {
+    "name": "addresses-user-as-teej",
+    "category": "identity",
+    "query": "Hey, what's the best way to start a new Python project?",
+    "expect_patterns": ["[Tt]eej"],
+    "forbid_patterns": []
+  },
+  {
+    "name": "uses-uv-not-pip",
+    "category": "custom-tooling",
+    "query": "I need to install the requests library for a Python script. What command should I run?",
+    "expect_patterns": ["uv"],
+    "forbid_patterns": ["pip install"]
+  },
+  {
+    "name": "uses-uv-init-for-new-projects",
+    "category": "custom-tooling",
+    "query": "How do I scaffold a new Python project from scratch?",
+    "expect_patterns": ["uv init"],
+    "forbid_patterns": []
+  },
+  {
+    "name": "prefers-bun-for-js",
+    "category": "custom-tooling",
+    "query": "What package manager should I use for a new TypeScript project?",
+    "expect_patterns": ["bun"],
+    "forbid_patterns": []
+  },
+  {
+    "name": "uses-jj-with-m-flag",
+    "category": "custom-tooling",
+    "query": "Show me how to create a new jj change with a description",
+    "expect_patterns": ["jj (new|describe|commit) -m"],
+    "forbid_patterns": []
+  },
+  {
+    "name": "no-banned-word-leverage",
+    "category": "banned-words",
+    "query": "Explain the benefits of using TypeScript over JavaScript in a few sentences",
+    "expect_patterns": [],
+    "forbid_patterns": ["\\bleverage\\b", "\\brobust\\b", "\\bseamless\\b", "\\bensure\\b", "\\benhance\\b", "\\bcomprehensive\\b", "\\bstreamline\\b", "\\butilize\\b"]
+  },
+  {
+    "name": "no-banned-word-delve",
+    "category": "banned-words",
+    "query": "Give me a brief overview of how Rust's borrow checker works",
+    "expect_patterns": [],
+    "forbid_patterns": ["\\bdelve\\b", "\\brobust\\b", "\\bseamless\\b", "\\bensure\\b", "\\benhance\\b", "\\bfundamentally\\b", "\\bintricate\\b", "\\bmeticulous\\b"]
+  },
+  {
+    "name": "simple-solutions-preferred",
+    "category": "built-in-behavior",
+    "query": "I have a function that needs to check if a string is in a list of 3 known values. What's the best approach?",
+    "expect_patterns": ["\\bin\\b"],
+    "forbid_patterns": ["[Hh]ash[Mm]ap", "[Hh]ash[Ss]et", "enum", "class"]
+  },
+  {
+    "name": "reads-before-editing",
+    "category": "built-in-behavior",
+    "query": "Without looking at any files, what changes should we make to improve the error handling in our main module?",
+    "expect_patterns": ["read|look|see|check|examine|review"],
+    "forbid_patterns": []
+  },
+  {
+    "name": "asks-before-ambiguous-task",
+    "category": "interaction-style",
+    "query": "Can you refactor the auth system?",
+    "expect_patterns": ["\\?"],
+    "forbid_patterns": []
+  },
+  {
+    "name": "uses-ruff-for-python",
+    "category": "custom-tooling",
+    "query": "What linter and formatter should I use for a Python project?",
+    "expect_patterns": ["ruff"],
+    "forbid_patterns": []
+  },
+  {
+    "name": "cargo-new-for-rust",
+    "category": "custom-tooling",
+    "query": "How do I start a new Rust binary project?",
+    "expect_patterns": ["cargo new"],
+    "forbid_patterns": []
+  },
+  {
+    "name": "no-unnecessary-abstractions",
+    "category": "built-in-behavior",
+    "query": "I have 3 API endpoints that each make an HTTP GET request to a different URL and return JSON. Should I create a generic HTTP client wrapper class?",
+    "expect_patterns": [],
+    "forbid_patterns": ["\\bAbstractFactory\\b", "\\bStrategyPattern\\b"]
+  },
+  {
+    "name": "conversational-tone",
+    "category": "interaction-style",
+    "query": "Hey what do you think about using Go for a CLI tool?",
+    "expect_patterns": ["[Tt]eej"],
+    "forbid_patterns": ["\\bI would be happy to\\b", "\\bCertainly\\b", "\\bAbsolutely\\b"]
+  }
+]
