@@ -201,7 +201,6 @@
     "PreToolUse": [
       {
         "matcher": "Bash",
-        "if": "Bash(git commit*) || Bash(git add*) || Bash(jj describe*) || Bash(jj new*) || Bash(jj commit*) || Bash(jj squash*)",
         "hooks": [
           {
             "type": "command",
@@ -211,7 +210,6 @@
       },
       {
         "matcher": "Bash",
-        "if": "Bash(git commit*) || Bash(jj describe*) || Bash(jj commit*) || Bash(jj squash*) || Bash(jj new*) || Bash(gh pr create*)",
         "hooks": [
           {
             "type": "command",
@@ -289,22 +287,13 @@
     "typescript-lsp@claude-plugins-official": true,
     "skill-creator@claude-plugins-official": true,
     "pyright-lsp@claude-plugins-official": true,
-    "telegram-enhanced@trevor-plugins": true,
-    "house@trevor-plugins": true,
-    "dev@trevor-plugins": true,
     "lua-lsp@claude-plugins-official": true
   },
-  "extraKnownMarketplaces": {
-    "trevor-plugins": {
-      "source": {
-        "source": "github",
-        "repo": "TrevorS/claude-code-plugins"
-      }
-    }
-  },
+  "extraKnownMarketplaces": {},
   "forceLoginMethod": "claudeai",
   "alwaysThinkingEnabled": true,
   "voiceEnabled": true,
+  "autoDreamEnabled": true,
   "showThinkingSummaries": true,
   "skipDangerousModePermissionPrompt": true
 }
