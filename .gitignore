@@ -67,3 +67,4 @@ channels/telegram/access.json
 *.db-wal
 *.jsonl
 .credentials.json
+channels/
