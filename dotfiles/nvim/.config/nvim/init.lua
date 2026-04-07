@@ -5,6 +5,8 @@
 -- Disable unused language providers
 vim.g.loaded_node_provider = 0
 vim.g.loaded_python3_provider = 0
+vim.g.loaded_ruby_provider = 0
+vim.g.loaded_perl_provider = 0
 
 -- ============================================================================
 -- PLUGIN MANAGEMENT (vim.pack)
@@ -14,7 +16,7 @@ vim.pack.add({
 	"https://github.com/nvim-mini/mini.nvim",
 	"https://github.com/catppuccin/nvim",
 	"https://github.com/stevearc/oil.nvim",
-	"https://github.com/nvim-treesitter/nvim-treesitter",
+	{ src = "https://github.com/nvim-treesitter/nvim-treesitter", branch = "main" },
 })
 
 vim.api.nvim_create_user_command("PackUpdate", function(args)
@@ -29,10 +31,6 @@ end, { nargs = "*" })
 -- Leader key
 vim.g.mapleader = " "
 vim.g.maplocalleader = " "
-
--- Disable unused providers
-vim.g.loaded_ruby_provider = 0
-vim.g.loaded_perl_provider = 0
 
 -- Settings not covered by mini.basics
 vim.opt.expandtab = true
@@ -69,8 +67,7 @@ vim.opt.fillchars = {
 	verthoriz = "╋",
 }
 
--- Configure LSP servers (examples - install servers separately)
--- lua_ls
+-- LSP servers
 vim.lsp.config("lua_ls", {
 	cmd = { "lua-language-server" },
 	filetypes = { "lua" },
@@ -95,7 +92,6 @@ vim.lsp.config("lua_ls", {
 	},
 })
 
--- rust-analyzer
 vim.lsp.config("rust_analyzer", {
 	cmd = { "rust-analyzer" },
 	filetypes = { "rust" },
@@ -112,14 +108,12 @@ vim.lsp.config("rust_analyzer", {
 	},
 })
 
--- vtsls (TypeScript)
 vim.lsp.config("vtsls", {
 	cmd = { "vtsls", "--stdio" },
 	filetypes = { "javascript", "javascriptreact", "typescript", "typescriptreact" },
 	root_markers = { "package.json", "tsconfig.json", "jsconfig.json", ".git" },
 })
 
--- basedpyright (Python)
 vim.lsp.config("basedpyright", {
 	cmd = { "basedpyright-langserver", "--stdio" },
 	filetypes = { "python" },
@@ -135,25 +129,21 @@ vim.lsp.config("basedpyright", {
 	},
 })
 
--- Enable LSP servers
 vim.lsp.enable({ "lua_ls", "rust_analyzer", "vtsls", "basedpyright" })
 
--- LSP keymaps and built-in completion
 -- 0.12 defaults: K (hover), grn (rename), gra (code action), grr (references),
 -- gri (implementation), gO (document symbols), grt (type definition), grx (codelens)
 vim.api.nvim_create_autocmd("LspAttach", {
+	group = vim.api.nvim_create_augroup("config_lsp", { clear = true }),
 	callback = function(args)
 		local client = vim.lsp.get_client_by_id(args.data.client_id)
 		if client then
 			vim.lsp.completion.enable(true, client.id, args.buf)
 		end
 
-		vim.keymap.set("n", "gd", vim.lsp.buf.definition, { buffer = args.buf })
+		vim.keymap.set("n", "gd", vim.lsp.buf.definition, { buffer = args.buf, desc = "Go to definition" })
 	end,
 })
-
--- Global format keymap
-vim.keymap.set("n", "<leader>f", vim.lsp.buf.format, { desc = "Format buffer" })
 
 -- ============================================================================
 -- DIAGNOSTIC FLOAT MANAGEMENT
@@ -165,69 +155,61 @@ local diagnostic_float_state = {
 	dismissed_buf = nil,
 }
 
--- Helper: Find the diagnostic float window
-local function find_diagnostic_float()
-	local current_win = vim.api.nvim_get_current_win()
-	for _, win in ipairs(vim.api.nvim_list_wins()) do
-		local config = vim.api.nvim_win_get_config(win)
-		if config.relative ~= "" and win ~= current_win then
-			return win
+local diag_float_group = vim.api.nvim_create_augroup("config_diagnostic_float", { clear = true })
+
+vim.api.nvim_create_autocmd("CursorMoved", {
+	group = diag_float_group,
+	callback = function()
+		if not diagnostic_float_state.dismissed_line then
+			return
 		end
-	end
-	return nil
-end
 
--- Setup diagnostic float autocmds
-local function setup_diagnostic_float()
-	-- Clear dismissed state when cursor moves to different line
-	vim.api.nvim_create_autocmd("CursorMoved", {
-		callback = function()
-			local current_line = vim.fn.line(".")
-			local current_buf = vim.api.nvim_get_current_buf()
+		local current_line = vim.api.nvim_win_get_cursor(0)[1]
+		local current_buf = vim.api.nvim_get_current_buf()
 
-			if
-				diagnostic_float_state.dismissed_line ~= current_line
-				or diagnostic_float_state.dismissed_buf ~= current_buf
-			then
-				diagnostic_float_state.dismissed_line = nil
-				diagnostic_float_state.dismissed_buf = nil
-			end
-		end,
-	})
-
-	-- Clear dismissed state when text changes
-	vim.api.nvim_create_autocmd({ "TextChanged", "TextChangedI" }, {
-		callback = function()
+		if
+			diagnostic_float_state.dismissed_line ~= current_line
+			or diagnostic_float_state.dismissed_buf ~= current_buf
+		then
 			diagnostic_float_state.dismissed_line = nil
 			diagnostic_float_state.dismissed_buf = nil
-		end,
-	})
+		end
+	end,
+})
 
-	-- Auto-show diagnostic on cursor hold
-	vim.api.nvim_create_autocmd("CursorHold", {
-		callback = function()
-			local current_line = vim.fn.line(".")
-			local current_buf = vim.api.nvim_get_current_buf()
+vim.api.nvim_create_autocmd({ "TextChanged", "TextChangedI" }, {
+	group = diag_float_group,
+	callback = function()
+		diagnostic_float_state.dismissed_line = nil
+		diagnostic_float_state.dismissed_buf = nil
+	end,
+})
 
-			-- Don't auto-show if float is open or line was dismissed
-			if diagnostic_float_state.win_id and vim.api.nvim_win_is_valid(diagnostic_float_state.win_id) then
-				return
-			end
+vim.api.nvim_create_autocmd("CursorHold", {
+	group = diag_float_group,
+	callback = function()
+		if vim.fn.mode() ~= "n" then
+			return
+		end
 
-			if
-				diagnostic_float_state.dismissed_line == current_line
-				and diagnostic_float_state.dismissed_buf == current_buf
-			then
-				return
-			end
+		local current_line = vim.api.nvim_win_get_cursor(0)[1]
+		local current_buf = vim.api.nvim_get_current_buf()
 
-			vim.diagnostic.open_float({ focus = false })
-			diagnostic_float_state.win_id = find_diagnostic_float()
-		end,
-	})
-end
+		if diagnostic_float_state.win_id and vim.api.nvim_win_is_valid(diagnostic_float_state.win_id) then
+			return
+		end
 
-setup_diagnostic_float()
+		if
+			diagnostic_float_state.dismissed_line == current_line
+			and diagnostic_float_state.dismissed_buf == current_buf
+		then
+			return
+		end
+
+		local _, winnr = vim.diagnostic.open_float({ focus = false })
+		diagnostic_float_state.win_id = winnr
+	end,
+})
 
 -- ============================================================================
 -- HELPER FUNCTIONS
@@ -236,7 +218,7 @@ setup_diagnostic_float()
 -- Get listed buffers
 local function get_listed_buffers()
 	return vim.tbl_filter(function(b)
-		return vim.fn.buflisted(b) == 1
+		return vim.bo[b].buflisted
 	end, vim.api.nvim_list_bufs())
 end
 
@@ -247,19 +229,25 @@ end
 
 -- Format on save: trim whitespace, ensure EOF newline, then format
 vim.api.nvim_create_autocmd("BufWritePre", {
+	group = vim.api.nvim_create_augroup("config_format", { clear = true }),
 	callback = function()
+		if vim.bo.buftype ~= "" then
+			return
+		end
+
 		require("mini.trailspace").trim()
 		vim.bo.fixeol = true
 		vim.bo.eol = true
 
-		-- Format Lua files with stylua if available
 		if vim.bo.filetype == "lua" and vim.fn.executable("stylua") == 1 then
 			local view = vim.fn.winsaveview()
 			vim.cmd("%!stylua -")
+			if vim.v.shell_error ~= 0 then
+				vim.cmd.undo()
+			end
 			vim.fn.winrestview(view)
 		else
-			-- Use LSP format for other filetypes
-			local clients = vim.lsp.get_clients({ bufnr = 0 })
+			local clients = vim.lsp.get_clients({ bufnr = 0, method = "textDocument/formatting" })
 			if #clients > 0 then
 				vim.lsp.buf.format()
 			end
@@ -306,7 +294,6 @@ require("mini.move").setup()
 require("mini.git").setup()
 
 require("oil").setup({
-	default_file_explorer = true,
 	delete_to_trash = true,
 	skip_confirm_for_simple_edits = true,
 	view_options = {
@@ -316,20 +303,27 @@ require("oil").setup({
 
 require("nvim-treesitter").setup()
 require("nvim-treesitter").install({
-	"lua",
-	"rust",
-	"typescript",
-	"javascript",
-	"json",
-	"toml",
-	"markdown",
-	"python",
-	"go",
+	"bash",
+	"diff",
 	"elixir",
 	"elm",
 	"gleam",
-	"zig",
+	"go",
+	"javascript",
+	"json",
+	"lua",
+	"markdown",
+	"markdown_inline",
+	"python",
+	"regex",
 	"ruby",
+	"rust",
+	"toml",
+	"typescript",
+	"vim",
+	"vimdoc",
+	"yaml",
+	"zig",
 })
 
 require("mini.clue").setup({
@@ -355,6 +349,7 @@ require("mini.clue").setup({
 -- Auto-hide tabline when only one buffer exists
 update_tabline_visibility()
 vim.api.nvim_create_autocmd({ "BufAdd", "BufDelete" }, {
+	group = vim.api.nvim_create_augroup("config_tabline", { clear = true }),
 	callback = function()
 		vim.schedule(update_tabline_visibility)
 	end,
@@ -366,7 +361,6 @@ vim.api.nvim_create_autocmd({ "BufAdd", "BufDelete" }, {
 
 require("catppuccin").setup({
 	flavour = "mocha",
-	transparent_background = false,
 	integrations = {
 		mini = {
 			enabled = true,
@@ -410,15 +404,15 @@ local function jj_refresh(buf)
 	if file == "" or file:find("^%w+:") then
 		return
 	end
-	local dir = vim.fn.fnamemodify(file, ":h")
-	if vim.fn.isdirectory(dir) == 0 then
+	local dir = vim.fs.dirname(file)
+	if not vim.uv.fs_stat(dir) then
 		return
 	end
 	vim.system(
 		{ "jj", "log", "-r", "@", "--no-graph", "-T", jj_tmpl, "--ignore-working-copy" },
 		{ cwd = dir },
 		vim.schedule_wrap(function(result)
-			if result.code == 0 and result.stdout and result.stdout ~= "" then
+			if result.code == 0 and result.stdout ~= "" then
 				local lines = vim.split(result.stdout, "\n")
 				local info = {
 					id = (lines[1] or ""):match("^%S+") or "",
@@ -441,9 +435,28 @@ local function jj_get(buf)
 	return jj_cache[buf]
 end
 
-vim.api.nvim_create_autocmd({ "BufEnter", "BufWritePost" }, {
+local jj_group = vim.api.nvim_create_augroup("config_jj", { clear = true })
+
+vim.api.nvim_create_autocmd("BufEnter", {
+	group = jj_group,
+	callback = function(args)
+		if jj_cache[args.buf] == nil then
+			jj_refresh(args.buf)
+		end
+	end,
+})
+
+vim.api.nvim_create_autocmd("BufWritePost", {
+	group = jj_group,
 	callback = function(args)
 		jj_refresh(args.buf)
+	end,
+})
+
+vim.api.nvim_create_autocmd("BufWipeout", {
+	group = jj_group,
+	callback = function(args)
+		jj_cache[args.buf] = nil
 	end,
 })
 
@@ -463,7 +476,7 @@ require("mini.statusline").setup({
 			-- jj: show change info instead of git when in a jj repo
 			local jj_info = jj_get()
 			local jj = ""
-			if jj_info and jj_info ~= false then
+			if type(jj_info) == "table" then
 				local diamond = jj_info.empty and "%#StJJEmpty#◇" or "%#StJJDirty#◆"
 				local parts = { diamond .. "%#MiniStatuslineDevinfo# " .. jj_info.id }
 				if jj_info.bookmark ~= "" then
@@ -507,6 +520,8 @@ vim.keymap.set("i", "<S-Tab>", function()
 	return vim.fn.pumvisible() == 1 and "<C-p>" or "<S-Tab>"
 end, { expr = true, desc = "Prev completion or unindent" })
 
+vim.keymap.set("n", "<leader>f", vim.lsp.buf.format, { desc = "Format buffer" })
+
 -- Splits
 vim.keymap.set("n", "<leader>v", "<cmd>vsplit<cr><c-w>l", { desc = "Vertical split" })
 vim.keymap.set("n", "<leader>h", "<cmd>split<cr><c-w>j", { desc = "Horizontal split" })
@@ -515,16 +530,18 @@ vim.keymap.set("n", "<leader>h", "<cmd>split<cr><c-w>j", { desc = "Horizontal sp
 vim.keymap.set("n", "<leader>ev", function()
 	vim.cmd.edit(vim.fn.stdpath("config") .. "/init.lua")
 end, { desc = "Edit vim config" })
-vim.keymap.set("n", "<leader>ez", "<cmd>edit $HOME/.zshrc<cr>", { desc = "Edit zshrc" })
-vim.keymap.set(
-	"n",
-	"<leader>eg",
-	"<cmd>edit $HOME/Library/Application\\ Support/com.mitchellh.ghostty/config<cr>",
-	{ desc = "Edit ghostty config" }
-)
+vim.keymap.set("n", "<leader>ez", function()
+	vim.cmd.edit("~/.zshrc")
+end, { desc = "Edit zshrc" })
+vim.keymap.set("n", "<leader>eg", function()
+	vim.cmd.edit("~/Library/Application Support/com.mitchellh.ghostty/config")
+end, { desc = "Edit ghostty config" })
 
 -- Redraw and clear highlights
-vim.keymap.set("n", "<leader>l", "<cmd>redraw!<cr><cmd>nohl<cr><esc>", { desc = "Redraw and clear highlights" })
+vim.keymap.set("n", "<leader>l", function()
+	vim.cmd.redraw({ bang = true })
+	vim.cmd.nohlsearch()
+end, { desc = "Redraw and clear highlights" })
 
 -- System clipboard yank in visual mode
 vim.keymap.set("v", "<leader>y", '"+y', { desc = "Yank to system clipboard" })
@@ -533,20 +550,13 @@ vim.keymap.set("v", "<leader>y", '"+y', { desc = "Yank to system clipboard" })
 vim.keymap.set("n", "-", "<cmd>Oil<cr>", { desc = "Open parent directory" })
 
 -- mini.pick keymaps
-local pick_maps = {
-	{ "<leader>p", "files", "Find files" },
-	{ "<leader>b", "buffers", "Find buffers" },
-	{ "<leader>gg", "grep_live", "Live grep" },
-}
-
-for _, map in ipairs(pick_maps) do
-	vim.keymap.set("n", map[1], function()
-		require("mini.pick").builtin[map[2]]()
-	end, { desc = map[3] })
-end
+local pick = require("mini.pick").builtin
+vim.keymap.set("n", "<leader>p", pick.files, { desc = "Find files" })
+vim.keymap.set("n", "<leader>b", pick.buffers, { desc = "Find buffers" })
+vim.keymap.set("n", "<leader>gg", pick.grep_live, { desc = "Live grep" })
 
 vim.keymap.set("n", "<leader>*", function()
-	require("mini.pick").builtin.grep({ pattern = vim.fn.expand("<cword>") })
+	pick.grep({ pattern = vim.fn.expand("<cword>") })
 end, { desc = "Grep word under cursor" })
 
 -- mini.extra diagnostic picker
@@ -554,9 +564,9 @@ vim.keymap.set("n", "<leader>xx", function()
 	require("mini.extra").pickers.diagnostic()
 end, { desc = "Show diagnostics" })
 
--- Diagnostic toggle keymap (defined here to access state/helpers)
+-- Diagnostic toggle keymap
 vim.keymap.set("n", "<leader>d", function()
-	local current_line = vim.fn.line(".")
+	local current_line = vim.api.nvim_win_get_cursor(0)[1]
 	local current_buf = vim.api.nvim_get_current_buf()
 
 	if diagnostic_float_state.win_id and vim.api.nvim_win_is_valid(diagnostic_float_state.win_id) then
@@ -567,8 +577,8 @@ vim.keymap.set("n", "<leader>d", function()
 		diagnostic_float_state.dismissed_buf = current_buf
 	else
 		-- Open and clear dismissed state
-		vim.diagnostic.open_float({ focus = false })
-		diagnostic_float_state.win_id = find_diagnostic_float()
+		local _, winnr = vim.diagnostic.open_float({ focus = false })
+		diagnostic_float_state.win_id = winnr
 		diagnostic_float_state.dismissed_line = nil
 		diagnostic_float_state.dismissed_buf = nil
 	end
@@ -587,11 +597,9 @@ vim.keymap.set("n", "<leader>q", function()
 	local buffers = get_listed_buffers()
 
 	if #buffers == 1 then
-		-- Last buffer, quit Neovim
-		vim.cmd("quit")
+		vim.cmd.quit()
 	else
-		-- Delete current buffer
-		vim.cmd("bdelete")
+		vim.cmd.bdelete()
 		-- Update tabline visibility (will hide if down to 1 buffer)
 		vim.schedule(update_tabline_visibility)
 	end
@@ -649,7 +657,7 @@ local test_commands = {
 
 vim.keymap.set("n", "<leader>tt", function()
 	local cmd = test_commands[vim.bo.filetype] or "make test"
-	vim.cmd("botright split | terminal " .. cmd)
+	vim.cmd.botright("split | terminal " .. cmd)
 end, { desc = "Run tests" })
 
 vim.keymap.set("n", "<leader>tf", function()
@@ -665,7 +673,7 @@ vim.keymap.set("n", "<leader>tf", function()
 	else
 		cmd = test_commands[ft] or "make test"
 	end
-	vim.cmd("botright split | terminal " .. cmd)
+	vim.cmd.botright("split | terminal " .. cmd)
 end, { desc = "Run tests for current file" })
 
 -- Better indenting
