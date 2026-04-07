@@ -1,0 +1,82 @@
+[
+  {
+    "query": "add my new gitconfig to the dotfiles and stow it",
+    "should_trigger": true
+  },
+  {
+    "query": "I added a config file to dotfiles but stow is complaining about a symlink conflict",
+    "should_trigger": true
+  },
+  {
+    "query": "move my starship.toml into the dotfiles so it's tracked",
+    "should_trigger": true
+  },
+  {
+    "query": "stow the zsh package to link my zshrc into home",
+    "should_trigger": true
+  },
+  {
+    "query": "unstow the tmux package, I want to make changes without the symlink",
+    "should_trigger": true
+  },
+  {
+    "query": "create a new dotfiles package for my wezterm configuration",
+    "should_trigger": true
+  },
+  {
+    "query": "the stow symlink for my nvim config is pointing to the wrong place",
+    "should_trigger": true
+  },
+  {
+    "query": "add this shell script to the dotfiles scripts package so it ends up in ~/.local/bin",
+    "should_trigger": true
+  },
+  {
+    "query": "which dotfile packages do I have and what files are in each?",
+    "should_trigger": true
+  },
+  {
+    "query": "I want to track my ghostty config in dotfiles, set up the right directory structure",
+    "should_trigger": true
+  },
+  {
+    "query": "edit my .zshrc to add a new alias",
+    "should_trigger": false
+  },
+  {
+    "query": "configure neovim to use a new color scheme",
+    "should_trigger": false
+  },
+  {
+    "query": "set up my tmux with a new theme and plugins",
+    "should_trigger": false
+  },
+  {
+    "query": "install homebrew packages on this new machine",
+    "should_trigger": false
+  },
+  {
+    "query": "commit my changes and push",
+    "should_trigger": false
+  },
+  {
+    "query": "help me write a Makefile for this project",
+    "should_trigger": false
+  },
+  {
+    "query": "back up my home directory to an external drive",
+    "should_trigger": false
+  },
+  {
+    "query": "configure git to use a specific SSH key for GitHub",
+    "should_trigger": false
+  },
+  {
+    "query": "create a new Claude Code skill for terraform",
+    "should_trigger": false
+  },
+  {
+    "query": "set up a new development environment on this machine",
+    "should_trigger": false
+  }
+]

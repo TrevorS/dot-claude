@@ -1,0 +1,82 @@
+[
+  {
+    "query": "show me what this PNG looks like in the terminal",
+    "should_trigger": true
+  },
+  {
+    "query": "display the generated image so I can see if the output looks right",
+    "should_trigger": true
+  },
+  {
+    "query": "preview screenshot.png in the terminal",
+    "should_trigger": true
+  },
+  {
+    "query": "render this SVG in the terminal so I can check the layout",
+    "should_trigger": true
+  },
+  {
+    "query": "view the diagram I just exported as a PNG",
+    "should_trigger": true
+  },
+  {
+    "query": "can you show me the image at /tmp/output.jpg?",
+    "should_trigger": true
+  },
+  {
+    "query": "display this GIF in the terminal to check the animation frames",
+    "should_trigger": true
+  },
+  {
+    "query": "I generated a chart, show it to me",
+    "should_trigger": true
+  },
+  {
+    "query": "preview the favicon I just created",
+    "should_trigger": true
+  },
+  {
+    "query": "let me see what the logo looks like",
+    "should_trigger": true
+  },
+  {
+    "query": "analyze this WAV file for audio quality issues",
+    "should_trigger": false
+  },
+  {
+    "query": "read the contents of this PDF document",
+    "should_trigger": false
+  },
+  {
+    "query": "optimize this PNG with pngquant to reduce file size",
+    "should_trigger": false
+  },
+  {
+    "query": "write CSS to display an image with a border radius",
+    "should_trigger": false
+  },
+  {
+    "query": "convert this SVG to PNG using sharp",
+    "should_trigger": false
+  },
+  {
+    "query": "help me build an image gallery component in React",
+    "should_trigger": false
+  },
+  {
+    "query": "resize all images in this directory to 800x600",
+    "should_trigger": false
+  },
+  {
+    "query": "generate a thumbnail for each uploaded photo",
+    "should_trigger": false
+  },
+  {
+    "query": "read the EXIF data from this photograph",
+    "should_trigger": false
+  },
+  {
+    "query": "write a Python script that applies a blur filter to images",
+    "should_trigger": false
+  }
+]

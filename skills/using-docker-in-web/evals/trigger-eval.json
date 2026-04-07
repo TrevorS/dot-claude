@@ -1,0 +1,82 @@
+[
+  {
+    "query": "my Docker build is failing with iptables bridge errors in Claude Code for Web",
+    "should_trigger": true
+  },
+  {
+    "query": "I'm getting SSL certificate errors when running Docker through the proxy in the web environment",
+    "should_trigger": true
+  },
+  {
+    "query": "Docker isn't working in my containerized Claude Code web session",
+    "should_trigger": true
+  },
+  {
+    "query": "how do I set up Docker inside the Claude Code web environment?",
+    "should_trigger": true
+  },
+  {
+    "query": "docker build fails with network bridge errors in the web Claude Code container",
+    "should_trigger": true
+  },
+  {
+    "query": "I can't pull images in Docker inside the web environment, getting SSL errors",
+    "should_trigger": true
+  },
+  {
+    "query": "configure Docker to work properly in the Claude Code for Web container",
+    "should_trigger": true
+  },
+  {
+    "query": "the docker daemon won't start in my Claude Code web session, iptables error",
+    "should_trigger": true
+  },
+  {
+    "query": "fix Docker networking in the containerized web environment",
+    "should_trigger": true
+  },
+  {
+    "query": "Docker compose up fails in Claude Code web with bridge-nf-call-iptables error",
+    "should_trigger": true
+  },
+  {
+    "query": "write a Dockerfile for my Python application",
+    "should_trigger": false
+  },
+  {
+    "query": "help me set up Docker Compose for local development with Postgres and Redis",
+    "should_trigger": false
+  },
+  {
+    "query": "optimize my Docker image to reduce the build size",
+    "should_trigger": false
+  },
+  {
+    "query": "debug why my container keeps crashing with an OOM error",
+    "should_trigger": false
+  },
+  {
+    "query": "set up a CUDA Docker container for GPU development",
+    "should_trigger": false
+  },
+  {
+    "query": "configure Docker to use a private registry",
+    "should_trigger": false
+  },
+  {
+    "query": "help me write a multi-stage Docker build",
+    "should_trigger": false
+  },
+  {
+    "query": "deploy my containerized app to Kubernetes",
+    "should_trigger": false
+  },
+  {
+    "query": "docker run is giving permission denied on the volume mount",
+    "should_trigger": false
+  },
+  {
+    "query": "set up GitHub Actions to build and push my Docker image",
+    "should_trigger": false
+  }
+]

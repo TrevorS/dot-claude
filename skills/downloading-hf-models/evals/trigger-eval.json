@@ -1,0 +1,82 @@
+[
+  {
+    "query": "download the llama-3-8b model from HuggingFace",
+    "should_trigger": true
+  },
+  {
+    "query": "what's the right command to pull a GGUF model from HuggingFace?",
+    "should_trigger": true
+  },
+  {
+    "query": "hf download the whisper-large-v3 model to my local models directory",
+    "should_trigger": true
+  },
+  {
+    "query": "I need to download a specific revision of a model from HuggingFace",
+    "should_trigger": true
+  },
+  {
+    "query": "grab the safetensors weights from this HuggingFace repo",
+    "should_trigger": true
+  },
+  {
+    "query": "download just the tokenizer files from the HuggingFace model repo",
+    "should_trigger": true
+  },
+  {
+    "query": "pull the qwen2-7b model from HF to /data/models",
+    "should_trigger": true
+  },
+  {
+    "query": "how do I download a gated model from HuggingFace that requires accepting terms?",
+    "should_trigger": true
+  },
+  {
+    "query": "fetch the model config and weights from HuggingFace for offline use",
+    "should_trigger": true
+  },
+  {
+    "query": "clone the HuggingFace model repo for stable-diffusion-xl",
+    "should_trigger": true
+  },
+  {
+    "query": "upload my fine-tuned model weights to HuggingFace",
+    "should_trigger": false
+  },
+  {
+    "query": "push these safetensors to my HuggingFace repo",
+    "should_trigger": false
+  },
+  {
+    "query": "create a new model repo on HuggingFace",
+    "should_trigger": false
+  },
+  {
+    "query": "run inference with the downloaded model using transformers",
+    "should_trigger": false
+  },
+  {
+    "query": "fine-tune a HuggingFace model on my custom dataset",
+    "should_trigger": false
+  },
+  {
+    "query": "install the huggingface_hub Python package",
+    "should_trigger": false
+  },
+  {
+    "query": "convert a PyTorch model to ONNX format",
+    "should_trigger": false
+  },
+  {
+    "query": "help me quantize this model to 4-bit with GPTQ",
+    "should_trigger": false
+  },
+  {
+    "query": "benchmark the inference speed of this language model",
+    "should_trigger": false
+  },
+  {
+    "query": "download a dataset from HuggingFace for training",
+    "should_trigger": false
+  }
+]

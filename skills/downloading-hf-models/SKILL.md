@@ -1,6 +1,6 @@
 ---
 name: downloading-hf-models
-description: Get the correct command syntax for downloading models from HuggingFace. Use when downloading models, running "hf download", or pulling models from HuggingFace repos.
+description: Download models and weights from HuggingFace. Use when downloading models, fetching safetensors or GGUFs, running "hf download", cloning model repos, or pulling weights from HuggingFace.
 ---
 
 # HuggingFace Model Download

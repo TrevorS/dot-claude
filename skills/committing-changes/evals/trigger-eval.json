@@ -1,0 +1,82 @@
+[
+  {
+    "query": "commit my changes with a descriptive message",
+    "should_trigger": true
+  },
+  {
+    "query": "stage and commit these files",
+    "should_trigger": true
+  },
+  {
+    "query": "commit and push to the remote branch",
+    "should_trigger": true
+  },
+  {
+    "query": "create a commit for the work I just finished",
+    "should_trigger": true
+  },
+  {
+    "query": "commit everything and push it up",
+    "should_trigger": true
+  },
+  {
+    "query": "I'm done with this change, commit it",
+    "should_trigger": true
+  },
+  {
+    "query": "push my latest commit to origin",
+    "should_trigger": true
+  },
+  {
+    "query": "commit the bug fix I just made",
+    "should_trigger": true
+  },
+  {
+    "query": "stage the modified files and create a commit",
+    "should_trigger": true
+  },
+  {
+    "query": "save my work as a commit and push",
+    "should_trigger": true
+  },
+  {
+    "query": "clean up the commit history on this branch",
+    "should_trigger": false
+  },
+  {
+    "query": "squash the last 5 commits together",
+    "should_trigger": false
+  },
+  {
+    "query": "review this pull request",
+    "should_trigger": false
+  },
+  {
+    "query": "run the test suite before I commit",
+    "should_trigger": false
+  },
+  {
+    "query": "rebase my branch onto main",
+    "should_trigger": false
+  },
+  {
+    "query": "check the CI status on my latest push",
+    "should_trigger": false
+  },
+  {
+    "query": "show me the git diff of my working tree",
+    "should_trigger": false
+  },
+  {
+    "query": "create a new feature branch",
+    "should_trigger": false
+  },
+  {
+    "query": "cherry-pick that fix onto the release branch",
+    "should_trigger": false
+  },
+  {
+    "query": "validate the project before I push",
+    "should_trigger": false
+  }
+]

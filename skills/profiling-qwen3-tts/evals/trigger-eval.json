@@ -1,0 +1,82 @@
+[
+  {
+    "query": "profile qwen3-tts-rs inference and show me where the time is spent",
+    "should_trigger": true
+  },
+  {
+    "query": "run e2e_bench on the TTS model and generate a flamegraph",
+    "should_trigger": true
+  },
+  {
+    "query": "benchmark the qwen3-tts inference pipeline end to end",
+    "should_trigger": true
+  },
+  {
+    "query": "use nsys to profile the GPU kernels during TTS inference",
+    "should_trigger": true
+  },
+  {
+    "query": "the TTS model is slow, help me find the bottleneck with chrome tracing",
+    "should_trigger": true
+  },
+  {
+    "query": "generate a Nsight Systems profile for the qwen3-tts inference run",
+    "should_trigger": true
+  },
+  {
+    "query": "run a performance benchmark of the TTS model inside the CUDA Docker container",
+    "should_trigger": true
+  },
+  {
+    "query": "profile the audio generation pipeline and identify the slowest operations",
+    "should_trigger": true
+  },
+  {
+    "query": "create a flamegraph for the qwen3-tts-rs inference to visualize hotspots",
+    "should_trigger": true
+  },
+  {
+    "query": "check if the latest changes improved or regressed TTS inference performance",
+    "should_trigger": true
+  },
+  {
+    "query": "write a new CUDA kernel for the attention layer",
+    "should_trigger": false
+  },
+  {
+    "query": "debug the NaN output from the TTS model",
+    "should_trigger": false
+  },
+  {
+    "query": "analyze this WAV file for audio quality issues",
+    "should_trigger": false
+  },
+  {
+    "query": "transcribe audio using whisper",
+    "should_trigger": false
+  },
+  {
+    "query": "set up the Docker development environment",
+    "should_trigger": false
+  },
+  {
+    "query": "optimize the memory layout of this Rust struct",
+    "should_trigger": false
+  },
+  {
+    "query": "help me benchmark this Python web server with wrk",
+    "should_trigger": false
+  },
+  {
+    "query": "profile my Node.js application for memory leaks",
+    "should_trigger": false
+  },
+  {
+    "query": "upload the model weights to HuggingFace",
+    "should_trigger": false
+  },
+  {
+    "query": "train the TTS model on a new dataset",
+    "should_trigger": false
+  }
+]

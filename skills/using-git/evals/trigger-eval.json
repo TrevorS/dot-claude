@@ -70,5 +70,13 @@
   {
     "query": "add a remote for my fork and fetch from it",
     "should_trigger": false
+  },
+  {
+    "query": "how do I use git stash to save my work and apply it to a different branch?",
+    "should_trigger": true
+  },
+  {
+    "query": "my pre-commit hook keeps reformatting files and then the commit fails, how do I fix this cycle?",
+    "should_trigger": true
   }
 ]

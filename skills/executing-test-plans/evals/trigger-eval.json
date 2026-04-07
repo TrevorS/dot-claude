@@ -1,0 +1,82 @@
+[
+  {
+    "query": "run the test plan I wrote and give me a structured results report",
+    "should_trigger": true
+  },
+  {
+    "query": "execute the QA checklist for the auth feature and document pass/fail for each item",
+    "should_trigger": true
+  },
+  {
+    "query": "walk through each acceptance criterion in this test plan and verify it",
+    "should_trigger": true
+  },
+  {
+    "query": "I have a test plan in test-plan.md, run it and produce a results document",
+    "should_trigger": true
+  },
+  {
+    "query": "systematically verify all the test cases listed in this document",
+    "should_trigger": true
+  },
+  {
+    "query": "execute the regression test plan and output results as JSON",
+    "should_trigger": true
+  },
+  {
+    "query": "run through the acceptance criteria checklist and produce a test report",
+    "should_trigger": true
+  },
+  {
+    "query": "I need you to execute this test plan step by step and record what passes and fails",
+    "should_trigger": true
+  },
+  {
+    "query": "verify the test plan for the payment flow and generate a markdown summary",
+    "should_trigger": true
+  },
+  {
+    "query": "go through each test case in the plan and check if it passes in the current code",
+    "should_trigger": true
+  },
+  {
+    "query": "write a test plan for the new search feature",
+    "should_trigger": false
+  },
+  {
+    "query": "run the pytest suite and show me the output",
+    "should_trigger": false
+  },
+  {
+    "query": "write unit tests for the UserService class",
+    "should_trigger": false
+  },
+  {
+    "query": "what does this test failure mean?",
+    "should_trigger": false
+  },
+  {
+    "query": "validate the project by running all linters and formatters",
+    "should_trigger": false
+  },
+  {
+    "query": "review this pull request for issues",
+    "should_trigger": false
+  },
+  {
+    "query": "create a QA checklist for the deployment process",
+    "should_trigger": false
+  },
+  {
+    "query": "fix the flaky test in test_auth.py",
+    "should_trigger": false
+  },
+  {
+    "query": "help me set up integration tests with a test database",
+    "should_trigger": false
+  },
+  {
+    "query": "check if the CI tests are passing",
+    "should_trigger": false
+  }
+]

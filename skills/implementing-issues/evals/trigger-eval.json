@@ -1,26 +1,82 @@
-{
-  "positive": [
-    "implement issue #42",
-    "work on ticket TEAM-123",
-    "start building the feature from this GitHub issue",
-    "pick up issue #15 and create a PR for it",
-    "I want to implement this Linear ticket end to end",
-    "take this issue and do TDD on it",
-    "create a feature branch for issue #88 and implement it",
-    "build what's described in this ticket",
-    "work through the requirements in issue #200",
-    "implement the acceptance criteria from this issue"
-  ],
-  "negative": [
-    "create a new GitHub issue for this bug",
-    "file an issue about the memory leak",
-    "list all open issues assigned to me",
-    "triage the bug reports",
-    "write a spec for the new feature",
-    "review this pull request",
-    "check the CI status",
-    "plan out the architecture for this project",
-    "close issue #42 as won't fix",
-    "add a comment to this issue"
-  ]
-}
+[
+  {
+    "query": "implement issue #42",
+    "should_trigger": true
+  },
+  {
+    "query": "work on ticket TEAM-123",
+    "should_trigger": true
+  },
+  {
+    "query": "start building the feature from this GitHub issue",
+    "should_trigger": true
+  },
+  {
+    "query": "pick up issue #15 and create a PR for it",
+    "should_trigger": true
+  },
+  {
+    "query": "I want to implement this Linear ticket end to end",
+    "should_trigger": true
+  },
+  {
+    "query": "take this issue and do TDD on it",
+    "should_trigger": true
+  },
+  {
+    "query": "create a feature branch for issue #88 and implement it",
+    "should_trigger": true
+  },
+  {
+    "query": "build what's described in this ticket",
+    "should_trigger": true
+  },
+  {
+    "query": "work through the requirements in issue #200",
+    "should_trigger": true
+  },
+  {
+    "query": "implement the acceptance criteria from this issue",
+    "should_trigger": true
+  },
+  {
+    "query": "create a new GitHub issue for this bug",
+    "should_trigger": false
+  },
+  {
+    "query": "file an issue about the memory leak",
+    "should_trigger": false
+  },
+  {
+    "query": "list all open issues assigned to me",
+    "should_trigger": false
+  },
+  {
+    "query": "triage the bug reports",
+    "should_trigger": false
+  },
+  {
+    "query": "write a spec for the new feature",
+    "should_trigger": false
+  },
+  {
+    "query": "review this pull request",
+    "should_trigger": false
+  },
+  {
+    "query": "check the CI status",
+    "should_trigger": false
+  },
+  {
+    "query": "plan out the architecture for this project",
+    "should_trigger": false
+  },
+  {
+    "query": "close issue #42 as won't fix",
+    "should_trigger": false
+  },
+  {
+    "query": "add a comment to this issue",
+    "should_trigger": false
+  }
+]

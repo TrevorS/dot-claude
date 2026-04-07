@@ -1,6 +1,6 @@
 ---
 name: specifying-and-planning
-description: Multi-mode skill for project planning workflows -- extract requirements from specs, break into tasks, create GitHub issues, set up project boards, or generate agent team configurations. Use when planning a project, extracting requirements, breaking down tasks, creating issues from tasks, setting up GitHub projects, or generating team plans.
+description: Plan project implementation -- extract requirements from specs, break into tasks, create GitHub issues, set up project boards, or generate agent team configurations. Use when planning a project, extracting requirements, breaking down tasks, creating issues from a spec, setting up GitHub projects, or generating team plans.
 argument-hint: "<mode> [file-or-args]"
 ---
 

@@ -1,0 +1,82 @@
+[
+  {
+    "query": "rebuild starship from the fork, I made changes to the jj_status module",
+    "should_trigger": true
+  },
+  {
+    "query": "sync the starship fork with upstream and resolve any conflicts",
+    "should_trigger": true
+  },
+  {
+    "query": "install the latest version of my custom starship binary",
+    "should_trigger": true
+  },
+  {
+    "query": "update the starship fork to pull in the latest upstream changes",
+    "should_trigger": true
+  },
+  {
+    "query": "the jj status module in my starship fork needs a fix, build and install after",
+    "should_trigger": true
+  },
+  {
+    "query": "recompile starship from the fork so the prompt picks up my changes",
+    "should_trigger": true
+  },
+  {
+    "query": "I want to modify the starship jj_status module to show conflict state",
+    "should_trigger": true
+  },
+  {
+    "query": "merge upstream starship changes into my fork branch",
+    "should_trigger": true
+  },
+  {
+    "query": "build and install the starship fork binary to ~/.local/bin",
+    "should_trigger": true
+  },
+  {
+    "query": "check if the starship fork is up to date with the latest upstream release",
+    "should_trigger": true
+  },
+  {
+    "query": "configure my starship.toml prompt to show git branch and status",
+    "should_trigger": false
+  },
+  {
+    "query": "install starship using homebrew",
+    "should_trigger": false
+  },
+  {
+    "query": "customize my zsh prompt with powerlevel10k",
+    "should_trigger": false
+  },
+  {
+    "query": "help me configure my terminal emulator colors",
+    "should_trigger": false
+  },
+  {
+    "query": "build a Rust binary and install it to /usr/local/bin",
+    "should_trigger": false
+  },
+  {
+    "query": "fork this GitHub repo and set up a remote",
+    "should_trigger": false
+  },
+  {
+    "query": "help me contribute to an open source project",
+    "should_trigger": false
+  },
+  {
+    "query": "add my dotfiles to the stow packages",
+    "should_trigger": false
+  },
+  {
+    "query": "configure the jj prompt in my shell",
+    "should_trigger": false
+  },
+  {
+    "query": "update my tmux configuration",
+    "should_trigger": false
+  }
+]

@@ -1,0 +1,82 @@
+[
+  {
+    "query": "store this API key in 1Password as a secure note",
+    "should_trigger": true
+  },
+  {
+    "query": "look up the database credentials in my 1Password vault",
+    "should_trigger": true
+  },
+  {
+    "query": "create a shareable link for the staging server password in 1Password",
+    "should_trigger": true
+  },
+  {
+    "query": "save this token to 1Password so I don't lose it",
+    "should_trigger": true
+  },
+  {
+    "query": "retrieve the AWS access key from 1Password",
+    "should_trigger": true
+  },
+  {
+    "query": "use op to get the secret from my vault",
+    "should_trigger": true
+  },
+  {
+    "query": "generate a shareable 1Password link for the deployment credentials",
+    "should_trigger": true
+  },
+  {
+    "query": "check what's in my 1Password vault for this project",
+    "should_trigger": true
+  },
+  {
+    "query": "create a new 1Password item for the Redis connection string",
+    "should_trigger": true
+  },
+  {
+    "query": "share the production database password with the team via 1Password",
+    "should_trigger": true
+  },
+  {
+    "query": "set up environment variables for my application",
+    "should_trigger": false
+  },
+  {
+    "query": "add this secret to GitHub Actions as a repository secret",
+    "should_trigger": false
+  },
+  {
+    "query": "encrypt this file with GPG",
+    "should_trigger": false
+  },
+  {
+    "query": "generate a random password for the new service account",
+    "should_trigger": false
+  },
+  {
+    "query": "configure AWS CLI with my credentials",
+    "should_trigger": false
+  },
+  {
+    "query": "store secrets in a .env file for local development",
+    "should_trigger": false
+  },
+  {
+    "query": "set up HashiCorp Vault for secret management",
+    "should_trigger": false
+  },
+  {
+    "query": "rotate the API keys for the production service",
+    "should_trigger": false
+  },
+  {
+    "query": "help me manage SSH keys on this machine",
+    "should_trigger": false
+  },
+  {
+    "query": "write a script that reads secrets from environment variables",
+    "should_trigger": false
+  }
+]

@@ -1,0 +1,82 @@
+[
+  {
+    "query": "write a CUDA kernel for fused attention in the candle framework",
+    "should_trigger": true
+  },
+  {
+    "query": "my custom CUDA kernel has low occupancy, help me analyze the register pressure",
+    "should_trigger": true
+  },
+  {
+    "query": "integrate this CUDA kernel with candle's custom op trait for qwen3-tts-rs",
+    "should_trigger": true
+  },
+  {
+    "query": "the GPU kernel is hitting shared memory bank conflicts, how do I pad to avoid them?",
+    "should_trigger": true
+  },
+  {
+    "query": "profile this CUDA kernel with ncu and tell me where the bottleneck is",
+    "should_trigger": true
+  },
+  {
+    "query": "write a roofline analysis for our matrix multiplication kernel",
+    "should_trigger": true
+  },
+  {
+    "query": "debug this CUDA kernel that's producing NaN outputs on certain input shapes",
+    "should_trigger": true
+  },
+  {
+    "query": "optimize the memory access pattern in this CUDA kernel to get better throughput",
+    "should_trigger": true
+  },
+  {
+    "query": "help me write the backward pass CUDA kernel for this custom candle operation",
+    "should_trigger": true
+  },
+  {
+    "query": "my kernel launch is failing with an invalid configuration error, help me pick the right block size",
+    "should_trigger": true
+  },
+  {
+    "query": "profile the end-to-end inference pipeline with flamegraph",
+    "should_trigger": false
+  },
+  {
+    "query": "benchmark the qwen3-tts-rs model using e2e_bench",
+    "should_trigger": false
+  },
+  {
+    "query": "write a Rust function that processes audio samples",
+    "should_trigger": false
+  },
+  {
+    "query": "set up the Docker container for GPU development",
+    "should_trigger": false
+  },
+  {
+    "query": "help me use PyTorch to train a neural network on my GPU",
+    "should_trigger": false
+  },
+  {
+    "query": "install CUDA toolkit on Ubuntu",
+    "should_trigger": false
+  },
+  {
+    "query": "write a Python script to run inference with a transformer model",
+    "should_trigger": false
+  },
+  {
+    "query": "optimize this SQL query that's doing a full table scan",
+    "should_trigger": false
+  },
+  {
+    "query": "help me configure OpenCL for my AMD GPU",
+    "should_trigger": false
+  },
+  {
+    "query": "build a REST API server in Rust with actix-web",
+    "should_trigger": false
+  }
+]

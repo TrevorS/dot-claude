@@ -1,0 +1,82 @@
+[
+  {
+    "query": "upload my fine-tuned model weights to HuggingFace",
+    "should_trigger": true
+  },
+  {
+    "query": "push these safetensors to my HuggingFace model repo",
+    "should_trigger": true
+  },
+  {
+    "query": "create a new model repository on HuggingFace and upload the GGUF files",
+    "should_trigger": true
+  },
+  {
+    "query": "I need to upload the quantized model to HF, what's the fastest way?",
+    "should_trigger": true
+  },
+  {
+    "query": "push the model checkpoint to HuggingFace Hub",
+    "should_trigger": true
+  },
+  {
+    "query": "upload the safetensors and tokenizer files to my HuggingFace repo",
+    "should_trigger": true
+  },
+  {
+    "query": "publish my model on HuggingFace with a proper model card",
+    "should_trigger": true
+  },
+  {
+    "query": "I trained a new model, help me push it to HuggingFace",
+    "should_trigger": true
+  },
+  {
+    "query": "upload these GGUF quantizations to my HuggingFace model repo",
+    "should_trigger": true
+  },
+  {
+    "query": "the HuggingFace upload is slow, how do I speed it up?",
+    "should_trigger": true
+  },
+  {
+    "query": "download the llama-3 model from HuggingFace",
+    "should_trigger": false
+  },
+  {
+    "query": "pull the model weights from this HF repo",
+    "should_trigger": false
+  },
+  {
+    "query": "fine-tune a HuggingFace model on my custom dataset",
+    "should_trigger": false
+  },
+  {
+    "query": "run inference with this model using transformers",
+    "should_trigger": false
+  },
+  {
+    "query": "convert the model to ONNX format",
+    "should_trigger": false
+  },
+  {
+    "query": "quantize this model to 4-bit GPTQ",
+    "should_trigger": false
+  },
+  {
+    "query": "help me write a model card for my project",
+    "should_trigger": false
+  },
+  {
+    "query": "deploy a model to a HuggingFace inference endpoint",
+    "should_trigger": false
+  },
+  {
+    "query": "push my code changes to GitHub",
+    "should_trigger": false
+  },
+  {
+    "query": "upload this file to S3",
+    "should_trigger": false
+  }
+]

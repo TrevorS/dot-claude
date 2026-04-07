@@ -1,0 +1,82 @@
+[
+  {
+    "query": "transcribe this WAV file using whisper to check if the TTS output is intelligible",
+    "should_trigger": true
+  },
+  {
+    "query": "run whisper on the generated audio to see if the speech is recognizable",
+    "should_trigger": true
+  },
+  {
+    "query": "test the audio quality by transcribing it with whisper and comparing to the input text",
+    "should_trigger": true
+  },
+  {
+    "query": "use whisper to check if this TTS output actually says what it should",
+    "should_trigger": true
+  },
+  {
+    "query": "transcribe output.wav and tell me what whisper thinks it says",
+    "should_trigger": true
+  },
+  {
+    "query": "run an intelligibility test on the generated speech using whisper",
+    "should_trigger": true
+  },
+  {
+    "query": "I want to verify the TTS output quality by doing a round-trip transcription with whisper",
+    "should_trigger": true
+  },
+  {
+    "query": "transcribe this audio file, I need to check if the words come through clearly",
+    "should_trigger": true
+  },
+  {
+    "query": "does this generated audio sound right? run whisper on it to check",
+    "should_trigger": true
+  },
+  {
+    "query": "check the word error rate of this TTS output by transcribing with whisper",
+    "should_trigger": true
+  },
+  {
+    "query": "analyze this WAV file for clipping and sample rate issues",
+    "should_trigger": false
+  },
+  {
+    "query": "build a speech-to-text pipeline using the whisper API",
+    "should_trigger": false
+  },
+  {
+    "query": "fine-tune whisper on my custom dataset",
+    "should_trigger": false
+  },
+  {
+    "query": "install the openai-whisper Python package",
+    "should_trigger": false
+  },
+  {
+    "query": "generate speech audio from this text using the TTS model",
+    "should_trigger": false
+  },
+  {
+    "query": "help me set up a real-time transcription service",
+    "should_trigger": false
+  },
+  {
+    "query": "profile the TTS inference performance",
+    "should_trigger": false
+  },
+  {
+    "query": "convert this audio from MP3 to WAV",
+    "should_trigger": false
+  },
+  {
+    "query": "write subtitles for this video using speech recognition",
+    "should_trigger": false
+  },
+  {
+    "query": "benchmark whisper inference speed on different model sizes",
+    "should_trigger": false
+  }
+]

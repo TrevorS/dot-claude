@@ -1,0 +1,82 @@
+[
+  {
+    "query": "find the passage in chapter 3 of this book where they discuss distributed consensus",
+    "should_trigger": true
+  },
+  {
+    "query": "search this PDF for mentions of 'event sourcing' and summarize the key points",
+    "should_trigger": true
+  },
+  {
+    "query": "read chapter 5 of designing-data-intensive-applications.epub and explain the main ideas",
+    "should_trigger": true
+  },
+  {
+    "query": "what does the author say about CAP theorem in this book?",
+    "should_trigger": true
+  },
+  {
+    "query": "go to page 142 of this PDF and read the section on replication strategies",
+    "should_trigger": true
+  },
+  {
+    "query": "find the quote about eventual consistency in this ebook",
+    "should_trigger": true
+  },
+  {
+    "query": "I'm reading this MOBI file, jump to the chapter on error handling and summarize it",
+    "should_trigger": true
+  },
+  {
+    "query": "search through this book for all references to the actor model",
+    "should_trigger": true
+  },
+  {
+    "query": "extract the key takeaways from chapters 7 through 9 of this PDF book",
+    "should_trigger": true
+  },
+  {
+    "query": "navigate to the table of contents of this EPUB and list all chapters",
+    "should_trigger": true
+  },
+  {
+    "query": "read the README.md in this project",
+    "should_trigger": false
+  },
+  {
+    "query": "read this API documentation page",
+    "should_trigger": false
+  },
+  {
+    "query": "summarize the contents of this log file",
+    "should_trigger": false
+  },
+  {
+    "query": "parse this JSON config file and explain the structure",
+    "should_trigger": false
+  },
+  {
+    "query": "read the first 50 lines of main.py",
+    "should_trigger": false
+  },
+  {
+    "query": "search the codebase for usages of the deprecated API",
+    "should_trigger": false
+  },
+  {
+    "query": "help me write a book report",
+    "should_trigger": false
+  },
+  {
+    "query": "generate a PDF from this markdown document",
+    "should_trigger": false
+  },
+  {
+    "query": "fetch the contents of this web page",
+    "should_trigger": false
+  },
+  {
+    "query": "convert this EPUB to PDF format",
+    "should_trigger": false
+  }
+]

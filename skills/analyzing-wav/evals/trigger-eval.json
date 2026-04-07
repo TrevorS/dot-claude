@@ -1,0 +1,82 @@
+[
+  {
+    "query": "check the sample rate and bit depth of this WAV file, something sounds off",
+    "should_trigger": true
+  },
+  {
+    "query": "analyze output.wav to see if the TTS model is producing silence at the start",
+    "should_trigger": true
+  },
+  {
+    "query": "the generated audio has weird clipping, can you inspect the waveform?",
+    "should_trigger": true
+  },
+  {
+    "query": "validate that this WAV file has the correct format for our audio pipeline",
+    "should_trigger": true
+  },
+  {
+    "query": "look at the spectrogram of this WAV and tell me if there's noise in the high frequencies",
+    "should_trigger": true
+  },
+  {
+    "query": "compare the duration and amplitude of these two WAV files from different TTS runs",
+    "should_trigger": true
+  },
+  {
+    "query": "the audio output sounds distorted, check if the PCM values are saturating",
+    "should_trigger": true
+  },
+  {
+    "query": "inspect this WAV file to debug why the speech synthesis output sounds robotic",
+    "should_trigger": true
+  },
+  {
+    "query": "is this WAV mono or stereo? I need it to be mono 16-bit 22050Hz for the model",
+    "should_trigger": true
+  },
+  {
+    "query": "check if the WAV header is valid, ffprobe is showing weird metadata",
+    "should_trigger": true
+  },
+  {
+    "query": "transcribe this audio file to text using whisper",
+    "should_trigger": false
+  },
+  {
+    "query": "convert this MP3 to WAV format using ffmpeg",
+    "should_trigger": false
+  },
+  {
+    "query": "play this audio file in the terminal",
+    "should_trigger": false
+  },
+  {
+    "query": "write a Python script that generates a sine wave WAV file",
+    "should_trigger": false
+  },
+  {
+    "query": "help me build a TTS model that outputs speech audio",
+    "should_trigger": false
+  },
+  {
+    "query": "set up an audio processing pipeline with sox",
+    "should_trigger": false
+  },
+  {
+    "query": "what's the best audio format for streaming over WebRTC?",
+    "should_trigger": false
+  },
+  {
+    "query": "help me read a CSV file and plot the data",
+    "should_trigger": false
+  },
+  {
+    "query": "profile the inference performance of the TTS model",
+    "should_trigger": false
+  },
+  {
+    "query": "display this image in the terminal",
+    "should_trigger": false
+  }
+]

@@ -1,0 +1,82 @@
+[
+  {
+    "query": "build a settings view in SwiftUI with a sidebar and detail pane for macOS",
+    "should_trigger": true
+  },
+  {
+    "query": "review my SwiftUI code for anti-patterns, I think I'm overusing @State",
+    "should_trigger": true
+  },
+  {
+    "query": "this SwiftUI view isn't updating when my @Observable model changes, help me debug it",
+    "should_trigger": true
+  },
+  {
+    "query": "migrate this AppKit NSViewController to a modern SwiftUI view",
+    "should_trigger": true
+  },
+  {
+    "query": "design the architecture for a macOS menu bar app using SwiftUI",
+    "should_trigger": true
+  },
+  {
+    "query": "create a SwiftUI list with search, filtering, and swipe actions",
+    "should_trigger": true
+  },
+  {
+    "query": "I need a SwiftUI sheet that presents a form with validation on macOS",
+    "should_trigger": true
+  },
+  {
+    "query": "what's the modern SwiftUI way to handle navigation on macOS? NavigationSplitView?",
+    "should_trigger": true
+  },
+  {
+    "query": "my SwiftUI preview is crashing with a missing environment object, how do I fix this?",
+    "should_trigger": true
+  },
+  {
+    "query": "build a custom SwiftUI component that wraps NSTextView for rich text editing",
+    "should_trigger": true
+  },
+  {
+    "query": "write a React component with a sidebar navigation",
+    "should_trigger": false
+  },
+  {
+    "query": "help me build a CLI tool in Swift using ArgumentParser",
+    "should_trigger": false
+  },
+  {
+    "query": "set up a new Xcode project for an iOS app",
+    "should_trigger": false
+  },
+  {
+    "query": "write UIKit code for a table view controller",
+    "should_trigger": false
+  },
+  {
+    "query": "help me write a server-side Swift app with Vapor",
+    "should_trigger": false
+  },
+  {
+    "query": "configure my tmux for a better development experience",
+    "should_trigger": false
+  },
+  {
+    "query": "design a REST API for a todo application",
+    "should_trigger": false
+  },
+  {
+    "query": "write a Python GUI using tkinter",
+    "should_trigger": false
+  },
+  {
+    "query": "help me write a Flutter widget for Android",
+    "should_trigger": false
+  },
+  {
+    "query": "build a web app frontend with Svelte",
+    "should_trigger": false
+  }
+]

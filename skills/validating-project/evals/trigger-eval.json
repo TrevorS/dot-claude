@@ -1,26 +1,82 @@
-{
-  "positive": [
-    "validate the project",
-    "run all the checks",
-    "check code quality before I commit",
-    "make sure the build passes",
-    "run formatting, linting, and tests",
-    "verify everything is green",
-    "run the full validation pipeline",
-    "check if my changes pass all linters and type checks",
-    "validate before pushing",
-    "run pre-commit checks on the whole project"
-  ],
-  "negative": [
-    "run just the unit tests",
-    "fix the linting error on line 42",
-    "set up prettier for this project",
-    "add eslint to the project",
-    "configure the CI pipeline",
-    "write a test for this function",
-    "what does this test failure mean",
-    "install the project dependencies",
-    "build the Docker image",
-    "deploy to staging"
-  ]
-}
+[
+  {
+    "query": "validate the project",
+    "should_trigger": true
+  },
+  {
+    "query": "run all the checks",
+    "should_trigger": true
+  },
+  {
+    "query": "check code quality before I commit",
+    "should_trigger": true
+  },
+  {
+    "query": "make sure the build passes",
+    "should_trigger": true
+  },
+  {
+    "query": "run formatting, linting, and tests",
+    "should_trigger": true
+  },
+  {
+    "query": "verify everything is green",
+    "should_trigger": true
+  },
+  {
+    "query": "run the full validation pipeline",
+    "should_trigger": true
+  },
+  {
+    "query": "check if my changes pass all linters and type checks",
+    "should_trigger": true
+  },
+  {
+    "query": "validate before pushing",
+    "should_trigger": true
+  },
+  {
+    "query": "run pre-commit checks on the whole project",
+    "should_trigger": true
+  },
+  {
+    "query": "run just the unit tests",
+    "should_trigger": false
+  },
+  {
+    "query": "fix the linting error on line 42",
+    "should_trigger": false
+  },
+  {
+    "query": "set up prettier for this project",
+    "should_trigger": false
+  },
+  {
+    "query": "add eslint to the project",
+    "should_trigger": false
+  },
+  {
+    "query": "configure the CI pipeline",
+    "should_trigger": false
+  },
+  {
+    "query": "write a test for this function",
+    "should_trigger": false
+  },
+  {
+    "query": "what does this test failure mean",
+    "should_trigger": false
+  },
+  {
+    "query": "install the project dependencies",
+    "should_trigger": false
+  },
+  {
+    "query": "build the Docker image",
+    "should_trigger": false
+  },
+  {
+    "query": "deploy to staging",
+    "should_trigger": false
+  }
+]

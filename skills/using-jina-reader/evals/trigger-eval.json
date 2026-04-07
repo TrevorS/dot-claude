@@ -1,0 +1,82 @@
+[
+  {
+    "query": "WebFetch returned a 403, try using Jina Reader to get the page content instead",
+    "should_trigger": true
+  },
+  {
+    "query": "that website is blocking me with Cloudflare, use Jina to fetch the content",
+    "should_trigger": true
+  },
+  {
+    "query": "I got a captcha page when trying to read that URL, try Jina Reader",
+    "should_trigger": true
+  },
+  {
+    "query": "use Jina Reader to fetch this web page",
+    "should_trigger": true
+  },
+  {
+    "query": "the page came back empty from WebFetch, try Jina as a fallback",
+    "should_trigger": true
+  },
+  {
+    "query": "I'm getting a 406 error fetching that page, can Jina Reader get through?",
+    "should_trigger": true
+  },
+  {
+    "query": "fetch this URL with Jina Reader, the direct fetch got anti-bot blocked",
+    "should_trigger": true
+  },
+  {
+    "query": "that site has aggressive bot protection, use Jina to read it",
+    "should_trigger": true
+  },
+  {
+    "query": "the WebFetch result was just a 'please enable JavaScript' page, try Jina",
+    "should_trigger": true
+  },
+  {
+    "query": "read the content at this URL using Jina Reader instead of direct fetch",
+    "should_trigger": true
+  },
+  {
+    "query": "fetch this web page and summarize the content",
+    "should_trigger": false
+  },
+  {
+    "query": "search the web for best practices for React testing",
+    "should_trigger": false
+  },
+  {
+    "query": "scrape all the links from this HTML page",
+    "should_trigger": false
+  },
+  {
+    "query": "read this PDF document",
+    "should_trigger": false
+  },
+  {
+    "query": "help me build a web scraper in Python",
+    "should_trigger": false
+  },
+  {
+    "query": "parse this HTML and extract the article text",
+    "should_trigger": false
+  },
+  {
+    "query": "check if this URL returns a valid response",
+    "should_trigger": false
+  },
+  {
+    "query": "help me set up Puppeteer for browser automation",
+    "should_trigger": false
+  },
+  {
+    "query": "curl this API endpoint and show me the response",
+    "should_trigger": false
+  },
+  {
+    "query": "read the contents of the GitHub README for this repo",
+    "should_trigger": false
+  }
+]

@@ -1,0 +1,82 @@
+[
+  {
+    "query": "write a Svelte component for a todo list with add and delete",
+    "should_trigger": true
+  },
+  {
+    "query": "create a Svelte 5 form component with validation using runes",
+    "should_trigger": true
+  },
+  {
+    "query": "help me build a Svelte component that fetches data and displays a table",
+    "should_trigger": true
+  },
+  {
+    "query": "convert this React component to Svelte",
+    "should_trigger": true
+  },
+  {
+    "query": "I need a Svelte store that syncs with localStorage using $state",
+    "should_trigger": true
+  },
+  {
+    "query": "write a .svelte file for a dropdown menu with keyboard navigation",
+    "should_trigger": true
+  },
+  {
+    "query": "create a Svelte component that uses $derived to compute filtered results",
+    "should_trigger": true
+  },
+  {
+    "query": "how do I use $props in Svelte 5 instead of export let?",
+    "should_trigger": true
+  },
+  {
+    "query": "build a reusable modal component in Svelte with transitions",
+    "should_trigger": true
+  },
+  {
+    "query": "migrate this Svelte 4 component to use Svelte 5 runes syntax",
+    "should_trigger": true
+  },
+  {
+    "query": "write a React component with useState and useEffect",
+    "should_trigger": false
+  },
+  {
+    "query": "build a Vue.js form with v-model binding",
+    "should_trigger": false
+  },
+  {
+    "query": "help me with SvelteKit routing and load functions",
+    "should_trigger": false
+  },
+  {
+    "query": "write a SwiftUI view for a settings screen",
+    "should_trigger": false
+  },
+  {
+    "query": "set up a new SvelteKit project with TypeScript",
+    "should_trigger": false
+  },
+  {
+    "query": "configure Vite for a JavaScript project",
+    "should_trigger": false
+  },
+  {
+    "query": "write CSS for a responsive grid layout",
+    "should_trigger": false
+  },
+  {
+    "query": "help me build a REST API with Express",
+    "should_trigger": false
+  },
+  {
+    "query": "write a Python script to process CSV files",
+    "should_trigger": false
+  },
+  {
+    "query": "create an Angular component for a user profile page",
+    "should_trigger": false
+  }
+]

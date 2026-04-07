@@ -1,0 +1,82 @@
+[
+  {
+    "query": "clean up the commit history on this branch before I open a PR, there are a bunch of WIP commits",
+    "should_trigger": true
+  },
+  {
+    "query": "reorganize these commits so formatting changes are separate from logic changes",
+    "should_trigger": true
+  },
+  {
+    "query": "I have 15 messy commits on this feature branch, help me squash them into logical groups",
+    "should_trigger": true
+  },
+  {
+    "query": "prepare this branch for review by cleaning up the commit history into reviewable chunks",
+    "should_trigger": true
+  },
+  {
+    "query": "some of my intermediate commits have broken tests, fix the history so each commit is green",
+    "should_trigger": true
+  },
+  {
+    "query": "separate the refactoring commits from the feature commits on this branch",
+    "should_trigger": true
+  },
+  {
+    "query": "squash all the 'fixup' and 'wip' commits into their parent commits",
+    "should_trigger": true
+  },
+  {
+    "query": "I need to clean this branch up, the reviewer asked for atomic commits",
+    "should_trigger": true
+  },
+  {
+    "query": "reorder and consolidate the commits on my feature branch to tell a coherent story",
+    "should_trigger": true
+  },
+  {
+    "query": "the commit history on this branch is a mess, help me reorganize it before merging",
+    "should_trigger": true
+  },
+  {
+    "query": "commit my current changes with a good message",
+    "should_trigger": false
+  },
+  {
+    "query": "rebase my branch onto the latest main",
+    "should_trigger": false
+  },
+  {
+    "query": "cherry-pick commit abc123 onto my branch",
+    "should_trigger": false
+  },
+  {
+    "query": "I lost a commit after a bad reset, help me recover it from the reflog",
+    "should_trigger": false
+  },
+  {
+    "query": "review this pull request",
+    "should_trigger": false
+  },
+  {
+    "query": "create a new branch for this feature",
+    "should_trigger": false
+  },
+  {
+    "query": "resolve the merge conflict in src/main.rs",
+    "should_trigger": false
+  },
+  {
+    "query": "push my branch to origin",
+    "should_trigger": false
+  },
+  {
+    "query": "show me the git log for the last 10 commits",
+    "should_trigger": false
+  },
+  {
+    "query": "amend the last commit message to fix a typo",
+    "should_trigger": false
+  }
+]

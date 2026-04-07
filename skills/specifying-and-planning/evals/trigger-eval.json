@@ -1,0 +1,82 @@
+[
+  {
+    "query": "break down this product spec into implementation tasks with estimates",
+    "should_trigger": true
+  },
+  {
+    "query": "extract the requirements from this PRD and create GitHub issues for each",
+    "should_trigger": true
+  },
+  {
+    "query": "plan out the project and set up a GitHub project board with the tasks",
+    "should_trigger": true
+  },
+  {
+    "query": "generate a team configuration for implementing this feature in parallel",
+    "should_trigger": true
+  },
+  {
+    "query": "I have a spec document, help me break it into discrete tasks and create issues",
+    "should_trigger": true
+  },
+  {
+    "query": "create a project plan from these requirements with dependencies between tasks",
+    "should_trigger": true
+  },
+  {
+    "query": "take this feature description and break it down into implementable work items",
+    "should_trigger": true
+  },
+  {
+    "query": "set up a GitHub project for tracking this initiative and populate it with issues from the spec",
+    "should_trigger": true
+  },
+  {
+    "query": "plan the implementation of this system and generate an agent team plan",
+    "should_trigger": true
+  },
+  {
+    "query": "extract tasks from this design doc and organize them by priority",
+    "should_trigger": true
+  },
+  {
+    "query": "implement issue #42",
+    "should_trigger": false
+  },
+  {
+    "query": "review this pull request",
+    "should_trigger": false
+  },
+  {
+    "query": "write the code for the authentication service",
+    "should_trigger": false
+  },
+  {
+    "query": "create a single GitHub issue for this bug",
+    "should_trigger": false
+  },
+  {
+    "query": "help me write a technical design document",
+    "should_trigger": false
+  },
+  {
+    "query": "estimate how long this feature will take to build",
+    "should_trigger": false
+  },
+  {
+    "query": "check what issues are assigned to me in Linear",
+    "should_trigger": false
+  },
+  {
+    "query": "run the test suite",
+    "should_trigger": false
+  },
+  {
+    "query": "refactor the database layer for better performance",
+    "should_trigger": false
+  },
+  {
+    "query": "deploy the application to production",
+    "should_trigger": false
+  }
+]

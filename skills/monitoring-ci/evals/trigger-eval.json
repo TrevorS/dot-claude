@@ -74,5 +74,9 @@
   {
     "query": "can you look at .github/workflows/ci.yml and tell me if there are any security issues?",
     "should_trigger": false
+  },
+  {
+    "query": "wait for the CI run to finish and show me the test results",
+    "should_trigger": true
   }
 ]

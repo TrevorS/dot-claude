@@ -220,6 +220,7 @@ def main():
     parser.add_argument("--runs", type=int, default=1, help="Runs per query")
     parser.add_argument("--verbose", action="store_true")
     parser.add_argument("--cwd", default=os.getcwd(), help="Working directory for claude -p")
+    parser.add_argument("--summary", action="store_true", help="Print a summary table (useful with --all)")
     args = parser.parse_args()
 
     skills_dir = Path(__file__).parent.parent / "skills"
@@ -234,6 +235,8 @@ def main():
     else:
         parser.error("Specify --skill or --all")
         return
+
+    all_outputs = []
 
     for skill_name in skill_names:
         eval_path = args.eval_set or str(skills_dir / skill_name / "evals" / "trigger-eval.json")
@@ -257,6 +260,8 @@ def main():
             cwd=args.cwd,
         )
 
+        all_outputs.append(output)
+
         if args.verbose:
             summary = output["summary"]
             print(f"\nResults: {summary['passed']}/{summary['total']} passed "
@@ -273,7 +278,31 @@ def main():
                 print(f"  [{status}] rate={rate_str} expected={r['should_trigger']}: "
                       f"{r['query'][:60]}{skills_str}", file=sys.stderr)
 
-        print(json.dumps(output, indent=2))
+        if not args.summary:
+            print(json.dumps(output, indent=2))
+
+    if args.summary and all_outputs:
+        total_passed = 0
+        total_cases = 0
+        rows = []
+        for o in all_outputs:
+            s = o["summary"]
+            total_passed += s["passed"]
+            total_cases += s["total"]
+            pct = round(100 * s["passed"] / s["total"]) if s["total"] else 0
+            rows.append((o["skill_name"], s["passed"], s["total"], pct, s["positive_rate"], s["negative_rate"]))
+
+        name_w = max(len(r[0]) for r in rows)
+        print(f"\n{'Skill':<{name_w}}  Pass  Total   %  Pos       Neg", file=sys.stderr)
+        print(f"{'-' * name_w}  ----  -----  ---  --------  --------", file=sys.stderr)
+        for name, passed, total, pct, pos, neg in rows:
+            marker = " " if pct == 100 else "*"
+            print(f"{name:<{name_w}}  {passed:>4}  {total:>5}  {pct:>3}{marker} {pos:>9}  {neg:>8}", file=sys.stderr)
+
+        overall_pct = round(100 * total_passed / total_cases) if total_cases else 0
+        print(f"\nOverall: {total_passed}/{total_cases} ({overall_pct}%)", file=sys.stderr)
+
+        print(json.dumps({"skills": all_outputs, "overall": {"passed": total_passed, "total": total_cases, "percent": overall_pct}}, indent=2))
 
 
 if __name__ == "__main__":
