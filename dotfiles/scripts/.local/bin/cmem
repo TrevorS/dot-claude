@@ -1,0 +1,72 @@
+#!/usr/bin/env bash
+# Browse Claude Code auto-memories across all projects.
+#
+# Lists every memory file under ~/.claude/projects/*/memory/, lets you fuzzy
+# search, and previews the file. The leading column is the decoded project
+# path (best-effort: hyphens become slashes).
+#
+# Usage:
+#   cmem            # interactive browser
+#   cmem -l         # plain list (project<TAB>file)
+#   cmem -c         # cat all MEMORY.md indexes with project headers
+
+set -o errexit
+set -o pipefail
+set -o nounset
+
+ROOT="${HOME}/.claude/projects"
+
+if [ ! -d "${ROOT}" ]; then
+  echo "no projects dir at ${ROOT}" >&2
+  exit 1
+fi
+
+# Print "<project>\t<file>" for every memory .md file.
+list_entries() {
+  find "${ROOT}" -type f -path '*/memory/*.md' -print0 |
+    while IFS= read -r -d '' f; do
+      rel="${f#"${ROOT}"/}"           # e.g. -Users-foo-bar/memory/MEMORY.md
+      proj="${rel%%/memory/*}"         # e.g. -Users-foo-bar
+      decoded="${proj//-//}"           # best-effort decode
+      printf '%s\t%s\n' "${decoded}" "${f}"
+    done | sort
+}
+
+case "${1:-}" in
+  -l)
+    list_entries
+    exit 0
+    ;;
+  -c)
+    find "${ROOT}" -type f -path '*/memory/MEMORY.md' -print0 |
+      while IFS= read -r -d '' f; do
+        rel="${f#"${ROOT}"/}"
+        proj="${rel%%/memory/*}"
+        decoded="${proj//-//}"
+        printf '\n\033[1;36m== %s ==\033[0m\n' "${decoded}"
+        cat "${f}"
+      done
+    exit 0
+    ;;
+  -h|--help)
+    sed -n '2,12p' "$0" | sed 's/^# \{0,1\}//'
+    exit 0
+    ;;
+esac
+
+# Interactive mode: fzf with preview.
+PREVIEW='f={2}; printf "\033[1;36m%s\033[0m\n\n" "$f"; \
+  if command -v bat >/dev/null 2>&1; then \
+    bat --style=plain --color=always --paging=never "$f"; \
+  else \
+    cat "$f"; \
+  fi'
+
+list_entries |
+  fzf \
+    --delimiter='\t' \
+    --with-nth=1,2 \
+    --preview "${PREVIEW}" \
+    --preview-window='right,70%,wrap' \
+    --header='claude memories — enter to print path' \
+    --bind 'enter:become(echo {2})'
