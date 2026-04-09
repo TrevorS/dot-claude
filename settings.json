@@ -9,7 +9,7 @@
     "CLAUDE_NOTIFY_SOUND": "",
     "ENABLE_LSP_TOOL": "1",
     "MCP_CONNECTION_NONBLOCKING": "1",
-    "CLAUDE_CODE_SUBPROCESS_ENV_SCRUB": "1"
+    "CLAUDE_CODE_SUBPROCESS_ENV_SCRUB": "0"
   },
   "includeCoAuthoredBy": false,
   "permissions": {
