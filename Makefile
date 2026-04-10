@@ -19,19 +19,16 @@ TPM_DIR := $(HOME)/.local/share/tmux/plugins/tpm
 
 install:
 	@$(MAKE) deps
-	@uv sync
+	@uv sync --quiet
 	@$(MAKE) dotfiles
 	@if [ -z "$$CI" ]; then $(MAKE) tpm; fi
 
 tpm:
-	@if [ -d "$(TPM_DIR)" ]; then \
-		echo "TPM already installed"; \
-	else \
+	@if [ ! -d "$(TPM_DIR)" ]; then \
 		echo "Installing TPM..."; \
 		git clone https://github.com/tmux-plugins/tpm "$(TPM_DIR)"; \
 	fi
-	@echo "Installing tmux plugins..."
-	@"$(TPM_DIR)/bin/install_plugins"
+	@"$(TPM_DIR)/bin/install_plugins" | grep -v 'Already installed' || true
 
 typecheck:
 	@uv run ty check $$(find skills -name '*.py' -not -path '*/evals/*')
@@ -52,58 +49,8 @@ pre-commit-install:
 pre-commit-update:
 	@uv run pre-commit autoupdate
 
-# -- Package lists --
-# Strip comments and blank lines from a package list file
-pkg_list = $(shell sed 's/\#.*//' $(1) | tr '\n' ' ')
-
 deps:
-	@case "$$(uname)" in \
-		Darwin) \
-			if command -v brew >/dev/null 2>&1; then \
-				echo "Installing Homebrew packages..."; \
-				brew install $(call pkg_list,packages/brew.txt); \
-			else \
-				echo "brew not found — skipping brew packages"; \
-			fi ;; \
-		Linux) \
-			if command -v apt >/dev/null 2>&1; then \
-				echo "Installing apt packages..."; \
-				sudo apt install -y $(call pkg_list,packages/apt.txt); \
-			else \
-				echo "apt not found — skipping apt packages"; \
-			fi ;; \
-	esac
-	@if command -v luarocks >/dev/null 2>&1; then \
-		echo "Installing LuaRocks packages..."; \
-		lua_dir="$$(brew --prefix lua@5.4 2>/dev/null)"; \
-		lr_flags=""; \
-		if [ -n "$$lua_dir" ] && [ -d "$$lua_dir" ]; then \
-			lr_flags="--lua-dir=$$lua_dir"; \
-		fi; \
-		for pkg in $(call pkg_list,packages/luarocks.txt); do \
-			if luarocks $$lr_flags show $$pkg >/dev/null 2>&1; then \
-				echo "  $$pkg already installed"; \
-			else \
-				sudo luarocks $$lr_flags install $$pkg; \
-			fi; \
-		done; \
-	else \
-		echo "luarocks not found — skipping luarocks packages"; \
-	fi
-	@if command -v cargo >/dev/null 2>&1; then \
-		echo "Installing cargo packages..."; \
-		for pkg in $(call pkg_list,packages/cargo.txt); do \
-			if cargo install --list | grep -q "^$$pkg "; then \
-				echo "  $$pkg already installed"; \
-			elif command -v cargo-binstall >/dev/null 2>&1 && [ "$$pkg" != "cargo-binstall" ]; then \
-				cargo binstall -y $$pkg; \
-			else \
-				cargo install $$pkg; \
-			fi; \
-		done; \
-	else \
-		echo "cargo not found — skipping cargo packages"; \
-	fi
+	@python3 scripts/install-deps.py
 
 MACOS_ONLY_PKGS := ghostty
 
@@ -117,7 +64,6 @@ dotfiles:
 				Darwin) ;; \
 				*) echo "$(MACOS_ONLY_PKGS)" | grep -qw "$$name" && { echo "Skipping $$name (macOS only)"; continue; } ;; \
 			esac; \
-			echo "Stowing $$name..."; \
 			stow --adopt -d dotfiles -t ~ $$name; \
 		done; \
 	fi

@@ -295,5 +295,6 @@
   "voiceEnabled": true,
   "autoDreamEnabled": true,
   "showThinkingSummaries": true,
-  "skipDangerousModePermissionPrompt": true
+  "skipDangerousModePermissionPrompt": true,
+  "effortLevel": "medium"
 }

@@ -6,6 +6,7 @@ fd-find
 fzf
 git
 imagemagick
+mosh
 jq
 luarocks
 neovim

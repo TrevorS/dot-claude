@@ -7,8 +7,10 @@ fzf
 gh
 git
 imagemagick
+mosh
 gnu-sed
 jq
+luarocks
 neovim
 ripgrep
 stow
