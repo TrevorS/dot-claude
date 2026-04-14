@@ -31,28 +31,19 @@
       "Bash(linear-cli:*)",
       "Bash(llm:*)",
       "Bash(claude:*)",
-      "Bash(ls:*)",
-      "Bash(find:*)",
-      "Bash(rg:*)",
-      "Bash(grep:*)",
-      "Bash(head:*)",
-      "Bash(sort:*)",
-      "Bash(wc:*)",
-      "Bash(xargs:*)",
       "Bash(mkdir:*)",
       "Bash(mv:*)",
       "Bash(chmod:*)",
-      "Bash(du:*)",
-      "Bash(echo:*)",
-      "Bash(command:*)",
-      "Bash(timeout:*)",
-      "Bash(gsed:*)",
-      "Bash(tailscale:*)",
       "Bash(touch:*)",
       "Bash(open:*)",
       "Bash(kill:*)",
       "Bash(pkill:*)",
       "Bash(lsof:*)",
+      "Bash(du:*)",
+      "Bash(xargs:*)",
+      "Bash(command:*)",
+      "Bash(timeout:*)",
+      "Bash(tailscale:*)",
       "Bash(node:*)",
       "Bash(npm test*)",
       "Bash(npm run *)",
@@ -66,7 +57,6 @@
       "Bash(npm pack*)",
       "Bash(npm explain *)",
       "Bash(npm why *)",
-      "Bash(sed:*)",
       "Bash(source:*)",
       "Read(~/.rbt2/**)",
       "Read(~/Downloads/**)",
@@ -196,6 +186,15 @@
             "command": "~/.claude/hooks/journal-reminder.sh"
           }
         ]
+      },
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/post-tool-failure.sh"
+          }
+        ]
       }
     ],
     "PreToolUse": [
@@ -249,17 +248,6 @@
         ]
       }
     ],
-    "PostToolUseFailure": [
-      {
-        "matcher": "",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "~/.claude/hooks/post-tool-failure.sh"
-          }
-        ]
-      }
-    ],
     "UserPromptSubmit": [
       {
         "matcher": "",
@@ -296,5 +284,5 @@
   "autoDreamEnabled": true,
   "showThinkingSummaries": true,
   "skipDangerousModePermissionPrompt": true,
-  "effortLevel": "medium"
+  "effortLevel": "auto"
 }
