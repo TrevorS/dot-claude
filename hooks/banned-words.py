@@ -11,6 +11,12 @@ import re
 import sys
 from pathlib import Path
 
+# Regex to match fenced code blocks (``` or ~~~) so we can skip them
+FENCED_CODE_BLOCK = re.compile(
+    r"^(?P<fence>`{3,}|~{3,}).*?\n.*?^(?P=fence)\s*$",
+    re.MULTILINE | re.DOTALL,
+)
+
 RULES_FILE = Path(__file__).parent.parent / "rules" / "banned-words.md"
 BEGIN_MARKER = "<!-- BEGIN BANNED_WORDS -->"
 END_MARKER = "<!-- END BANNED_WORDS -->"
@@ -80,9 +86,15 @@ def build_pattern(words: list[str]) -> re.Pattern | None:
     return re.compile(r"\b(" + "|".join(escaped) + r")\b", re.IGNORECASE)
 
 
+def strip_fenced_code_blocks(text: str) -> str:
+    """Remove fenced code blocks so their contents aren't checked."""
+    return FENCED_CODE_BLOCK.sub("", text)
+
+
 def find_violations(text: str, pattern: re.Pattern) -> list[str]:
-    """Return deduplicated list of banned words found in text."""
-    matches = pattern.findall(text)
+    """Return deduplicated list of banned words found in prose (outside code blocks)."""
+    prose = strip_fenced_code_blocks(text)
+    matches = pattern.findall(prose)
     seen = set()
     result = []
     for m in matches:
