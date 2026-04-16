@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
-"""PreToolUse hook: block banned AI-slop words in docs, commits, and PRs.
+"""PostToolUse hook: flag banned AI-slop words in docs, commits, and PRs.
 
 Reads the banned words list from rules/banned-words.md (between markers).
 Checks Write/Edit tool calls for doc-like files and Bash commands that
-carry commit messages or PR descriptions.
+carry commit messages or PR descriptions. Emits a suggestion via stderr
+(exit 2) so Claude can rewrite; does not block the tool call.
 """
 
 import json
@@ -187,8 +188,9 @@ def main() -> None:
 
     word_list = ", ".join(f'"{w}"' for w in violations)
     print(
-        f"Blocked: found banned AI-slop words: {word_list}. "
-        "Rewrite using plain, direct language. "
+        f"Suggestion: found banned AI-slop words: {word_list}. "
+        "Consider rewriting using plain, direct language "
+        "(edit the file or amend the commit/PR message). "
         "See rules/banned-words.md for the full list.",
         file=sys.stderr,
     )

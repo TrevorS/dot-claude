@@ -148,6 +148,15 @@
             "command": "~/.claude/hooks/post-tool-failure.sh"
           }
         ]
+      },
+      {
+        "matcher": "Write|Edit|Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 ~/.claude/hooks/banned-words.py"
+          }
+        ]
       }
     ],
     "PreToolUse": [
@@ -157,24 +166,6 @@
           {
             "type": "command",
             "command": "~/.claude/hooks/branch_protection.sh"
-          }
-        ]
-      },
-      {
-        "matcher": "Bash",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python3 ~/.claude/hooks/banned-words.py"
-          }
-        ]
-      },
-      {
-        "matcher": "Write|Edit",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python3 ~/.claude/hooks/banned-words.py"
           }
         ]
       }
