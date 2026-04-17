@@ -34,6 +34,7 @@ mcp-needs-auth-cache.json
 node_modules/
 paste-cache/
 plans/
+scheduled_tasks.lock
 plugins/
 projects/
 session-env/
