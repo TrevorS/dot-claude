@@ -1,20 +1,8 @@
 ---
 name: searching-history
-description: >-
-  Search past Claude Code conversation history and tool logs to recall previous
-  solutions, commands, and approaches. ALWAYS load this skill when the user
-  mentions anything about past sessions, previous conversations, or prior work
-  done in Claude Code. Trigger phrases include: "have I done this before", "how
-  did I fix", "what command did I run", "remind me how", "last time we", "find
-  that session", "pick up where we left off", "check my history", "I did this
-  before", "previous conversation", "a few months ago", "we figured it out",
-  "can you find what I did", or any reference to recalling, remembering, or
-  looking up something from a past Claude Code session. Also trigger when the
-  user asks about past implementations, error resolutions, configuration changes,
-  or commands from earlier conversations — even if they don't explicitly say
-  "search history". Do NOT use for searching the current codebase, the web, npm,
-  GitHub repos, git log, or documentation — only for recalling past Claude Code
-  session history.
+description: Search past Claude Code sessions to recall prior solutions, commands, fixes, and decisions. Use when the user references earlier work ("how did I fix", "last time we", "pick up where we left off", "a few months ago"). Current project auto-excluded; pass `--include-this-project` to include it.
+context: fork
+model: claude-sonnet-4-5
 allowed-tools: Bash
 argument-hint: "<search-query>"
 ---

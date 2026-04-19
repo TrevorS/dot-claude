@@ -94,6 +94,18 @@ Design agent team configuration from tasks:
 
 Target 3-5 teammates, 5-6 tasks per teammate. Prefer fewer focused teammates over many scattered ones.
 
+**Model selection per teammate.** Agent teams run ~7x tokens vs a single session, so the temptation is to downgrade aggressively. Resist it. A teammate that fails still burned input + output tokens, and a failed parallel branch blocks its dependents — the real cost of a bad model choice is retries + debugging + lost time, not the initial API spend. When in doubt, go one tier up.
+
+Guidance, not a rule:
+
+- `claude-opus-4-7` — roles that drive architectural decisions, gnarly debugging, cross-cutting refactors with high blast radius, or where a single mistake cascades. Use here freely; this is where Opus earns its keep.
+- `claude-sonnet-4-5` — default for implementation work: most writing-code, refactoring, integration, review. Strong tool use, reliable enough for parallel execution.
+- `claude-haiku-4-5` — only roles where the failure mode is cheap and obvious: shell-command runners, file movers, status reporters, well-specified doc generation. Not for anything requiring judgment.
+
+Set `model:` explicitly in each teammate's frontmatter — unset inherits the parent model silently. If a role sits on the Sonnet/Opus boundary, pick Opus. If a role sits on the Haiku/Sonnet boundary, pick Sonnet.
+
+**Context discipline**: instruct each teammate to return a **≤1500-token summary** to the root agent, not raw tool output. The root agent's context is the scarce resource; teammates that dump full output defeat the parallelism benefit.
+
 ## General Principles
 
 - No artificial timelines or phases (except team coordination)

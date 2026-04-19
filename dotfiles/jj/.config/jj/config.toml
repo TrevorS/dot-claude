@@ -23,26 +23,18 @@ diff-args = ["--color=always", "--display=inline", "$left", "$right"]
 "diff added token" = { fg = "bright green", bg = "#003000", underline = false }
 
 [aliases]
-s = ["status"]
-l = ["log", "-n", "15"]
-la = ["log", "--revsets", "all()"]
-lb = ["log", "-r", "trunk()..@"]
+l = ["log", "--limit", "15", "--no-graph"]
 e = ["evolog"]
-d = ["diff"]
-ds = ["diff", "--stat"]
-dd = ["diff", "--tool", "difft"]
+d = ["diff", "--tool", "difft"]
 f = ["git", "fetch"]
-pull = ["git", "fetch", "--branch"]
-push = ["git", "push"]
-b = ["bookmark", "list"]
-tug = ["bookmark", "move", "--from", "heads(::@- & bookmarks())", "--to", "@-"]
+p = ["git", "push"]
+t = ["bookmark", "move", "--from", "heads(::@- & bookmarks())", "--to", "@-"]
 
 [remotes.origin]
 auto-track-bookmarks = "glob:*"
 
 [revsets]
-bookmark-advance-from = "bookmarks()"
-bookmark-advance-to = "@"
+bookmark-advance-to = "@-"
 
 [revset-aliases]
 'immutable_heads()' = 'builtin_immutable_heads() | remote_bookmarks()'

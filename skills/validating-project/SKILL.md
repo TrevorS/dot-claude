@@ -2,6 +2,7 @@
 name: validating-project
 description: Auto-detect and run formatters, linters, type checkers, and tests for the current project. Use when validating a project, running all checks, checking code quality before committing, or verifying the build passes.
 context: fork
+model: claude-haiku-4-5
 ---
 
 # Validating Project

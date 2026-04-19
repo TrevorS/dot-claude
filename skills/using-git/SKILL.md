@@ -1,6 +1,6 @@
 ---
 name: using-git
-description: ALWAYS load this skill when the user mentions ANY of these git topics — squash, rebase, cherry-pick, merge conflicts, conflict resolution, reflog, recovering lost commits, resetting commits, pre-commit hooks, or fixing broken git state. This skill contains safe, non-interactive git approaches that must be preferred over default git commands. Load for ANY git workflow involving history rewriting, commit manipulation, or branch rebasing — even if the request seems straightforward.
+description: Advanced git history operations and recovery — reflog for lost commits, cherry-pick with conflicts, revert on shared history, non-interactive `reset --soft` squash, aborting/recovering from rebases, stash across branches, pre-commit hook cycles. Prefers safe, non-interactive approaches. Skip for basic commit/push/branch/gitignore.
 ---
 
 # Git Workflow

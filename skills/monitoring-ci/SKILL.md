@@ -1,6 +1,8 @@
 ---
 name: monitoring-ci
 description: Monitor and watch GitHub Actions CI/CD pipeline runs in real time. Use when the user has pushed code and wants to watch the build, check CI status, see if tests passed, monitor a pipeline, or wait for a workflow run to complete. Also use after any `jj git push` or `git push` command. Reports pass/fail with failed job logs. Do NOT use for writing or editing CI workflow YAML files, optimizing CI config, or debugging CI configuration — only for monitoring active runs.
+context: fork
+model: claude-haiku-4-5
 ---
 
 # CI Monitor

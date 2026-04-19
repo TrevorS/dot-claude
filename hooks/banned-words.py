@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
 """PostToolUse hook: flag banned AI-slop words in docs, commits, and PRs.
 
-Reads the banned words list from rules/banned-words.md (between markers).
 Checks Write/Edit tool calls for doc-like files and Bash commands that
 carry commit messages or PR descriptions. Emits a suggestion via stderr
 (exit 2) so Claude can rewrite; does not block the tool call.
+
+The word list is embedded below (was previously in rules/banned-words.md,
+removed to cut ~420 tokens of per-session context).
 """
 
 import json
@@ -18,9 +20,26 @@ FENCED_CODE_BLOCK = re.compile(
     re.MULTILINE | re.DOTALL,
 )
 
-RULES_FILE = Path(__file__).parent.parent / "rules" / "banned-words.md"
-BEGIN_MARKER = "<!-- BEGIN BANNED_WORDS -->"
-END_MARKER = "<!-- END BANNED_WORDS -->"
+BANNED_WORDS = [
+    "leverage", "robust", "streamline", "comprehensive", "utilize",
+    "facilitate", "seamless", "ensure", "enhance", "cutting-edge",
+    "holistic", "delve", "harness", "pivotal", "foster", "elevate",
+    "bolster", "cornerstone", "realm", "tapestry", "landscape",
+    "multifaceted", "intricate", "meticulous", "endeavor", "testament",
+    "paramount", "furthermore", "moreover", "notably", "essentially",
+    "fundamentally", "encompasses", "empower", "synergy", "spearhead",
+    "amplify", "orchestrate", "architected", "scalable", "innovative",
+    "optimal", "proactive", "ecosystem", "additionally", "subsequently",
+    "consequently", "accordingly", "nonetheless", "underscore", "embark",
+    "navigate", "unpack", "uncover", "unveil", "unlock", "unleash",
+    "revolutionize", "cultivate", "ascertain", "garner", "exemplify",
+    "resonate", "transcend", "groundbreaking", "transformative",
+    "unprecedented", "nuanced", "dynamic", "vibrant", "profound",
+    "compelling", "state-of-the-art", "bespoke", "mission-critical",
+    "unwavering", "paradigm", "interplay", "beacon", "crucible",
+    "labyrinth", "mosaic", "underpinnings", "frontier", "game-changer",
+    "disruptive", "world-class", "renowned", "breathtaking",
+]
 
 DOC_EXTENSIONS = {".md", ".txt", ".rst", ".mdx", ".adoc"}
 TEMP_MSG_PATTERNS = re.compile(r"(commit|msg|message|pr[-_]body)", re.IGNORECASE)
@@ -55,28 +74,6 @@ GH_PR_BODY_SIMPLE = re.compile(
     r"""gh\s+pr\s+create\s+.*?--body\s+(['"])(.*?)\1""",
     re.DOTALL,
 )
-
-
-def load_banned_words() -> list[str]:
-    """Load banned words from the rules file between markers."""
-    try:
-        text = RULES_FILE.read_text()
-    except FileNotFoundError:
-        return []
-
-    in_block = False
-    words = []
-    for line in text.splitlines():
-        if BEGIN_MARKER in line:
-            in_block = True
-            continue
-        if END_MARKER in line:
-            break
-        if in_block:
-            word = line.strip()
-            if word:
-                words.append(word)
-    return words
 
 
 def build_pattern(words: list[str]) -> re.Pattern | None:
@@ -155,8 +152,7 @@ def main() -> None:
     tool_name = hook_input.get("tool_name", "")
     tool_input = hook_input.get("tool_input", {})
 
-    words = load_banned_words()
-    pattern = build_pattern(words)
+    pattern = build_pattern(BANNED_WORDS)
     if pattern is None:
         json.dump(hook_input, sys.stdout)
         return
@@ -191,7 +187,7 @@ def main() -> None:
         f"Suggestion: found banned AI-slop words: {word_list}. "
         "Consider rewriting using plain, direct language "
         "(edit the file or amend the commit/PR message). "
-        "See rules/banned-words.md for the full list.",
+        "See hooks/banned-words.py for the full list.",
         file=sys.stderr,
     )
     sys.exit(2)

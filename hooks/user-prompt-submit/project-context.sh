@@ -6,7 +6,9 @@
 # Drain stdin to prevent blocking
 cat > /dev/null
 
-ctx="time=$(date '+%Y-%m-%d %H:%M %z') cwd=$PWD"
+# Round to the hour: prompt-cache invalidates when user-content changes,
+# so a minute-precision timestamp busts the ~5K-token prefix every turn.
+ctx="time=$(date '+%Y-%m-%d %H:00 %z') cwd=$PWD"
 
 if [[ -d .jj ]]; then
   if [[ -d .git ]]; then
@@ -18,8 +20,6 @@ if [[ -d .jj ]]; then
   change=$(jj log -r @ --no-graph -T 'change_id.short()' 2>/dev/null) && ctx+=" change=$change"
   bookmarks=$(jj log -r @ --no-graph -T 'bookmarks.join(",")' 2>/dev/null)
   [[ -n "$bookmarks" ]] && ctx+=" bookmark=$bookmarks"
-
-  ctx+=" | For advanced jj workflows (revsets, absorb, oplog), load the using-jj skill."
 
 elif [[ -d .git ]]; then
   ctx+=" vcs=git"
@@ -37,8 +37,6 @@ elif [[ -d .git ]]; then
   else
     ctx+=" dirty=no"
   fi
-
-  ctx+=" | For advanced git workflows (squashing, rebasing), load the using-git skill."
 
 else
   ctx+=" vcs=none"

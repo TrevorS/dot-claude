@@ -2,6 +2,7 @@
 name: cleaning-commit-history
 description: Reorganize and clean up messy commit history on a feature branch into logical, reviewable commits. Use when cleaning up commits, preparing a branch for review, separating formatting from logic changes, fixing broken intermediate states, or squashing WIP commits.
 context: fork
+model: claude-sonnet-4-5
 ---
 
 # Cleaning Commit History
