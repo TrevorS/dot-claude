@@ -32,6 +32,7 @@ ide/
 image-cache/
 mcp-needs-auth-cache.json
 node_modules/
+remote-settings.json
 paste-cache/
 plans/
 scheduled_tasks.lock

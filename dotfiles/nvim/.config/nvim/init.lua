@@ -16,6 +16,7 @@ vim.pack.add({
 	"https://github.com/nvim-mini/mini.nvim",
 	"https://github.com/catppuccin/nvim",
 	"https://github.com/stevearc/oil.nvim",
+	"https://github.com/mrjones2014/smart-splits.nvim",
 	{ src = "https://github.com/nvim-treesitter/nvim-treesitter", branch = "main" },
 })
 
@@ -300,6 +301,15 @@ require("oil").setup({
 		show_hidden = true,
 	},
 })
+
+require("smart-splits").setup({
+	at_edge = "stop",
+})
+local ss = require("smart-splits")
+vim.keymap.set("n", "<C-h>", ss.move_cursor_left, { desc = "Move to left split/pane" })
+vim.keymap.set("n", "<C-j>", ss.move_cursor_down, { desc = "Move to below split/pane" })
+vim.keymap.set("n", "<C-k>", ss.move_cursor_up, { desc = "Move to above split/pane" })
+vim.keymap.set("n", "<C-l>", ss.move_cursor_right, { desc = "Move to right split/pane" })
 
 require("nvim-treesitter").setup()
 require("nvim-treesitter").install({
@@ -621,6 +631,34 @@ vim.keymap.set("n", "<leader>jf", "<cmd>%!jq .<cr>", { desc = "Format JSON with 
 
 -- Format SQL with sleek
 vim.keymap.set("n", "<leader>sf", "<cmd>%!sleek<cr>", { desc = "Format SQL with sleek" })
+
+-- Render current buffer as markdown via glow, either in a tmux popup or split
+local function glow_preview(target)
+	if vim.fn.executable("glow") == 0 then
+		vim.notify("glow not installed (macOS: brew install glow)", vim.log.levels.WARN)
+		return
+	end
+	if vim.env.TMUX == nil then
+		vim.notify("Not running inside tmux", vim.log.levels.WARN)
+		return
+	end
+	local tmpfile = vim.fn.tempname() .. ".md"
+	vim.fn.writefile(vim.api.nvim_buf_get_lines(0, 0, -1, false), tmpfile)
+	local quoted = vim.fn.shellescape(tmpfile)
+	local cmd = string.format("glow -p %s; rm -f %s", quoted, quoted)
+	if target == "popup" then
+		vim.system({ "tmux", "display-popup", "-E", "-w", "90%", "-h", "90%", cmd })
+	else
+		vim.system({ "tmux", "split-window", "-h", cmd })
+	end
+end
+
+vim.keymap.set("n", "<leader>mp", function()
+	glow_preview("popup")
+end, { desc = "Markdown preview in tmux popup" })
+vim.keymap.set("n", "<leader>ms", function()
+	glow_preview("split")
+end, { desc = "Markdown preview in tmux right split" })
 
 -- Copy buffer path to system clipboard
 vim.keymap.set("n", "<leader>xp", function()

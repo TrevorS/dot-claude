@@ -6,6 +6,7 @@ fd
 fzf
 gh
 git
+glow
 imagemagick
 mosh
 gnu-sed
