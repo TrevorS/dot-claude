@@ -1,0 +1,87 @@
+{
+  "name": "catppuccin mocha",
+  "base": "dark",
+  "overrides": {
+    "text": "#cdd6f4",
+    "inverseText": "#1e1e2e",
+    "inactive": "#7f849c",
+    "inactiveShimmer": "#9399b2",
+    "subtle": "#45475a",
+    "background": "#313244",
+
+    "success": "#a6e3a1",
+    "error": "#f38ba8",
+    "warning": "#f9e2af",
+    "warningShimmer": "#fbecc7",
+    "merged": "#cba6f7",
+
+    "claude": "#fab387",
+    "claudeShimmer": "#f2cdcd",
+    "claudeBlue_FOR_SYSTEM_SPINNER": "#89b4fa",
+    "claudeBlueShimmer_FOR_SYSTEM_SPINNER": "#89dceb",
+
+    "autoAccept": "#cba6f7",
+    "permission": "#b4befe",
+    "permissionShimmer": "#89dceb",
+    "planMode": "#94e2d5",
+    "ide": "#74c7ec",
+    "suggestion": "#b4befe",
+    "remember": "#b4befe",
+
+    "bashBorder": "#f5c2e7",
+    "promptBorder": "#6c7086",
+    "promptBorderShimmer": "#7f849c",
+
+    "diffAdded": "#2d4a3e",
+    "diffRemoved": "#532a37",
+    "diffAddedDimmed": "#3a5247",
+    "diffRemovedDimmed": "#5e3e4a",
+    "diffAddedWord": "#74a98f",
+    "diffRemovedWord": "#d08497",
+
+    "red_FOR_SUBAGENTS_ONLY": "#f38ba8",
+    "blue_FOR_SUBAGENTS_ONLY": "#89b4fa",
+    "green_FOR_SUBAGENTS_ONLY": "#a6e3a1",
+    "yellow_FOR_SUBAGENTS_ONLY": "#f9e2af",
+    "purple_FOR_SUBAGENTS_ONLY": "#cba6f7",
+    "orange_FOR_SUBAGENTS_ONLY": "#fab387",
+    "pink_FOR_SUBAGENTS_ONLY": "#f5c2e7",
+    "cyan_FOR_SUBAGENTS_ONLY": "#94e2d5",
+
+    "professionalBlue": "#89b4fa",
+    "chromeYellow": "#f9e2af",
+    "clawd_body": "#fab387",
+    "clawd_background": "#1e1e2e",
+
+    "userMessageBackground": "#313244",
+    "userMessageBackgroundHover": "#45475a",
+    "messageActionsBackground": "#45475a",
+    "selectionBg": "#585b70",
+    "bashMessageBackgroundColor": "#313244",
+    "memoryBackgroundColor": "#313244",
+
+    "rate_limit_fill": "#b4befe",
+    "rate_limit_empty": "#45475a",
+
+    "fastMode": "#fab387",
+    "fastModeShimmer": "#f2cdcd",
+
+    "briefLabelYou": "#74c7ec",
+    "briefLabelClaude": "#fab387",
+
+    "rainbow_red": "#f38ba8",
+    "rainbow_orange": "#fab387",
+    "rainbow_yellow": "#f9e2af",
+    "rainbow_green": "#a6e3a1",
+    "rainbow_blue": "#89b4fa",
+    "rainbow_indigo": "#b4befe",
+    "rainbow_violet": "#cba6f7",
+    "rainbow_red_shimmer": "#f5e0dc",
+    "rainbow_orange_shimmer": "#f2cdcd",
+    "rainbow_yellow_shimmer": "#fbecc7",
+    "rainbow_green_shimmer": "#c4ecc0",
+    "rainbow_blue_shimmer": "#89dceb",
+    "rainbow_indigo_shimmer": "#ccd3fe",
+    "rainbow_violet_shimmer": "#dcc4fa"
+  }
+}
