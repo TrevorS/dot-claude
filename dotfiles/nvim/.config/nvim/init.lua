@@ -269,8 +269,30 @@ require("mini.basics").setup({
 	autocommands = { basic = true, relnum_in_visual_mode = false },
 })
 
-require("mini.surround").setup()
+require("mini.surround").setup({
+	mappings = {
+		add = "ys",
+		delete = "ds",
+		replace = "cs",
+		find = "",
+		find_left = "",
+		highlight = "",
+		update_n_lines = "",
+		suffix_last = "l",
+		suffix_next = "n",
+	},
+	search_method = "cover_or_next",
+})
 require("mini.pairs").setup()
+
+-- Disable autopairs in prose filetypes where apostrophes dominate
+vim.api.nvim_create_autocmd("FileType", {
+	group = vim.api.nvim_create_augroup("config_minipairs_prose", { clear = true }),
+	pattern = { "markdown", "text", "gitcommit", "mail" },
+	callback = function()
+		vim.b.minipairs_disable = true
+	end,
+})
 require("mini.ai").setup()
 require("mini.snippets").setup()
 
