@@ -1,6 +1,7 @@
 # System packages (Ubuntu/Debian)
 # One package per line. Comments and blank lines are ignored.
 bat
+clang
 curl
 fd-find
 fzf
@@ -8,6 +9,7 @@ git
 imagemagick
 mosh
 jq
+libclang-dev
 luarocks
 neovim
 ripgrep
