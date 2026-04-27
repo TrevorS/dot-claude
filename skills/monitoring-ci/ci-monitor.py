@@ -62,20 +62,61 @@ def head_sha(branch: str) -> str | None:
 
 
 def find_run(branch: str, max_wait: int = 60, expected_sha: str | None = None) -> str | None:
-    """Poll for a CI run on the branch matching expected_sha, return run ID or None."""
-    for _ in range(max_wait // 5):
+    """Poll for a CI run on the branch matching expected_sha, return run ID or None.
+
+    NOTE: deliberately does NOT pass `--branch` to `gh run list`. As of
+    `gh` 2.91.0 (released 2026-04-22), `gh run list --branch <name>
+    --json <fields>` returns `[]` even when matching runs exist; the
+    same query works without either flag but the combination is broken.
+    Filtering branch client-side is bulletproof and survives any future
+    flag-handling regressions.
+    """
+    poll_interval = 5
+    iterations = max(1, max_wait // poll_interval)
+    last_summary: tuple[int, int, int] | None = None
+
+    for attempt in range(1, iterations + 1):
         r = run(
-            f"gh run list --branch {branch} --limit 5 "
-            f"--json databaseId,status,headSha --jq '.[]'"
+            "gh run list --limit 10 "
+            "--json databaseId,status,headSha,headBranch --jq '.[]'"
         )
-        if r.returncode == 0 and r.stdout.strip():
-            for line in r.stdout.strip().split("\n"):
-                data = json.loads(line)
-                run_id = str(data.get("databaseId", ""))
-                run_sha = data.get("headSha", "")
-                if run_id and (not expected_sha or run_sha == expected_sha):
-                    return run_id
-        time.sleep(5)
+        if r.returncode != 0:
+            print(f"  poll {attempt}/{iterations}: gh failed — {r.stderr.strip()}")
+            time.sleep(poll_interval)
+            continue
+
+        seen = 0
+        branch_matches = 0
+        sha_matches = 0
+        for line in r.stdout.strip().split("\n"):
+            if not line:
+                continue
+            seen += 1
+            data = json.loads(line)
+            run_id = str(data.get("databaseId", ""))
+            if data.get("headBranch", "") != branch:
+                continue
+            branch_matches += 1
+            run_sha = data.get("headSha", "")
+            if expected_sha and run_sha != expected_sha:
+                continue
+            sha_matches += 1
+            if run_id:
+                return run_id
+
+        # Only print when we couldn't match — keeps the happy path quiet.
+        # Suppress duplicate summaries so a long stall produces one line,
+        # not 12 identical ones.
+        summary = (seen, branch_matches, sha_matches)
+        if summary != last_summary:
+            wanted = f" (need sha {expected_sha[:12]})" if expected_sha else ""
+            print(
+                f"  poll {attempt}/{iterations}: "
+                f"saw {seen} runs, {branch_matches} on {branch}, "
+                f"{sha_matches} matching{wanted}"
+            )
+            last_summary = summary
+        time.sleep(poll_interval)
     return None
 
 
