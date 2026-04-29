@@ -28,3 +28,7 @@ Never use `jj split`, `jj squash -i`, or `jj diffedit` — no non-interactive mo
 - Pre-commit hooks modify files during commit — re-stage and retry.
 - `git reset --soft HEAD~N` to squash N commits non-interactively.
 - Never rebase shared branches.
+
+## Background tasks
+
+When a background task completes and sends a `<task-notification>` with an `<output-file>` path, read the file directly with the Read tool. Do NOT call `TaskOutput` — the task ID may already be cleaned up, causing a "No task found" error.

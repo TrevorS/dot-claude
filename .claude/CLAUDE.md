@@ -1,5 +1,7 @@
 # CLAUDE.md — ~/.claude repo
 
+direct-commits-allowed: true
+
 Project-local context that loads only when cwd is `~/.claude`.
 
 ## Development Commands
@@ -8,6 +10,7 @@ Project-local context that loads only when cwd is `~/.claude`.
 make install              # Install deps (uv sync), stow dotfiles, install TPM
 make deps                 # Install system packages from packages/*.txt
 make validate             # All checks: formatting, linting, type checking, stylua, luacheck
+make pre-commit           # Run pre-commit on all files (same as the git pre-commit hook)
 make typecheck            # Type check Python scripts (ty)
 make dotfiles             # Stow all dotfile packages into ~
 make tpm                  # Install tmux plugin manager + plugins
@@ -16,7 +19,7 @@ make pre-commit-update    # Update pre-commit hooks to latest versions
 make clean                # Remove .venv
 ```
 
-CI runs four jobs on push/PR to master: `format-and-lint-check`, `typecheck`, `nvim-lint`, `nvim-format`. Use `monitoring-ci` skill after pushing.
+CI mirrors `make validate` on push/PR to master. Use `monitoring-ci` skill after pushing.
 
 ## Repository Architecture
 

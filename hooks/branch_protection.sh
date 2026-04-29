@@ -18,11 +18,13 @@ else
   exit 0
 fi
 
-# Check for project-level override
-if [ -f "./CLAUDE.md" ] && grep -qi "direct-commits-allowed: true" ./CLAUDE.md 2>/dev/null; then
-  echo "$input"
-  exit 0
-fi
+# Check for project-level override (root CLAUDE.md or .claude/CLAUDE.md)
+for f in ./CLAUDE.md ./.claude/CLAUDE.md; do
+  if [ -f "$f" ] && grep -qi "direct-commits-allowed: true" "$f" 2>/dev/null; then
+    echo "$input"
+    exit 0
+  fi
+done
 
 # Get current branch
 current_branch=""

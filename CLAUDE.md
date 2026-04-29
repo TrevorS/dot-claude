@@ -1,7 +1,5 @@
 # CLAUDE.md
 
-direct-commits-allowed: true
-
 ## Interaction
 
 - Address the user as "Teej"

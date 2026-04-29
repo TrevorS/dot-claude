@@ -1,90 +1,89 @@
 ---
 name: maintaining-claude-code
-description: Create, validate, and improve Claude Code configuration — SKILL.md files, CLAUDE.md, rules, hooks, and settings.json. Use when creating a new skill, writing a SKILL.md, adding a hook, editing rules, auditing skill descriptions, checking config quality, debugging hook behavior, or deciding between skills vs rules vs CLAUDE.md. Also auto-loads when working in ~/.claude/ on skills, rules, hooks, or settings.
+description: Audit and improve Claude Code hooks, rules, and settings.json. Use when adding/debugging a hook, organizing rules, auditing settings.json (permissions, env vars, stale flags), or deciding between hook vs skill vs rule vs CLAUDE.md. For SKILL.md authoring use the skill-creator plugin; for CLAUDE.md audits use the claude-md-improver plugin.
 ---
 
 # Maintaining Claude Code
 
-Validate, organize, and improve Claude Code configurations.
+Covers hooks, rules, settings.json, and the entity-type decision tree. Delegates to plugins for the things they do better.
 
-## Modes of Operation
+## Entity-type decision
 
-### Audit Mode
+Pick the right home before writing anything:
 
-**Use when**: Checking config quality, validating skills work
+| Need | Use |
+| --- | --- |
+| Run automatically before/after a tool call | **Hook** |
+| Auto-detected capability for a recurring task | **Skill** (use skill-creator) |
+| Heavy isolated workflow | **Skill with `context: fork`** |
+| Always-on behavioral guidance | **CLAUDE.md** (use claude-md-improver) |
+| Path-specific rules | **rules/** with `paths:` frontmatter |
+| External integration | **MCP server** |
 
-Checklist:
+## Hooks
 
-- CLAUDE.md: Specific, structured, actionable
-- Skills: Valid YAML, good descriptions (What + When formula)
-- Commands: Clear purpose, not duplicating skills
-- Hooks: Proper exit codes, reasonable timeouts
+### Events you'll actually use
 
-### Organize Mode
+- `PreToolUse` — block/allow a tool call (exit 2 to block, write to stderr)
+- `PostToolUse` — react to a completed tool call; can inject `additionalContext`
+- `UserPromptSubmit` — inject context on every prompt (rounded timestamps to preserve prompt cache)
+- `Stop` / `Notification` — desktop or audio notifications
+- `PostCompact` — log compaction events
+- `SessionStart` / `SubagentStop` — pre-load context or capture subagent output
 
-**Use when**: .claude directory is messy, too many similar skills
+### Exit codes
 
-Guidelines:
+- `0` — success, continue
+- `2` — block action; stderr is shown to Claude
+- non-zero (other) — non-blocking warning
 
-- Split CLAUDE.md into rules when >150 lines
-- Consolidate similar skills (don't have 3 "code review" skills)
-- Use subdirectories in rules/ for large projects
+### Output shape
 
-### Advise Mode
+Inject context with JSON on stdout:
 
-**Use when**: Deciding what entity type to create
+```json
+{
+  "hookSpecificOutput": {
+    "hookEventName": "<EventName>",
+    "additionalContext": "..."
+  }
+}
+```
 
-Decision tree:
+### Common pitfalls
 
-- Needs to run automatically before/after actions? -> **Hook**
-- Claude should auto-detect and use? -> **Skill**
-- Needs isolated context for heavy work? -> **Skill with `context: fork`**
-- Always-on behavioral guidance? -> **CLAUDE.md**
-- Path-specific rules? -> **.claude/rules/**
+- Cache busting: minute-precision timestamps in `UserPromptSubmit` invalidate prompt cache. Round to the hour.
+- Hook script not executable: `chmod +x` and verify shebang.
+- Reading stdin twice: drain once, parse from a variable.
+- Forgetting `set -euo pipefail` in bash — silent failures otherwise.
 
-## Quick Reference
+## Rules
 
-### Entity Type Decision Matrix
+`.claude/rules/*.md` files. Each can have `paths:` frontmatter to load only when matching files are touched. Smaller, narrower files load less context per session.
 
-| Need                       | Best Entity            | Alternative            |
-| -------------------------- | ---------------------- | ---------------------- |
-| Global behavior guidelines | CLAUDE.md              | Rules if >150 lines    |
-| Path-specific rules        | .claude/rules/         | CLAUDE.md if universal |
-| Auto-detected capabilities | Skills                 | Rules if always-on     |
-| Heavy isolated workflows   | Skills (context: fork) | Regular skill          |
-| Pre/post action validation | Hooks                  | Nothing else does this |
-| External API integration   | MCP Servers            | Bash calls if simple   |
+```yaml
+---
+paths:
+  - "**/*.py"
+---
+# Python
+- guidance...
+```
 
-### Skill Description Formula
+When to keep something in CLAUDE.md instead: cross-cutting interaction style, project-wide commands, or rules that apply regardless of file path.
 
-`<What it does>. Use when <trigger1>, <trigger2>, or <trigger3>.`
+## Settings.json
 
-Good: "Extract text and tables from PDF files. Use when working with PDFs, forms, or document extraction."
+Audit checklist:
 
-Bad: "Helps with documents"
+- **Env vars**: verify each is referenced in the current claude binary (`strings ~/.local/share/claude/versions/<v> | grep VAR`). Undocumented does not mean dead — many flags are intentionally unlisted.
+- **Permissions**: prefer narrow over broad. `Bash(<cmd>:*)` allows everything; `Bash(<cmd> <safe-args>)` is tighter. Always carry a deny list for secrets (`~/.ssh/**`, `**/*.pem`, `~/.env*`).
+- **Plugin allow rules**: `Skill(<plugin-name>)` must match the actual plugin/skill identifier; typos silently fail.
+- **Hook wiring**: matchers are regex against tool names — `""` matches all, `"Write|Edit|Bash"` is the common write-side filter.
 
-### YAML Validation
+## Audit a config
 
-- `---` on line 1 (required)
-- `name:` max 64 chars
-- `description:` max 1024 chars, must include triggers
-- `---` before content
-
-### Common Anti-Patterns
-
-- Vague descriptions: "Helps with stuff"
-- Nested references: SKILL.md -> REF.md -> DETAILS.md
-- Overloaded skills: Does 5 unrelated things
-- Missing triggers: No "Use when..." clause
-
-## Validation Steps
-
-1. Check YAML syntax in all skills
-2. Verify descriptions include trigger phrases
-3. Ensure no duplicate capabilities across skills
-4. Confirm CLAUDE.md content won't quickly grow stale
-5. Check hooks have reasonable timeouts
-
-## Resources
-
-See [REFERENCE.md](REFERENCE.md) for detailed examples and troubleshooting.
+1. Validate YAML frontmatter on every SKILL.md and rules/*.md
+2. Cross-check each `Skill(...)` and `mcp__...` permission rule against the installed plugins/servers
+3. Strings-grep the claude binary for env vars and settings keys to flag dead ones
+4. Test each hook script standalone with synthetic stdin before wiring
