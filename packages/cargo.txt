@@ -1,5 +1,6 @@
 # Cargo packages (installed via cargo binstall, falls back to cargo install)
 # One package per line. Comments and blank lines are ignored.
+atuin
 cargo-binstall
 git-delta
 jj-cli

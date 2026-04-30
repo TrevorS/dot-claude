@@ -38,6 +38,7 @@ alias gcd="git checkout dev"
 
 alias cdc="cd $HOME/.claude"
 alias cdp="cd $HOME/Projects"
+alias yolo="claude --dangerously-skip-permissions"
 
 alias dcu="docker compose up"
 alias dcd="docker compose down"
@@ -69,11 +70,14 @@ export RIPGREP_CONFIG_PATH="$HOME/.config/ripgrep/config"
 command -v fnm      >/dev/null && eval "$(fnm env --use-on-cd)"
 command -v starship >/dev/null && eval "$(starship init zsh)"
 command -v rbenv    >/dev/null && eval "$(rbenv init - zsh)"
+# History navigation bindings (esp. over SSH where vi-insert default eats them).
+# Bound unconditionally so they work without atuin; atuin block below overrides ^R + ^P.
+bindkey '^P' up-line-or-history
+bindkey '^N' down-line-or-history
+bindkey '^R' history-incremental-search-backward
 if command -v atuin >/dev/null; then
   eval "$(atuin init zsh)"
-  # atuin doesn't bind ctrl-p/ctrl-n — restore for history navigation (esp. over SSH)
   bindkey '^P' atuin-up-search
-  bindkey '^N' down-line-or-history
 fi
 command -v uv       >/dev/null && eval "$(uv generate-shell-completion zsh)"
 command -v zoxide   >/dev/null && eval "$(zoxide init zsh)"
