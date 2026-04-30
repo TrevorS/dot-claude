@@ -161,12 +161,24 @@ jj git push
 
 ### Addressing PR feedback
 
+**Stop:** if the PR already has review comments, do not squash or rewrite the original commits — review threads will detach from their line anchors. Add new commits on top instead, and only squash/rebase after Teej confirms. See `rules/version-control.md` ("Don't rewrite history on a reviewed PR without asking").
+
+Default (safe — preserves comment anchors):
+
 ```bash
 jj new feature-x- -m "address review feedback"
 # ... make changes ...
+jj describe -m "fixup: address review feedback"
+jj bookmark set feature-x -r @-
+jj git push   # adds a new commit; existing review threads stay put
+```
+
+Only after Teej approves rewriting:
+
+```bash
 jj squash -m "feat: updated per review"
 jj bookmark set feature-x -r @-
-jj git push
+jj git push   # force-push; review comments may detach
 ```
 
 ## Revsets
@@ -229,7 +241,7 @@ jj config set --repo 'revset-aliases."immutable_heads()"' 'builtin_immutable_hea
 In jj-colocated repos, git HEAD is detached — `gh pr create` fails with "not on any branch". Always specify `--head`:
 
 ```bash
-# Ensure bookmark exists and is pushed
+# Make sure bookmark exists and is pushed
 jj bookmark set feature-x -r @-
 jj git push
 

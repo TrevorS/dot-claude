@@ -34,7 +34,8 @@ The `--committer-date-is-author-date` flag puts your feature commits on top chro
 ## Key Safety Rules
 
 - **Never rebase shared branches** — only rebase local feature branches
-- **Check `git status` first** — ensure no uncommitted changes
+- **Don't rewrite history on a PR with review comments without asking Teej** — rebase/squash/amend/force-push detaches comments from their line anchors. Default to a new commit on top. See `rules/version-control.md`.
+- **Check `git status` first** — confirm no uncommitted changes
 - **Create a backup branch**: `git branch backup-$(date +%s)`
 - **Review changes** before committing: `git diff --cached`
 
