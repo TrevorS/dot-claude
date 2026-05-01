@@ -230,5 +230,10 @@
   "skipDangerousModePermissionPrompt": true,
   "theme": "custom:catppuccin-mocha",
   "skipAutoPermissionPrompt": true,
-  "voiceEnabled": true
+  "voiceEnabled": true,
+  "preferredNotifChannel": "ghostty",
+  "fileCheckpointingEnabled": false,
+  "teammateMode": "auto",
+  "remoteControlAtStartup": false,
+  "agentPushNotifEnabled": false
 }
