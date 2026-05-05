@@ -336,6 +336,7 @@ vim.keymap.set("n", "<C-l>", ss.move_cursor_right, { desc = "Move to right split
 require("nvim-treesitter").setup()
 require("nvim-treesitter").install({
 	"bash",
+	"comment",
 	"diff",
 	"elixir",
 	"elm",
@@ -356,6 +357,14 @@ require("nvim-treesitter").install({
 	"vimdoc",
 	"yaml",
 	"zig",
+})
+
+-- nvim-treesitter main branch: highlights/injections aren't auto-started
+vim.api.nvim_create_autocmd("FileType", {
+	group = vim.api.nvim_create_augroup("config_treesitter", { clear = true }),
+	callback = function(args)
+		pcall(vim.treesitter.start, args.buf)
+	end,
 })
 
 require("mini.clue").setup({
@@ -412,6 +421,12 @@ require("catppuccin").setup({
 			-- jj diamond highlights
 			StJJDirty = { fg = colors.green, bg = colors.surface1, bold = true },
 			StJJEmpty = { fg = colors.overlay0, bg = colors.surface1 },
+			-- Reverse-highlight TODO-style comment markers (TODO, FIXME, NOTE, WARN, etc.)
+			Todo = { fg = colors.base, bg = colors.yellow, bold = true },
+			["@comment.todo"] = { fg = colors.base, bg = colors.yellow, bold = true },
+			["@comment.note"] = { fg = colors.base, bg = colors.blue, bold = true },
+			["@comment.warning"] = { fg = colors.base, bg = colors.peach, bold = true },
+			["@comment.error"] = { fg = colors.base, bg = colors.red, bold = true },
 		}
 	end,
 })
