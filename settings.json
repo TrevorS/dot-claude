@@ -53,6 +53,7 @@
       "Bash(tmux:*)",
       "Bash(touch:*)",
       "Bash(traceroute:*)",
+      "Bash(uv run ~/.claude/skills/monitoring-ci/ci-monitor.py:*)",
       "Bash(whois:*)",
       "Read(/opt/**)",
       "Read(/usr/local/**)",
