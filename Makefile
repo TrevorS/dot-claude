@@ -31,7 +31,7 @@ tpm:
 	@"$(TPM_DIR)/bin/install_plugins" | grep -v 'Already installed' || true
 
 typecheck:
-	@uv run ty check $$(find skills -name '*.py' -not -path '*/evals/*')
+	@uv run ty check $$(find skills teej-skills/skills -name '*.py' -not -path '*/evals/*')
 
 validate:
 	@uv run pre-commit run --all-files

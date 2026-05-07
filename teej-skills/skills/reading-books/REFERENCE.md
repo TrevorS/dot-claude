@@ -5,7 +5,7 @@
 The script uses PEP 723 inline dependencies. No installation needed - just run with `uv`:
 
 ```bash
-uv run ~/.claude/skills/reading-books/book.py <command> [options]
+uv run ${CLAUDE_PLUGIN_ROOT}/skills/reading-books/book.py <command> [options]
 ```
 
 ## Commands
@@ -15,7 +15,7 @@ uv run ~/.claude/skills/reading-books/book.py <command> [options]
 Show book metadata without full extraction.
 
 ```bash
-uv run ~/.claude/skills/reading-books/book.py info <file>
+uv run ${CLAUDE_PLUGIN_ROOT}/skills/reading-books/book.py info <file>
 ```
 
 **Output:**
@@ -30,7 +30,7 @@ uv run ~/.claude/skills/reading-books/book.py info <file>
 **Example:**
 
 ```text
-$ uv run ~/.claude/skills/reading-books/book.py info ~/Books/kant.pdf
+$ uv run ${CLAUDE_PLUGIN_ROOT}/skills/reading-books/book.py info ~/Books/kant.pdf
 File: kant.pdf
 Format: pdf
 Title: The Critique of Pure Reason
@@ -46,13 +46,13 @@ Chapters: 3
 Show table of contents with chapter titles and page ranges.
 
 ```bash
-uv run ~/.claude/skills/reading-books/book.py toc <file>
+uv run ${CLAUDE_PLUGIN_ROOT}/skills/reading-books/book.py toc <file>
 ```
 
 **Example:**
 
 ```text
-$ uv run ~/.claude/skills/reading-books/book.py toc ~/Books/alice.epub
+$ uv run ${CLAUDE_PLUGIN_ROOT}/skills/reading-books/book.py toc ~/Books/alice.epub
 Table of Contents: Alice's Adventures in Wonderland
 ==================================================
 1. Down the Rabbit-Hole (pages 1-5)
@@ -68,7 +68,7 @@ Table of Contents: Alice's Adventures in Wonderland
 Read book content by chapter, page, or character range.
 
 ```bash
-uv run ~/.claude/skills/reading-books/book.py read <file> [options]
+uv run ${CLAUDE_PLUGIN_ROOT}/skills/reading-books/book.py read <file> [options]
 ```
 
 **Options:**
@@ -84,16 +84,16 @@ uv run ~/.claude/skills/reading-books/book.py read <file> [options]
 
 ```bash
 # Read chapter 3
-uv run ~/.claude/skills/reading-books/book.py read book.pdf --chapter 3
+uv run ${CLAUDE_PLUGIN_ROOT}/skills/reading-books/book.py read book.pdf --chapter 3
 
 # Read page 42
-uv run ~/.claude/skills/reading-books/book.py read book.epub --page 42
+uv run ${CLAUDE_PLUGIN_ROOT}/skills/reading-books/book.py read book.epub --page 42
 
 # Read first 2000 characters
-uv run ~/.claude/skills/reading-books/book.py read book.txt --length 2000
+uv run ${CLAUDE_PLUGIN_ROOT}/skills/reading-books/book.py read book.txt --length 2000
 
 # Read from position 10000, next 3000 chars
-uv run ~/.claude/skills/reading-books/book.py read book.pdf --start 10000 --length 3000
+uv run ${CLAUDE_PLUGIN_ROOT}/skills/reading-books/book.py read book.pdf --start 10000 --length 3000
 ```
 
 ---
@@ -103,7 +103,7 @@ uv run ~/.claude/skills/reading-books/book.py read book.pdf --start 10000 --leng
 Search for text using BM25 ranking algorithm.
 
 ```bash
-uv run ~/.claude/skills/reading-books/book.py search <file> <query> [options]
+uv run ${CLAUDE_PLUGIN_ROOT}/skills/reading-books/book.py search <file> <query> [options]
 ```
 
 **Options:**
@@ -122,7 +122,7 @@ uv run ~/.claude/skills/reading-books/book.py search <file> <query> [options]
 **Example:**
 
 ```text
-$ uv run ~/.claude/skills/reading-books/book.py search kant.pdf "transcendental"
+$ uv run ${CLAUDE_PLUGIN_ROOT}/skills/reading-books/book.py search kant.pdf "transcendental"
 Search results for 'transcendental' in The Critique of Pure Reason:
 ============================================================
 
@@ -144,7 +144,7 @@ abstraction of all content of cognition...
 Extract full text from book (for piping to other tools).
 
 ```bash
-uv run ~/.claude/skills/reading-books/book.py extract <file>
+uv run ${CLAUDE_PLUGIN_ROOT}/skills/reading-books/book.py extract <file>
 ```
 
 Pages are separated by `\n---\n`.
@@ -153,10 +153,10 @@ Pages are separated by `\n---\n`.
 
 ```bash
 # Extract and count words
-uv run ~/.claude/skills/reading-books/book.py extract book.pdf | wc -w
+uv run ${CLAUDE_PLUGIN_ROOT}/skills/reading-books/book.py extract book.pdf | wc -w
 
 # Extract and search with grep
-uv run ~/.claude/skills/reading-books/book.py extract book.epub | grep -i "philosophy"
+uv run ${CLAUDE_PLUGIN_ROOT}/skills/reading-books/book.py extract book.epub | grep -i "philosophy"
 ```
 
 ---

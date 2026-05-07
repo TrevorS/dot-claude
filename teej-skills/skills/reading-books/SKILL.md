@@ -11,22 +11,22 @@ Read and query digital book formats from the command line using BM25 search.
 
 ```bash
 # Get book metadata
-uv run ~/.claude/skills/reading-books/book.py info ~/Books/mybook.pdf
+uv run ${CLAUDE_PLUGIN_ROOT}/skills/reading-books/book.py info ~/Books/mybook.pdf
 
 # Show table of contents
-uv run ~/.claude/skills/reading-books/book.py toc ~/Books/mybook.epub
+uv run ${CLAUDE_PLUGIN_ROOT}/skills/reading-books/book.py toc ~/Books/mybook.epub
 
 # Read a specific chapter
-uv run ~/.claude/skills/reading-books/book.py read ~/Books/mybook.pdf --chapter 3
+uv run ${CLAUDE_PLUGIN_ROOT}/skills/reading-books/book.py read ~/Books/mybook.pdf --chapter 3
 
 # Read a specific page
-uv run ~/.claude/skills/reading-books/book.py read ~/Books/mybook.pdf --page 42
+uv run ${CLAUDE_PLUGIN_ROOT}/skills/reading-books/book.py read ~/Books/mybook.pdf --page 42
 
 # Search for content (BM25 ranked)
-uv run ~/.claude/skills/reading-books/book.py search ~/Books/mybook.pdf "query"
+uv run ${CLAUDE_PLUGIN_ROOT}/skills/reading-books/book.py search ~/Books/mybook.pdf "query"
 
 # Extract full text
-uv run ~/.claude/skills/reading-books/book.py extract ~/Books/mybook.txt
+uv run ${CLAUDE_PLUGIN_ROOT}/skills/reading-books/book.py extract ~/Books/mybook.txt
 ```
 
 ## Supported Formats

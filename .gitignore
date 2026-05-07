@@ -49,6 +49,7 @@ todos/
 backups/
 telemetry/
 certs/
+.last-cleanup
 
 # ML models
 models/

@@ -221,20 +221,28 @@
     "typescript-lsp@claude-plugins-official": true,
     "skill-creator@claude-plugins-official": true,
     "pyright-lsp@claude-plugins-official": true,
-    "lua-lsp@claude-plugins-official": true
+    "lua-lsp@claude-plugins-official": true,
+    "teej-skills@teej-skills": false
   },
-  "extraKnownMarketplaces": {},
+  "extraKnownMarketplaces": {
+    "teej-skills": {
+      "source": {
+        "source": "directory",
+        "path": "/Users/trevorstrieber/.claude/teej-skills"
+      }
+    }
+  },
   "forceLoginMethod": "claudeai",
   "alwaysThinkingEnabled": true,
   "autoDreamEnabled": true,
   "showThinkingSummaries": true,
   "skipDangerousModePermissionPrompt": true,
   "theme": "custom:catppuccin-mocha",
-  "skipAutoPermissionPrompt": true,
-  "voiceEnabled": true,
   "preferredNotifChannel": "ghostty",
   "fileCheckpointingEnabled": false,
   "teammateMode": "auto",
   "remoteControlAtStartup": false,
-  "agentPushNotifEnabled": false
+  "agentPushNotifEnabled": false,
+  "skipAutoPermissionPrompt": true,
+  "voiceEnabled": true
 }

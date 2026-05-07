@@ -22,7 +22,7 @@ execute the transcription script:
 
 ```bash
 uv run --no-project --with openai-whisper --with scipy --python 3.11 \
-  python3 ~/.claude/skills/testing-whisper/transcribe.py \
+  python3 ${CLAUDE_PLUGIN_ROOT}/skills/testing-whisper/transcribe.py \
   [--model tiny|base|small|medium|large-v3] \
   [--language en] \
   [--expected "expected text"] \
@@ -103,7 +103,7 @@ When testing multiple TTS outputs against expected text:
 
 ```bash
 uv run --no-project --with openai-whisper --with scipy --python 3.11 \
-  python3 ~/.claude/skills/testing-whisper/transcribe.py \
+  python3 ${CLAUDE_PLUGIN_ROOT}/skills/testing-whisper/transcribe.py \
   --expected "Hello world, this is a test." \
   variant1.wav variant2.wav variant3.wav
 ```
@@ -127,7 +127,7 @@ ffmpeg isn't available and apt can be slow. Two workarounds:
 
    ```bash
    pip install openai-whisper scipy
-   python3 ~/.claude/skills/testing-whisper/transcribe.py --model large-v3 output.wav
+   python3 ${CLAUDE_PLUGIN_ROOT}/skills/testing-whisper/transcribe.py --model large-v3 output.wav
    ```
 
 The script loads WAV files directly via scipy, bypassing Whisper's ffmpeg
