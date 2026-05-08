@@ -9,6 +9,7 @@ Project-local context that loads only when cwd is `~/.claude`.
 ```bash
 make install              # Install deps (uv sync), stow dotfiles, install TPM
 make deps                 # Install system packages from packages/*.txt
+make upgrade              # Bump managed brew/cargo/luarocks packages to latest
 make validate             # All checks: formatting, linting, type checking, stylua, luacheck
 make pre-commit           # Run pre-commit on all files (same as the git pre-commit hook)
 make typecheck            # Type check Python scripts (ty)

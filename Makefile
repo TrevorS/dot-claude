@@ -1,10 +1,11 @@
-.PHONY: help install validate clean pre-commit pre-commit-install pre-commit-update dotfiles tpm typecheck deps
+.PHONY: help install upgrade validate clean pre-commit pre-commit-install pre-commit-update dotfiles tpm typecheck deps
 
 # Default target
 help:
 	@echo "Available targets:"
 	@echo "  install           - Install all dependencies and stow dotfiles"
 	@echo "  deps              - Install system packages from packages/*.txt"
+	@echo "  upgrade           - Bump managed brew/cargo/luarocks packages to latest"
 	@echo "  validate          - Format and lint all files (all-in-one)"
 	@echo "  clean             - Clean up generated files"
 	@echo "  dotfiles          - Stow all dotfile packages into ~"
@@ -51,6 +52,9 @@ pre-commit-update:
 
 deps:
 	@python3 scripts/install-deps.py
+
+upgrade:
+	@python3 scripts/install-deps.py --upgrade
 
 MACOS_ONLY_PKGS := ghostty
 

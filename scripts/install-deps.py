@@ -1,10 +1,16 @@
 #!/usr/bin/env python3
-"""Install system packages from packages/*.txt lists.
+"""Install or upgrade system packages from packages/*.txt lists.
 
-Reads package lists, skips already-installed packages, and only prints
-output when there's actual work to do.
+Default mode reads package lists, skips already-installed packages, and only
+prints output when there's actual work to do. Pass --upgrade to bump every
+managed package to its latest version.
+
+apt is intentionally skipped in --upgrade mode: a system-wide `apt upgrade`
+is too broad to trigger from this script. Bump system packages with the OS's
+own update flow.
 """
 
+import argparse
 import platform
 import shutil
 import subprocess
@@ -31,16 +37,7 @@ def run(cmd: list[str], **kwargs) -> subprocess.CompletedProcess[str]:
     return subprocess.run(cmd, capture_output=True, text=True, **kwargs)
 
 
-def install_brew():
-    if not shutil.which("brew"):
-        print("brew not found — skipping brew packages")
-        return
-
-    packages = read_package_list("brew.txt")
-    if not packages:
-        return
-
-    # Check which packages are already installed
+def brew_install(packages: list[str]) -> None:
     result = run(["brew", "list", "--formula"])
     installed = set(result.stdout.splitlines())
 
@@ -54,7 +51,28 @@ def install_brew():
         print("Warning: some brew packages may have failed to install", file=sys.stderr)
 
 
-def install_apt():
+def brew_upgrade(packages: list[str]) -> None:
+    print(f"Upgrading brew packages: {', '.join(packages)}")
+    subprocess.run(["brew", "upgrade", *packages])
+
+
+def install_brew(upgrade: bool) -> None:
+    if not shutil.which("brew"):
+        print("brew not found — skipping brew packages")
+        return
+    packages = read_package_list("brew.txt")
+    if not packages:
+        return
+    if upgrade:
+        brew_upgrade(packages)
+    else:
+        brew_install(packages)
+
+
+def install_apt(upgrade: bool) -> None:
+    if upgrade:
+        # System-wide upgrades are out of scope for this script.
+        return
     if not shutil.which("apt"):
         print("apt not found — skipping apt packages")
         return
@@ -63,7 +81,6 @@ def install_apt():
     if not packages:
         return
 
-    # Check which packages are already installed via dpkg
     result = run(["dpkg", "-l", *packages])
     installed = set()
     for line in result.stdout.splitlines():
@@ -80,7 +97,17 @@ def install_apt():
     subprocess.run(["sudo", "apt", "install", "-y", *missing])
 
 
-def install_luarocks():
+def luarocks_flags() -> list[str]:
+    if not shutil.which("brew"):
+        return []
+    result = run(["brew", "--prefix", "lua@5.4"])
+    lua_dir = result.stdout.strip()
+    if lua_dir and Path(lua_dir).is_dir():
+        return [f"--lua-dir={lua_dir}"]
+    return []
+
+
+def install_luarocks(upgrade: bool) -> None:
     if not shutil.which("luarocks"):
         print("luarocks not found — skipping luarocks packages")
         return
@@ -89,22 +116,31 @@ def install_luarocks():
     if not packages:
         return
 
-    lr_flags: list[str] = []
-    if shutil.which("brew"):
-        result = run(["brew", "--prefix", "lua@5.4"])
-        lua_dir = result.stdout.strip()
-        if lua_dir and Path(lua_dir).is_dir():
-            lr_flags = [f"--lua-dir={lua_dir}"]
+    flags = luarocks_flags()
 
     for pkg in packages:
-        check = run(["luarocks", *lr_flags, "show", pkg])
+        if upgrade:
+            print(f"Upgrading luarock {pkg}...")
+            subprocess.run(["sudo", "luarocks", *flags, "install", "--force", pkg])
+            continue
+        check = run(["luarocks", *flags, "show", pkg])
         if check.returncode == 0:
             continue
         print(f"Installing luarock {pkg}...")
-        subprocess.run(["sudo", "luarocks", *lr_flags, "install", pkg])
+        subprocess.run(["sudo", "luarocks", *flags, "install", pkg])
 
 
-def install_cargo():
+def cargo_installed() -> set[str]:
+    """Return the set of crate names currently installed via cargo."""
+    result = run(["cargo", "install", "--list"])
+    return {
+        line.split()[0]
+        for line in result.stdout.splitlines()
+        if line and not line.startswith(" ")
+    }
+
+
+def install_cargo(upgrade: bool) -> None:
     if not shutil.which("cargo"):
         print("cargo not found — skipping cargo packages")
         return
@@ -113,32 +149,51 @@ def install_cargo():
     if not packages:
         return
 
-    result = run(["cargo", "install", "--list"])
-    installed_lines = result.stdout
-    installed = {line.split()[0] for line in installed_lines.splitlines() if not line.startswith(" ") and line.strip()}
+    if upgrade:
+        if not shutil.which("cargo-install-update"):
+            print("cargo-update not found — run 'make deps' first to bootstrap it")
+            return
+        print(f"Upgrading cargo packages: {', '.join(packages)}")
+        subprocess.run(["cargo", "install-update", *packages])
+        return
+
+    installed = cargo_installed()
+
+    # Bootstrap cargo-binstall first so the rest can install via prebuilt binaries.
+    if "cargo-binstall" in packages and "cargo-binstall" not in installed:
+        print("Installing cargo package cargo-binstall...")
+        subprocess.run(["cargo", "install", "cargo-binstall"])
 
     has_binstall = shutil.which("cargo-binstall") is not None
 
     for pkg in packages:
-        if pkg in installed:
+        if pkg == "cargo-binstall" or pkg in installed:
             continue
         print(f"Installing cargo package {pkg}...")
-        if has_binstall and pkg != "cargo-binstall":
+        if has_binstall:
             subprocess.run(["cargo", "binstall", "-y", pkg])
         else:
             subprocess.run(["cargo", "install", pkg])
 
 
-def main():
+def main() -> None:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--upgrade",
+        action="store_true",
+        help="Bump managed packages to latest versions instead of installing missing ones.",
+    )
+    args = parser.parse_args()
+
     system = platform.system()
 
     if system == "Darwin":
-        install_brew()
+        install_brew(args.upgrade)
     elif system == "Linux":
-        install_apt()
+        install_apt(args.upgrade)
 
-    install_luarocks()
-    install_cargo()
+    install_luarocks(args.upgrade)
+    install_cargo(args.upgrade)
 
 
 if __name__ == "__main__":

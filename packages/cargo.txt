@@ -1,7 +1,9 @@
-# Cargo packages (installed via cargo binstall, falls back to cargo install)
+# Cargo packages (installed via cargo binstall, falls back to cargo install).
+# Upgraded via `cargo install-update` (see make upgrade).
 # One package per line. Comments and blank lines are ignored.
 atuin
 cargo-binstall
+cargo-update
 git-delta
 jj-cli
 tree-sitter-cli
