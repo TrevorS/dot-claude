@@ -17,7 +17,7 @@
       "src": "https://github.com/stevearc/oil.nvim"
     },
     "smart-splits.nvim": {
-      "rev": "80be31a3d2e37d32bd37794da72a4f69fce7a85f",
+      "rev": "9053ebd394c38fe55fd2f4710daec27411c34fb9",
       "src": "https://github.com/mrjones2014/smart-splits.nvim"
     }
   }
