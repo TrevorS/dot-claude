@@ -73,3 +73,5 @@ channels/telegram/access.json
 *.jsonl
 .credentials.json
 channels/
+daemon/
+jobs/
