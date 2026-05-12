@@ -49,6 +49,8 @@ todos/
 backups/
 telemetry/
 certs/
+daemon/
+jobs/
 .last-cleanup
 
 # ML models
