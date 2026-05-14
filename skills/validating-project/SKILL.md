@@ -97,3 +97,16 @@ Cache discovered validation info in the project's CLAUDE.md:
 - **Type Check**: make typecheck
 - **Test**: make test
 ```
+
+## Reporting Format
+
+Report one line per check using `⟨✓⟩` / `⟨~⟩` / `⟨✗⟩`. **Never use emoji** (`✅`/`❌`/`✔️`). Never collapse the per-item list into a single emoji'd summary line.
+
+```
+⟨✓⟩ Trim trailing whitespace
+⟨✓⟩ Fix end of file markers
+⟨~⟩ Mixed line endings           (skipped — none found)
+⟨✗⟩ Markdownlint                 (3 errors)
+```
+
+After the list, add one plain-text summary line with no marks — e.g. "all checks passed" or "1 failure: markdownlint". If a check is skipped, say why in parens on the same line.

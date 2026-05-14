@@ -121,3 +121,51 @@ xyz/1       Previous version of change xyz
 | Bookmark didn't move      | Bookmarks don't auto-advance; `jj bookmark set X -r @-`          |
 | New bookmark push refused | `jj config set --user 'remotes.origin.auto-track-bookmarks' '*'` |
 | File tracked w/ gitignore | `jj file untrack <path>` (snapshotted before ignore rule)        |
+
+## Parallel Experiments
+
+```bash
+jj new main -m "approach A"           # Branch from main
+jj new main -m "approach B"           # Another branch from main (not from A)
+jj diff --from <A-id> --to <B-id>     # Compare approaches
+jj edit <winner-id>                   # Continue with the winner
+jj abandon <loser-id>                 # Discard the loser
+```
+
+## Immutable Commits — Disable & Restore
+
+When you need to rewrite a commit protected by `immutable_heads()` (e.g., squashing into a remote bookmark), **and Teej has confirmed**:
+
+```bash
+# Disable protection (quote the key — parentheses are invalid TOML bare keys)
+jj config set --repo 'revset-aliases."immutable_heads()"' 'none()'
+
+# Do your rewrite
+jj squash -m "updated message"
+
+# ALWAYS restore protection immediately after
+jj config set --repo 'revset-aliases."immutable_heads()"' 'builtin_immutable_heads() | remote_bookmarks()'
+```
+
+**Note on shell quoting:** the `NAME` argument requires shell quoting around the TOML key because `immutable_heads()` contains parentheses. Use single quotes around the full dotted key with inner double quotes: `'revset-aliases."immutable_heads()"'`.
+
+## Recommended Config
+
+User config lives at `~/.config/jj/config.toml`:
+
+```toml
+[remotes.origin]
+auto-track-bookmarks = "*"
+
+[revset-aliases]
+# Prevent rewriting pushed commits
+'immutable_heads()' = 'builtin_immutable_heads() | remote_bookmarks()'
+# Shorthand for trunk
+'trunk()' = 'master@origin'
+```
+
+## Bail Out
+
+```bash
+rm -rf .jj    # Delete jj state, keep git unchanged
+```

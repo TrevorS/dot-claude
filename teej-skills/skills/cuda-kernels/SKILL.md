@@ -1,6 +1,9 @@
 ---
 name: cuda-kernels
 description: Develop, test, and optimize custom CUDA kernels in the candle framework for qwen3-tts-rs. Use when writing CUDA kernels, debugging GPU code, integrating kernels with candle, optimizing throughput, profiling with nsys/ncu, analyzing roofline, or investigating register pressure and occupancy.
+paths:
+  - "**/*.cu"
+  - "**/*.cuh"
 ---
 
 # CUDA Kernel Development & Optimization

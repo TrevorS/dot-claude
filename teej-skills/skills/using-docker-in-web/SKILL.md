@@ -1,6 +1,11 @@
 ---
 name: using-docker-in-web
 description: Set up and use Docker in Claude Code for Web environments. Use when Docker builds fail with bridge/iptables errors, SSL certificate errors through proxy, or when working in containerized web environments.
+paths:
+  - "**/Dockerfile*"
+  - "**/docker-compose*.yml"
+  - "**/docker-compose*.yaml"
+  - "**/.dockerignore"
 ---
 
 # Docker in Claude Code for Web

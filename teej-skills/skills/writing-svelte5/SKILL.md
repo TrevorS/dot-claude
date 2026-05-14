@@ -1,6 +1,10 @@
 ---
 name: writing-svelte5
 description: Svelte 5 syntax reference. Use when writing ANY Svelte component. Svelte 5 uses runes ($state, $derived, $effect, $props) instead of Svelte 4 patterns. Training data is heavily Svelte 4—this skill prevents outdated syntax.
+paths:
+  - "**/*.svelte"
+  - "**/*.svelte.ts"
+  - "**/*.svelte.js"
 ---
 
 # Svelte 5 Syntax

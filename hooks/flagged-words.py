@@ -1,12 +1,15 @@
 #!/usr/bin/env python3
-"""PostToolUse hook: flag banned AI-slop words in docs, commits, and PRs.
+"""PostToolUse hook: flag AI-slop words in docs, commits, and PRs.
 
-Checks Write/Edit tool calls for doc-like files and Bash commands that
-carry commit messages or PR descriptions. Emits a suggestion via stderr
-(exit 2) so Claude can rewrite; does not block the tool call.
+These words aren't categorically forbidden — they show up in legitimate prose.
+But when they appear in generated content (docs, commit messages, PR bodies),
+they often signal vapid AI-speak: "leverage", "robust", "seamless" stacking
+into vacuous filler. This hook surfaces them informationally so the model can
+re-read and ask "is this word earning its keep, or am I padding with
+buzzwords?" — not to block or fail the tool call.
 
-The word list is embedded below (was previously in rules/banned-words.md,
-removed to cut ~420 tokens of per-session context).
+Output: emits `hookSpecificOutput.additionalContext` so the suggestion lands
+as context for the next turn, not as a tool failure.
 """
 
 import json
@@ -14,16 +17,18 @@ import re
 import sys
 from pathlib import Path
 
-# Regex to match fenced code blocks (``` or ~~~) so we can skip them
 FENCED_CODE_BLOCK = re.compile(
     r"^(?P<fence>`{3,}|~{3,}).*?\n.*?^(?P=fence)\s*$",
     re.MULTILINE | re.DOTALL,
 )
 
-BANNED_WORDS = [
+# Words that flag vapid AI-speak when they show up in generated prose.
+# Not categorically forbidden — flagged for a sanity check that the word is
+# doing real work rather than padding.
+FLAGGED_WORDS = [
     "leverage", "robust", "streamline", "comprehensive", "utilize",
     "facilitate", "seamless", "ensure", "enhance", "cutting-edge",
-    "holistic", "delve", "harness", "pivotal", "foster", "elevate",
+    "holistic", "delve", "pivotal", "foster", "elevate",
     "bolster", "cornerstone", "realm", "tapestry", "landscape",
     "multifaceted", "intricate", "meticulous", "endeavor", "testament",
     "paramount", "furthermore", "moreover", "notably", "essentially",
@@ -44,13 +49,10 @@ BANNED_WORDS = [
 DOC_EXTENSIONS = {".md", ".txt", ".rst", ".mdx", ".adoc"}
 TEMP_MSG_PATTERNS = re.compile(r"(commit|msg|message|pr[-_]body)", re.IGNORECASE)
 
-# Patterns for extracting message text from Bash commands
-# jj describe/commit/squash/new -m "..."
 JJ_MSG = re.compile(
     r"""jj\s+(?:describe|commit|squash|new)\s+.*?-m\s+(['"])(.*?)\1""",
     re.DOTALL,
 )
-# git commit -m "..." or git commit -m "$(cat <<'EOF' ... EOF)"
 GIT_MSG_FLAG = re.compile(
     r"""git\s+commit\s+.*?-m\s+(['"])(.*?)\1""",
     re.DOTALL,
@@ -59,9 +61,7 @@ GIT_MSG_HEREDOC = re.compile(
     r"""git\s+commit\s+.*?-m\s+"\$\(cat\s+<<'?EOF'?\s*\n(.*?)\nEOF""",
     re.DOTALL,
 )
-# git commit -F <path>
 GIT_MSG_FILE = re.compile(r"""git\s+commit\s+.*?-F\s+(\S+)""")
-# gh pr create --title "..." --body "..."
 GH_PR_TITLE = re.compile(
     r"""gh\s+pr\s+create\s+.*?--title\s+(['"])(.*?)\1""",
     re.DOTALL,
@@ -77,7 +77,6 @@ GH_PR_BODY_SIMPLE = re.compile(
 
 
 def build_pattern(words: list[str]) -> re.Pattern | None:
-    """Build a compiled regex that matches any banned word at word boundaries."""
     if not words:
         return None
     escaped = [re.escape(w) for w in words]
@@ -85,12 +84,10 @@ def build_pattern(words: list[str]) -> re.Pattern | None:
 
 
 def strip_fenced_code_blocks(text: str) -> str:
-    """Remove fenced code blocks so their contents aren't checked."""
     return FENCED_CODE_BLOCK.sub("", text)
 
 
-def find_violations(text: str, pattern: re.Pattern) -> list[str]:
-    """Return deduplicated list of banned words found in prose (outside code blocks)."""
+def find_flagged(text: str, pattern: re.Pattern) -> list[str]:
     prose = strip_fenced_code_blocks(text)
     matches = pattern.findall(prose)
     seen = set()
@@ -104,7 +101,6 @@ def find_violations(text: str, pattern: re.Pattern) -> list[str]:
 
 
 def is_doc_file(file_path: str) -> bool:
-    """Check if a file path looks like documentation or a temp commit message."""
     p = Path(file_path)
     if p.suffix.lower() in DOC_EXTENSIONS:
         return True
@@ -114,7 +110,6 @@ def is_doc_file(file_path: str) -> bool:
 
 
 def extract_bash_text(command: str) -> str:
-    """Extract message text from known Bash command patterns."""
     chunks = []
 
     for match in JJ_MSG.finditer(command):
@@ -152,9 +147,8 @@ def main() -> None:
     tool_name = hook_input.get("tool_name", "")
     tool_input = hook_input.get("tool_input", {})
 
-    pattern = build_pattern(BANNED_WORDS)
+    pattern = build_pattern(FLAGGED_WORDS)
     if pattern is None:
-        json.dump(hook_input, sys.stdout)
         return
 
     text_to_check = ""
@@ -174,23 +168,30 @@ def main() -> None:
         text_to_check = extract_bash_text(command)
 
     if not text_to_check:
-        json.dump(hook_input, sys.stdout)
         return
 
-    violations = find_violations(text_to_check, pattern)
-    if not violations:
-        json.dump(hook_input, sys.stdout)
+    flagged = find_flagged(text_to_check, pattern)
+    if not flagged:
         return
 
-    word_list = ", ".join(f'"{w}"' for w in violations)
-    print(
-        f"Suggestion: found banned AI-slop words: {word_list}. "
-        "Consider rewriting using plain, direct language "
-        "(edit the file or amend the commit/PR message). "
-        "See hooks/banned-words.py for the full list.",
-        file=sys.stderr,
+    word_list = ", ".join(f'"{w}"' for w in flagged)
+    suggestion = (
+        f"Heads up — the prose you just wrote contains {word_list}. "
+        "These words aren't forbidden, but they often signal vapid AI-speak "
+        "when they show up in generated content. Re-read the affected section "
+        "and ask whether each instance is doing real work or padding with "
+        "buzzwords; plain, direct language usually reads better. "
+        "(Full list: hooks/flagged-words.py.)"
     )
-    sys.exit(2)
+    json.dump(
+        {
+            "hookSpecificOutput": {
+                "hookEventName": "PostToolUse",
+                "additionalContext": suggestion,
+            },
+        },
+        sys.stdout,
+    )
 
 
 if __name__ == "__main__":

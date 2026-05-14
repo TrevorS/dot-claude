@@ -35,15 +35,15 @@
     "forbid_patterns": []
   },
   {
-    "name": "no-banned-word-leverage",
-    "category": "banned-words",
+    "name": "no-flagged-word-leverage",
+    "category": "flagged-words",
     "query": "Explain the benefits of using TypeScript over JavaScript in a few sentences",
     "expect_patterns": [],
     "forbid_patterns": ["\\bleverage\\b", "\\brobust\\b", "\\bseamless\\b", "\\bensure\\b", "\\benhance\\b", "\\bcomprehensive\\b", "\\bstreamline\\b", "\\butilize\\b"]
   },
   {
-    "name": "no-banned-word-delve",
-    "category": "banned-words",
+    "name": "no-flagged-word-delve",
+    "category": "flagged-words",
     "query": "Give me a brief overview of how Rust's borrow checker works",
     "expect_patterns": [],
     "forbid_patterns": ["\\bdelve\\b", "\\brobust\\b", "\\bseamless\\b", "\\bensure\\b", "\\benhance\\b", "\\bfundamentally\\b", "\\bintricate\\b", "\\bmeticulous\\b"]

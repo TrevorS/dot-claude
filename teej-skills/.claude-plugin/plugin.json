@@ -1,6 +1,6 @@
 {
   "name": "teej-skills",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Teej's domain-specific skills (TTS/ML, frontend, niche tooling)",
   "author": { "name": "Trevor Strieber", "email": "trevor@usestable.com" }
 }

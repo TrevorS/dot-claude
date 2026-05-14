@@ -1,10 +1,12 @@
 #!/usr/bin/env bash
 # PostToolUse hook: nudge toward journaling after sustained Bash activity.
 #
-# Fires only when all three are true:
-#   - Last journal entry is older than THRESHOLD_MINUTES
-#   - The invoking Bash command was not a read-only inspection
-#   - At least COOLDOWN_MINUTES have passed since the previous reminder
+# Silent when any of:
+#   - cj binary not installed
+#   - journal directory missing or not writable (bot can't journal anyway)
+#   - last command was a read-only inspection
+#   - last journal entry was within THRESHOLD_MINUTES
+#   - last reminder fired within COOLDOWN_MINUTES
 #
 # Env overrides: CJ_REMINDER_MINUTES, CJ_REMINDER_COOLDOWN, CJ_REMINDER_STAMP
 
@@ -30,6 +32,11 @@ esac
 if [ -f "$STAMP_FILE" ] && [ -n "$(find "$STAMP_FILE" -mmin -"$COOLDOWN_MINUTES" 2>/dev/null)" ]; then
 	exit 0
 fi
+
+# Bail if the bot can't actually write to the journal — no point nagging
+command -v cj >/dev/null 2>&1 || exit 0
+journal_dir=$(cj dir 2>/dev/null) || exit 0
+[ -d "$journal_dir" ] && [ -w "$journal_dir" ] || exit 0
 
 last_json=$(cj last --json 2>/dev/null) || exit 0
 minutes_ago=$(echo "$last_json" | jq -r '.minutes_ago // empty')

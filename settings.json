@@ -156,7 +156,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 ~/.claude/hooks/banned-words.py"
+            "command": "python3 ~/.claude/hooks/flagged-words.py"
           }
         ]
       }
@@ -228,7 +228,7 @@
     "teej-skills": {
       "source": {
         "source": "directory",
-        "path": "/Users/trevorstrieber/.claude/teej-skills"
+        "path": "~/.claude/teej-skills"
       }
     }
   },
