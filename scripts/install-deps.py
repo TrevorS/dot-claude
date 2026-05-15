@@ -176,6 +176,40 @@ def install_cargo(upgrade: bool) -> None:
             subprocess.run(["cargo", "install", pkg])
 
 
+def uv_tool_installed() -> set[str]:
+    """Return the set of tool names currently installed via `uv tool`."""
+    result = run(["uv", "tool", "list"])
+    return {
+        line.split()[0]
+        for line in result.stdout.splitlines()
+        if line and not line.startswith(" ") and not line.startswith("-")
+    }
+
+
+def install_uv_tools(upgrade: bool) -> None:
+    if not shutil.which("uv"):
+        print("uv not found — skipping uv tool packages")
+        return
+
+    packages = read_package_list("uv-tools.txt")
+    if not packages:
+        return
+
+    if upgrade:
+        print(f"Upgrading uv tools: {', '.join(packages)}")
+        subprocess.run(["uv", "tool", "upgrade", *packages])
+        return
+
+    installed = uv_tool_installed()
+    missing = [p for p in packages if p not in installed]
+    if not missing:
+        return
+
+    for pkg in missing:
+        print(f"Installing uv tool {pkg}...")
+        subprocess.run(["uv", "tool", "install", pkg])
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
@@ -194,6 +228,7 @@ def main() -> None:
 
     install_luarocks(args.upgrade)
     install_cargo(args.upgrade)
+    install_uv_tools(args.upgrade)
 
 
 if __name__ == "__main__":

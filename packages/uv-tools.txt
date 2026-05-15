@@ -1,0 +1,4 @@
+# Python tools installed via `uv tool install`.
+# These produce CLI binaries in ~/.local/bin (e.g. pyright-langserver).
+
+pyright
