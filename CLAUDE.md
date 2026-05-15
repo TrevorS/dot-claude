@@ -19,3 +19,7 @@
 
 - User's last name: **strieber** (NOT strueburg or strueber)
 - Cross-check path spellings against environment context at the start of each conversation
+
+## Background tasks
+
+When a background task completes and sends a `<task-notification>` with an `<output-file>` path, read the file directly with the Read tool. Do NOT call `TaskOutput` — the task ID may already be cleaned up, causing a "No task found" error.
