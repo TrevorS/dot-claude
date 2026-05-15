@@ -2,6 +2,8 @@
 
 Conventions for per-item status lines, diff/duration indicators, and report layout. Many GFM features don't render in the Claude Code TUI for this terminal/theme — these rules pick the subset that actually displays distinctly.
 
+Skills running in a fork context should reference `status-marks-quickref.md` (compact subset) rather than this file.
+
 ## Status marks
 
 - ⟨`✓`⟩ — pass / done
