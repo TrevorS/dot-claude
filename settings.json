@@ -179,6 +179,10 @@
           {
             "type": "command",
             "command": "~/.claude/hooks/claude-notify.sh"
+          },
+          {
+            "type": "command",
+            "command": "python3 ~/.claude/hooks/revise-claude-md-stop.py"
           }
         ]
       }
