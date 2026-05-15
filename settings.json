@@ -232,7 +232,7 @@
     "teej-skills": {
       "source": {
         "source": "directory",
-        "path": "/Users/trevor/.claude/teej-skills"
+        "path": "./teej-skills"
       }
     }
   },
