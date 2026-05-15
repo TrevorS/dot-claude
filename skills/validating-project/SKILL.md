@@ -100,7 +100,7 @@ Cache discovered validation info in the project's CLAUDE.md:
 
 ## Reporting Format
 
-Read `~/.claude/rules/status-marks-quickref.md` and follow its conventions. Report one line per check, then a single plain-text summary line.
+Read `~/.claude/references/status-marks.md` and follow its conventions. Report one line per check, then a single plain-text summary line.
 
 Example output:
 
