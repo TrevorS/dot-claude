@@ -44,7 +44,7 @@ Use `run_in_background: true` so it doesn't block the conversation. Tell the use
 - **Auto-detects branch**: jj bookmarks first, falls back to git
 - **Deduplicates**: sentinel file at `/tmp/{repo}-ci-monitor` prevents double-watching
 - **Polls for run**: waits up to 180s for a CI run to appear on the branch (configurable via `--timeout`); sleeps 5s first so GitHub has time to register the run
-- **Watches until done**: uses `gh run watch --exit-status`
+- **Watches until done**: polls `gh run view --json status,conclusion` every 10s — a transient API error delays detection by one poll instead of crashing the watcher (which is what `gh run watch` does on a TCP reset)
 - **Reports failure logs**: on failure, fetches `gh run view --log-failed` (last 3000 chars)
 - **Cleans up**: always removes sentinel, even on error
 

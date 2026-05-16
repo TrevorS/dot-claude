@@ -129,19 +129,37 @@ def find_run(branch: str, max_wait: int = 180, expected_sha: str | None = None) 
     return None
 
 
-def watch_run(run_id: str) -> int:
-    """Watch a run until completion. Returns exit code.
+def watch_run(run_id: str, poll_interval: int = 10, timeout: int = 1800) -> int:
+    """Poll a run's state until completion. Returns 0=success, 1=failure, 2=timeout.
 
-    Discards `gh run watch`'s streaming stdout — when captured to a non-TTY it
-    accumulates one screen-refresh frame every few seconds for the full CI run,
-    bloating result logs by ~50k+ tokens. Failure diagnostics come from
-    fetch_failed_logs() in main(); stderr is still printed in case gh itself
-    errors (auth, network) rather than CI failing.
+    Replaces `gh run watch --exit-status`, which crashes hard on transient
+    network errors (TCP resets are common over long watches) and doesn't
+    distinguish a watch error from a run failure. With direct polling, a
+    one-off API hiccup just delays detection by one poll interval instead of
+    falsely reporting a CI failure. Tolerates up to ~1 min of consecutive API
+    errors before giving up.
     """
-    r = run(f"gh run watch {run_id} --exit-status", check=False)
-    if r.returncode != 0 and r.stderr.strip():
-        print(r.stderr)
-    return r.returncode
+    deadline = time.time() + timeout
+    consecutive_errors = 0
+    while time.time() < deadline:
+        r = run(f"gh run view {run_id} --json status,conclusion")
+        if r.returncode != 0:
+            consecutive_errors += 1
+            if consecutive_errors * poll_interval > 60:
+                print(f"  gh run view failing repeatedly: {r.stderr.strip()}")
+                return 1
+            time.sleep(poll_interval)
+            continue
+        consecutive_errors = 0
+        try:
+            data = json.loads(r.stdout)
+        except json.JSONDecodeError:
+            time.sleep(poll_interval)
+            continue
+        if data.get("status") == "completed":
+            return 0 if data.get("conclusion") == "success" else 1
+        time.sleep(poll_interval)
+    return 2
 
 
 def fetch_failed_logs(run_id: str) -> str:
