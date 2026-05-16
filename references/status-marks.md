@@ -4,9 +4,9 @@ Compact subset of `status-marks.md` for skills to reference when formatting stat
 
 ## Marks
 
-- ⟨`✓`⟩ — pass / done
-- ⟨`~`⟩ — skip / partial / not applicable
-- ⟨`✗`⟩ — fail / error
+- ❨`✓`❩ — pass / done
+- ❨`~`❩ — skip / partial / not applicable
+- ❨`✗`❩ — fail / error
 
 Wrap only the inner flag in inline code; keep the math angle brackets plain. Never use emoji checkmarks (`✅`, `❌`, `✔️`).
 

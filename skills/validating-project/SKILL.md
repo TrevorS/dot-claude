@@ -105,10 +105,10 @@ Read `~/.claude/references/status-marks.md` and follow its conventions. Report o
 Example output:
 
 ```
-⟨`✓`⟩ Trim trailing whitespace
-⟨`✓`⟩ Fix end of file markers
-⟨`~`⟩ Mixed line endings (skipped — none found)
-⟨`✗`⟩ Markdownlint (3 errors)
+❨`✓`❩ Trim trailing whitespace
+❨`✓`❩ Fix end of file markers
+❨`~`❩ Mixed line endings (skipped — none found)
+❨`✗`❩ Markdownlint (3 errors)
 ```
 
 After the list, add a plain-text summary with no marks — e.g. "all checks passed" or "1 failure: markdownlint". Skip reasons go in parens on the same line. Never collapse the per-item list into a single emoji'd summary.

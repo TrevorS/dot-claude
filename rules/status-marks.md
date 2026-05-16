@@ -6,17 +6,17 @@ Skills running in a fork context should reference `~/.claude/references/status-m
 
 ## Status marks
 
-- ⟨`✓`⟩ — pass / done
-- ⟨`~`⟩ — skip / partial / not applicable
-- ⟨`✗`⟩ — fail / error
+- ❨`✓`❩ — pass / done
+- ❨`~`❩ — skip / partial / not applicable
+- ❨`✗`❩ — fail / error
 
-Always wrap the inner flag in inline code; keep the math angle brackets plain. Never use emoji checkmarks (`✅`, `❌`, `✔️`) — they render inconsistently and violate the no-emoji default.
+Always wrap the inner flag in inline code; keep the parenthesis ornaments (`❨` U+2768 / `❩` U+2769) plain. Never use emoji checkmarks (`✅`, `❌`, `✔️`) — they render inconsistently and violate the no-emoji default.
 
 ## Example
 
-⟨`✓`⟩ Validate — *9/9 passed*
-⟨`~`⟩ Cooldown — *active until 00:35*
-⟨`✗`⟩ Push — *blocked by hook*
+❨`✓`❩ Validate — *9/9 passed*
+❨`~`❩ Cooldown — *active until 00:35*
+❨`✗`❩ Push — *blocked by hook*
 
 ## Indicators
 
@@ -42,7 +42,7 @@ Don't rely on bold — it renders identical to plain in this terminal/theme.
 
 When the label points to a clickable target (commit, PR, CI run, issue, file in repo), put plain text inside the link — code styling overrides link color:
 
-⟨`✓`⟩ [Format and Lint Check](https://...) — `✓` 9/9
+❨`✓`❩ [Format and Lint Check](https://...) — `✓` 9/9
 
 If the SHA itself is the label, choose: link color (`[79ed823](url)`) or code color (`` `79ed823` `` + separate link elsewhere). Can't have both on one span.
 
@@ -52,13 +52,13 @@ Don't link without an actionable target. Skip the markdown link if no useful URL
 
 **Single-line with `·` interpunct** — for terse status:
 
-⟨`✓`⟩ Action `→` target · `↑` N `↓` N · `⏱` Xm · `✓` N/N
+❨`✓`❩ Action `→` target · `↑` N `↓` N · `⏱` Xm · `✓` N/N
 
 **Multi-line line-items** — when detail matters:
 
-⟨`✓`⟩ Diff — `↑` 213 `↓` 15 across 5 files
-⟨`✓`⟩ Commits — 2 `→` master (`79ed823`, `637f804`)
-⟨`✓`⟩ CI — `⏱` 7m, `✓` 9/9 jobs
+❨`✓`❩ Diff — `↑` 213 `↓` 15 across 5 files
+❨`✓`❩ Commits — 2 `→` master (`79ed823`, `637f804`)
+❨`✓`❩ CI — `⏱` 7m, `✓` 9/9 jobs
 
 Markdown collapses internal whitespace; don't rely on visual column alignment with spaces.
 
@@ -71,6 +71,30 @@ Markdown collapses internal whitespace; don't rely on visual column alignment wi
 | `092d4bd` | `↑` 12 `↓` 4   | `⏱` 3m | `✓` 9/9 |
 
 **Blockquotes** — small amounts of text only (a one-liner banner, a brief callout). Wide content in a blockquote pushes text too far right and reads poorly. Don't blockquote multi-paragraph or wide content.
+
+## Continuation lines
+
+When detail under a status line would push past one terminal row, split onto continuation lines using rounded box-drawing branches. Don't jam two clauses with `;` or wrap detail in parentheticals — splitting always reads better than wrapping.
+
+- `` `├─` `` — non-last child, plain detail
+- `` `╰─` `` — last child, plain detail
+- `` `├─▶` `` / `` `╰─▶` `` — when the child is a result or action, not just descriptive detail
+
+Indent the branch glyph by one space so it sits directly under the `✓` of `❨✓❩` — the tree visually descends from the status mark. The leading space goes *outside* the code span (markdownlint MD038 forbids spaces inside code spans).
+
+Leave a blank line after the last child (`╰─`) before the next status line. The tree-continuation is a block; the blank line separates one block from the next so the children can't be misread as siblings of the following status mark.
+
+**Plain detail** (no arrow):
+
+❨`✓`❩ Conflict — *settings.json Stop block*
+ `├─` kept new `revise-claude-md-stop.py` hook (`~` → `$HOME`)
+ `╰─` dropped re-introduced `PostCompact` / `post-compact.sh`
+
+**Result / action** (arrow):
+
+❨`✓`❩ Push — `0da48f3d` `→` `master`
+ `├─▶` 6 files (`↑` 15 `↓` 148)
+ `╰─▶` CI run #25952834388 triggered
 
 ## Anti-patterns (silently broken in this terminal)
 
