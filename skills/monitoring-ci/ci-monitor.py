@@ -130,10 +130,16 @@ def find_run(branch: str, max_wait: int = 180, expected_sha: str | None = None) 
 
 
 def watch_run(run_id: str) -> int:
-    """Watch a run until completion. Returns exit code."""
+    """Watch a run until completion. Returns exit code.
+
+    Discards `gh run watch`'s streaming stdout — when captured to a non-TTY it
+    accumulates one screen-refresh frame every few seconds for the full CI run,
+    bloating result logs by ~50k+ tokens. Failure diagnostics come from
+    fetch_failed_logs() in main(); stderr is still printed in case gh itself
+    errors (auth, network) rather than CI failing.
+    """
     r = run(f"gh run watch {run_id} --exit-status", check=False)
-    print(r.stdout)
-    if r.returncode != 0:
+    if r.returncode != 0 and r.stderr.strip():
         print(r.stderr)
     return r.returncode
 
