@@ -6,9 +6,9 @@
 # Drain stdin to prevent blocking
 cat > /dev/null
 
-# Round to the hour: prompt-cache invalidates when user-content changes,
-# so a minute-precision timestamp busts the ~5K-token prefix every turn.
-ctx="time=$(date '+%Y-%m-%d %H:00 %z') cwd=$PWD"
+# Date only (no clock): a clock-time prompts social commentary about working
+# late, and also busts the prompt cache more often than a date does.
+ctx="date=$(date '+%Y-%m-%d') cwd=$PWD"
 
 if [[ -d .jj ]]; then
   if [[ -d .git ]]; then
@@ -17,9 +17,14 @@ if [[ -d .jj ]]; then
     ctx+=" vcs=jj"
   fi
 
+  trunk=$(jj log -r 'trunk()' --no-graph -T 'bookmarks.join(",")' 2>/dev/null)
+  [[ -n "$trunk" ]] && ctx+=" trunk=$trunk"
+
   change=$(jj log -r @ --no-graph -T 'change_id.short()' 2>/dev/null) && ctx+=" change=$change"
   bookmarks=$(jj log -r @ --no-graph -T 'bookmarks.join(",")' 2>/dev/null)
   [[ -n "$bookmarks" ]] && ctx+=" bookmark=$bookmarks"
+  dirty=$(jj log -r @ --no-graph -T 'if(empty, "no", "yes")' 2>/dev/null)
+  [[ -n "$dirty" ]] && ctx+=" dirty=$dirty"
 
 elif [[ -d .git ]]; then
   ctx+=" vcs=git"

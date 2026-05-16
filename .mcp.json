@@ -1,9 +1,0 @@
-{
-  "mcpServers": {
-    "cj": {
-      "command": "cj",
-      "args": ["mcp"],
-      "type": "stdio"
-    }
-  }
-}

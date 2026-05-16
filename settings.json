@@ -18,7 +18,6 @@
       "Bash(brew install:*)",
       "Bash(brew list:*)",
       "Bash(bun test:*)",
-      "Bash(cj:*)",
       "Bash(command:*)",
       "Bash(curl:*)",
       "Bash(dig:*)",
@@ -127,36 +126,18 @@
         "hooks": [
           {
             "type": "command",
-            "command": "~/.claude/hooks/claude-notify.sh"
+            "command": "$HOME/.claude/hooks/claude-notify.sh"
           }
         ]
       }
     ],
     "PostToolUse": [
       {
-        "matcher": "Bash",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "~/.claude/hooks/journal-reminder.sh"
-          }
-        ]
-      },
-      {
-        "matcher": "",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "~/.claude/hooks/post-tool-failure.sh"
-          }
-        ]
-      },
-      {
         "matcher": "Write|Edit|Bash",
         "hooks": [
           {
             "type": "command",
-            "command": "python3 ~/.claude/hooks/flagged-words.py"
+            "command": "python3 $HOME/.claude/hooks/flagged-words.py"
           }
         ]
       }
@@ -167,7 +148,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "~/.claude/hooks/branch_protection.sh"
+            "command": "$HOME/.claude/hooks/branch_protection.sh"
           }
         ]
       }
@@ -178,22 +159,11 @@
         "hooks": [
           {
             "type": "command",
-            "command": "~/.claude/hooks/claude-notify.sh"
+            "command": "$HOME/.claude/hooks/claude-notify.sh"
           },
           {
             "type": "command",
-            "command": "python3 ~/.claude/hooks/revise-claude-md-stop.py"
-          }
-        ]
-      }
-    ],
-    "PostCompact": [
-      {
-        "matcher": "",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "~/.claude/hooks/post-compact.sh"
+            "command": "python3 $HOME/.claude/hooks/revise-claude-md-stop.py"
           }
         ]
       }
@@ -204,7 +174,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "~/.claude/hooks/user-prompt-submit/project-context.sh"
+            "command": "$HOME/.claude/hooks/user-prompt-submit/project-context.sh"
           }
         ]
       }
@@ -212,7 +182,7 @@
   },
   "statusLine": {
     "type": "command",
-    "command": "~/.claude/hooks/status.sh"
+    "command": "$HOME/.claude/hooks/status.sh"
   },
   "enabledPlugins": {
     "clangd-lsp@claude-plugins-official": true,
