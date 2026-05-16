@@ -84,6 +84,8 @@ Indent the branch glyph by one space so it sits directly under the `✓` of `❨
 
 Leave a blank line after the last child (`╰─`) before the next status line. The tree-continuation is a block; the blank line separates one block from the next so the children can't be misread as siblings of the following status mark.
 
+Branch glyphs stand alone — don't wrap them in the parenthesis ornaments (`❨├─❩` ✗). `❨ ❩` is only for the status flag (`✓` / `~` / `✗`).
+
 **Plain detail** (no arrow):
 
 ❨`✓`❩ Conflict — *settings.json Stop block*
@@ -96,6 +98,29 @@ Leave a blank line after the last child (`╰─`) before the next status line. 
  `├─▶` 6 files (`↑` 15 `↓` 148)
  `╰─▶` CI run #25952834388 triggered
 
+## Categorical lists
+
+For multi-item *proposals* (fix lists, audit findings, change packages, refactor scope) prefer flat-but-grouped bullets under H4 mini-headers. Group by intent or kind, not by chronology. Categorical contrast does more readability work than visual tree branches when the items are peers, not children.
+
+Use real `####` headings rather than `**Bold**` on its own line — H4 collapses to plain text in this TUI (see Anti-patterns), so the rendering is identical, but `####` is lint-clean (markdownlint MD036 forbids emphasis-as-heading) and semantically a heading.
+
+### Example
+
+#### Bugs
+
+- `--timeout` is dead code — parsed but never read.
+- `find_run`'s 60s `max_wait` is too tight against GH's 30–90s registration latency.
+
+#### Polish
+
+- 5s grace before the first poll.
+- `--limit` 10 → 30 for headroom.
+- Skip the trailing sleep on the final iteration.
+
+Pick contrasting categories, not arbitrary buckets — Bugs/Polish, Must/Nice, Blocker/Follow-up. Two crisp groups beat four wishy-washy ones. Keep each bullet to one rendered line; if it would wrap, split it (see the list-continuation anti-pattern below).
+
+Reserve the Continuation lines tree (`├─` / `╰─`) for parent-child *status reporting* — one status mark with sub-results — not for any multi-item list.
+
 ## Anti-patterns (silently broken in this terminal)
 
 - `**bold**` — renders identical to plain
@@ -107,6 +132,7 @@ Leave a blank line after the last child (`╰─`) before the next status line. 
 - Italic on the ⏱ stopwatch glyph specifically — doesn't slant; use code wrap only
 - Italic inside an inline code span (`` `*x*` ``) — markers shown literally
 - Wrapping link text in inline code (`` [`text`](url) ``) — code color wins, link color lost
+- List-item continuation indent — bullets and numbered items collapse continuation lines flush-left regardless of source indent (2 or 4 spaces). Keep bullets to one rendered line; if it would wrap, split it or drop out of the list.
 
 ## When this applies
 
