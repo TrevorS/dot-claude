@@ -103,7 +103,10 @@ def find_run(branch: str, max_wait: int = 180, expected_sha: str | None = None) 
                 continue
             branch_matches += 1
             run_sha = data.get("headSha", "")
-            if expected_sha and run_sha != expected_sha:
+            # Use prefix match so callers can pass short SHAs (the JSON from
+            # `gh run list` always returns 40-char SHAs; a 12-char input would
+            # never `==` match).
+            if expected_sha and not run_sha.startswith(expected_sha):
                 continue
             sha_matches += 1
             if run_id:
