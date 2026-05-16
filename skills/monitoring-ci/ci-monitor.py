@@ -61,7 +61,7 @@ def head_sha(branch: str) -> str | None:
     return None
 
 
-def find_run(branch: str, max_wait: int = 60, expected_sha: str | None = None) -> str | None:
+def find_run(branch: str, max_wait: int = 180, expected_sha: str | None = None) -> str | None:
     """Poll for a CI run on the branch matching expected_sha, return run ID or None.
 
     NOTE: deliberately does NOT pass `--branch` to `gh run list`. As of
@@ -75,9 +75,14 @@ def find_run(branch: str, max_wait: int = 60, expected_sha: str | None = None) -
     iterations = max(1, max_wait // poll_interval)
     last_summary: tuple[int, int, int] | None = None
 
+    # Grace before the first poll: GitHub typically takes a few seconds to
+    # register a workflow run after a push, so polling immediately at push+0
+    # is a guaranteed miss.
+    time.sleep(5)
+
     for attempt in range(1, iterations + 1):
         r = run(
-            "gh run list --limit 10 "
+            "gh run list --limit 30 "
             "--json databaseId,status,headSha,headBranch --jq '.[]'"
         )
         if r.returncode != 0:
@@ -116,7 +121,8 @@ def find_run(branch: str, max_wait: int = 60, expected_sha: str | None = None) -
                 f"{sha_matches} matching{wanted}"
             )
             last_summary = summary
-        time.sleep(poll_interval)
+        if attempt < iterations:
+            time.sleep(poll_interval)
     return None
 
 
@@ -138,7 +144,12 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="Monitor GitHub Actions CI run")
     parser.add_argument("--branch", help="Branch to monitor (auto-detected if omitted)")
     parser.add_argument("--sha", help="Expected HEAD SHA to match (avoids watching stale runs)")
-    parser.add_argument("--timeout", type=int, default=600, help="Max seconds to wait (default: 600)")
+    parser.add_argument(
+        "--timeout",
+        type=int,
+        default=180,
+        help="Max seconds to poll for a CI run to appear (default: 180)",
+    )
     args = parser.parse_args()
 
     name = repo_name()
@@ -159,7 +170,7 @@ def main() -> int:
         sha = args.sha or head_sha(branch)
         print(f"Watching CI for {name} @ {branch} (sha: {sha or 'unknown'}) ...")
 
-        run_id = find_run(branch, expected_sha=sha)
+        run_id = find_run(branch, max_wait=args.timeout, expected_sha=sha)
         if not run_id:
             print(f"No CI run found for branch {branch} after polling")
             return 0
