@@ -606,6 +606,48 @@ vim.keymap.set("n", "<leader>*", function()
 	pick.grep({ pattern = vim.fn.expand("<cword>") })
 end, { desc = "Grep word under cursor" })
 
+-- Pick files changed vs base branch (committed + staged + unstaged)
+local function pick_changed_vs_base(base)
+	base = base ~= "" and base or "master"
+
+	local mb = vim.system({ "git", "merge-base", base, "HEAD" }, { text = true }):wait()
+	if mb.code ~= 0 then
+		vim.notify("merge-base " .. base .. " HEAD failed: " .. (mb.stderr or ""), vim.log.levels.ERROR)
+		return
+	end
+	local merge_base = vim.trim(mb.stdout)
+
+	-- Comparing working tree to merge-base catches all three:
+	-- committed-on-branch, staged, and unstaged.
+	local diff = vim.system({ "git", "diff", "--name-only", merge_base }, { text = true }):wait()
+	if diff.code ~= 0 then
+		vim.notify("git diff failed: " .. (diff.stderr or ""), vim.log.levels.ERROR)
+		return
+	end
+
+	local files = vim.split(vim.trim(diff.stdout), "\n", { trimempty = true })
+	if #files == 0 then
+		vim.notify("No changes vs " .. base, vim.log.levels.INFO)
+		return
+	end
+
+	require("mini.pick").start({
+		source = {
+			items = files,
+			name = "Changed vs " .. base,
+			cwd = vim.fn.getcwd(),
+		},
+	})
+end
+
+vim.api.nvim_create_user_command("PickChanged", function(opts)
+	pick_changed_vs_base(opts.args)
+end, { nargs = "?", desc = "Pick files changed vs base branch (default: master)" })
+
+vim.keymap.set("n", "<leader>gc", function()
+	pick_changed_vs_base("master")
+end, { desc = "Pick files changed vs master" })
+
 -- mini.extra diagnostic picker
 vim.keymap.set("n", "<leader>xx", function()
 	require("mini.extra").pickers.diagnostic()
