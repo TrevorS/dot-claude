@@ -75,3 +75,4 @@ channels/telegram/access.json
 channels/
 daemon/
 jobs/
+daemon.*

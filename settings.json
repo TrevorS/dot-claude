@@ -217,6 +217,7 @@
   "fileCheckpointingEnabled": false,
   "teammateMode": "auto",
   "remoteControlAtStartup": false,
+  "inputNeededNotifEnabled": false,
   "agentPushNotifEnabled": false,
   "skipAutoPermissionPrompt": true,
   "voiceEnabled": true
