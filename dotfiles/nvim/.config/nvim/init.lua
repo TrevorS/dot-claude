@@ -606,26 +606,59 @@ vim.keymap.set("n", "<leader>*", function()
 	pick.grep({ pattern = vim.fn.expand("<cword>") })
 end, { desc = "Grep word under cursor" })
 
--- Pick files changed vs base branch (committed + staged + unstaged)
-local function pick_changed_vs_base(base)
-	base = base ~= "" and base or "master"
+vim.keymap.set("n", "<leader>P", pick.resume, { desc = "Resume last picker" })
 
+vim.keymap.set("n", "<leader>r", function()
+	require("mini.extra").pickers.visit_paths()
+end, { desc = "Recent/frequent files (visits)" })
+
+-- ----------------------------------------------------------------------------
+-- VCS pickers and navigation (vs base branch: testing → dev → master → main)
+-- ----------------------------------------------------------------------------
+
+local base_priority = { "testing", "dev", "master", "main" }
+
+-- Resolve base + its merge-base with HEAD. `quiet` suppresses error notifications.
+local function resolve_base(explicit, quiet)
+	local base
+	if explicit and explicit ~= "" then
+		base = explicit
+	else
+		for _, b in ipairs(base_priority) do
+			if vim.system({ "git", "rev-parse", "--verify", "--quiet", b }, { text = true }):wait().code == 0 then
+				base = b
+				break
+			end
+		end
+	end
+	if not base then
+		if not quiet then
+			vim.notify("No base branch (tried: " .. table.concat(base_priority, ", ") .. ")", vim.log.levels.ERROR)
+		end
+		return
+	end
 	local mb = vim.system({ "git", "merge-base", base, "HEAD" }, { text = true }):wait()
 	if mb.code ~= 0 then
-		vim.notify("merge-base " .. base .. " HEAD failed: " .. (mb.stderr or ""), vim.log.levels.ERROR)
+		if not quiet then
+			vim.notify("merge-base " .. base .. ": " .. (mb.stderr or ""), vim.log.levels.ERROR)
+		end
 		return
 	end
-	local merge_base = vim.trim(mb.stdout)
+	return base, vim.trim(mb.stdout)
+end
 
-	-- Comparing working tree to merge-base catches all three:
-	-- committed-on-branch, staged, and unstaged.
-	local diff = vim.system({ "git", "diff", "--name-only", merge_base }, { text = true }):wait()
-	if diff.code ~= 0 then
-		vim.notify("git diff failed: " .. (diff.stderr or ""), vim.log.levels.ERROR)
+-- Pick files changed vs base (committed + staged + unstaged)
+local function pick_changed_vs_base(explicit)
+	local base, merge_base = resolve_base(explicit)
+	if not base then
 		return
 	end
 
-	local files = vim.split(vim.trim(diff.stdout), "\n", { trimempty = true })
+	local files = vim.split(
+		vim.trim(vim.system({ "git", "diff", "--name-only", merge_base }, { text = true }):wait().stdout or ""),
+		"\n",
+		{ trimempty = true }
+	)
 	if #files == 0 then
 		vim.notify("No changes vs " .. base, vim.log.levels.INFO)
 		return
@@ -636,17 +669,141 @@ local function pick_changed_vs_base(base)
 			items = files,
 			name = "Changed vs " .. base,
 			cwd = vim.fn.getcwd(),
+			preview = function(buf_id, item)
+				local out = vim.system({ "git", "diff", merge_base, "--", item }, { text = true }):wait().stdout or ""
+				local lines = vim.split(out, "\n", { trimempty = false })
+				if #lines == 0 or (#lines == 1 and lines[1] == "") then
+					lines = { "(no diff output)" }
+				end
+				vim.api.nvim_buf_set_lines(buf_id, 0, -1, false, lines)
+				vim.bo[buf_id].filetype = "diff"
+			end,
 		},
 	})
 end
 
-vim.api.nvim_create_user_command("PickChanged", function(opts)
-	pick_changed_vs_base(opts.args)
-end, { nargs = "?", desc = "Pick files changed vs base branch (default: master)" })
+-- Pick hunks changed vs base (committed + staged + unstaged)
+local function pick_hunks_vs_base(explicit)
+	local base, merge_base = resolve_base(explicit)
+	if not base then
+		return
+	end
 
-vim.keymap.set("n", "<leader>gc", function()
-	pick_changed_vs_base("master")
-end, { desc = "Pick files changed vs master" })
+	local out = vim.system({ "git", "diff", "--unified=3", merge_base }, { text = true }):wait().stdout or ""
+	local items, file, hunk, first = {}, nil, nil, false
+	local function flush()
+		if hunk then
+			table.insert(items, hunk)
+		end
+		hunk, first = nil, false
+	end
+
+	for line in (out .. "\n"):gmatch("([^\n]*)\n") do
+		local new_path = line:match("^%+%+%+ b/(.+)$")
+		if new_path then
+			flush()
+			file = new_path ~= "/dev/null" and new_path or nil
+		elseif line:sub(1, 2) == "@@" and file then
+			flush()
+			local start = tonumber(line:match("@@ %-%d+,?%d* %+(%d+)")) or 1
+			hunk = {
+				file = file,
+				lnum = start,
+				body = { line },
+				text = string.format("%s:%d │ %s", file, start, line),
+			}
+		elseif hunk then
+			table.insert(hunk.body, line)
+			local sigil = line:sub(1, 1)
+			if (sigil == "+" or sigil == "-") and not first then
+				first = true
+				hunk.text = string.format("%s:%d │ %s", hunk.file, hunk.lnum, line)
+			end
+		end
+	end
+	flush()
+
+	if #items == 0 then
+		vim.notify("No hunks vs " .. base, vim.log.levels.INFO)
+		return
+	end
+
+	require("mini.pick").start({
+		source = {
+			items = items,
+			name = "Hunks vs " .. base,
+			cwd = vim.fn.getcwd(),
+			preview = function(buf_id, item)
+				vim.api.nvim_buf_set_lines(buf_id, 0, -1, false, item.body)
+				vim.bo[buf_id].filetype = "diff"
+			end,
+			choose = function(item)
+				vim.schedule(function()
+					vim.cmd.edit(item.file)
+					pcall(vim.api.nvim_win_set_cursor, 0, { item.lnum, 0 })
+				end)
+			end,
+		},
+	})
+end
+
+-- Jump between hunks (vs base) in the current file
+local function jump_hunk_vs_base(direction)
+	local file = vim.api.nvim_buf_get_name(0)
+	local _, merge_base = resolve_base(nil, true)
+	if file == "" or not merge_base then
+		return
+	end
+	local out = vim.system({ "git", "diff", "--unified=0", merge_base, "--", file }, { text = true }):wait().stdout
+		or ""
+	local starts = {}
+	for line in (out .. "\n"):gmatch("([^\n]*)\n") do
+		local ns = tonumber(line:match("^@@ %-%d+,?%d* %+(%d+)"))
+		if ns then
+			table.insert(starts, ns)
+		end
+	end
+	if #starts == 0 then
+		vim.notify("No hunks vs base in this file", vim.log.levels.INFO)
+		return
+	end
+
+	local cur = vim.api.nvim_win_get_cursor(0)[1]
+	local target
+	if direction == "next" then
+		for _, h in ipairs(starts) do
+			if h > cur then
+				target = h
+				break
+			end
+		end
+	else
+		for i = #starts, 1, -1 do
+			if starts[i] < cur then
+				target = starts[i]
+				break
+			end
+		end
+	end
+	vim.api.nvim_win_set_cursor(0, { target or starts[direction == "next" and 1 or #starts], 0 })
+end
+
+vim.api.nvim_create_user_command("PickChanged", function(o)
+	pick_changed_vs_base(o.args)
+end, { nargs = "?", desc = "Pick files changed vs base" })
+vim.api.nvim_create_user_command("PickHunks", function(o)
+	pick_hunks_vs_base(o.args)
+end, { nargs = "?", desc = "Pick hunks changed vs base" })
+
+vim.keymap.set("n", "<leader>gc", pick_changed_vs_base, { desc = "Pick files changed vs base" })
+vim.keymap.set("n", "<leader>gh", pick_hunks_vs_base, { desc = "Pick hunks changed vs base" })
+vim.keymap.set("n", "]g", function()
+	jump_hunk_vs_base("next")
+end, { desc = "Next hunk vs base" })
+vim.keymap.set("n", "[g", function()
+	jump_hunk_vs_base("prev")
+end, { desc = "Previous hunk vs base" })
+vim.keymap.set("n", "<leader>gs", require("mini.git").show_at_cursor, { desc = "Git show at cursor" })
 
 -- mini.extra diagnostic picker
 vim.keymap.set("n", "<leader>xx", function()
