@@ -78,5 +78,37 @@
   {
     "query": "what does the error 'ECONNREFUSED 127.0.0.1:5432' mean? how do I fix it?",
     "should_trigger": false
+  },
+  {
+    "query": "we already solved this websocket reconnection issue, find what we did",
+    "should_trigger": true
+  },
+  {
+    "query": "I know I've written a custom eslint rule before, pull up that session",
+    "should_trigger": true
+  },
+  {
+    "query": "what was that cargo alias I set up? I used it all the time but forgot it",
+    "should_trigger": true
+  },
+  {
+    "query": "what should I do before deploying to production? any checklist?",
+    "should_trigger": false
+  },
+  {
+    "query": "remember to always use strict mode when compiling typescript in this project",
+    "should_trigger": false
+  },
+  {
+    "query": "show me the bash history for any curl commands I ran recently",
+    "should_trigger": false
+  },
+  {
+    "query": "how do sessions work in express.js? I need to add session-based auth",
+    "should_trigger": false
+  },
+  {
+    "query": "what was the last thing that changed in this file? check git blame",
+    "should_trigger": false
   }
 ]
