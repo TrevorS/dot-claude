@@ -1,6 +1,6 @@
 # Version Control
 
-Use **jj (jujutsu)** for local work, **git** for GitHub interface. Load `using-jj` or `using-git` skill for advanced workflows (revsets, absorb, oplog recovery, reflog, rebase recovery, cherry-pick with conflicts).
+Use **jj (jujutsu)** for local work, **git** for GitHub interface. Load `using-jj` skill for advanced jj workflows (revsets, absorb, oplog recovery, conflict resolution).
 
 ## Non-interactive jj (critical)
 
@@ -27,6 +27,8 @@ Never use `jj split`, `jj squash -i`, or `jj diffedit` — no non-interactive mo
 - Use Write tool for commit messages (avoids shell escaping issues).
 - Pre-commit hooks modify files during commit — re-stage and retry.
 - `git reset --soft HEAD~N` to squash N commits non-interactively.
+- Never use `git rebase -i` or `git add -i` — interactive modes block the agent.
 - Never rebase shared branches.
+- Before destructive ops (reset --hard, force push), create a backup: `git branch backup-$(date +%s)`.
 
 See `pr-safety.md` for rules on rewriting history of branches that already have a PR open.
