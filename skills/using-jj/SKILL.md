@@ -1,6 +1,6 @@
 ---
 name: using-jj
-description: Use when working with jj (jujutsu) version control and the query involves revsets, absorb, evolog, oplog, undo, immutable_heads, conflicts after rebase, divergent changes, or splitting changes. Also use when the user needs jj-specific syntax or workflows that differ from git. Contains critical non-interactive rules that prevent broken workflows. Skip for basic jj operations (commit, push, describe, bookmark).
+description: Jujutsu (jj) version control reference. MUST load this skill whenever a query mentions jj, jujutsu, revsets, absorb, evolog, oplog, immutable_heads, divergent changes, or jj-specific concepts — jj differs from git in non-obvious ways and the skill contains critical constraints (e.g., always pass -m, never use split/diffedit) that prevent broken workflows. Skip only for trivial jj commands you're certain about (describe, new, commit, push).
 ---
 
 # jj Workflow
