@@ -1,6 +1,6 @@
 ---
 name: using-jj
-description: Advanced jj/jujutsu workflows — revsets, absorb, evolog, op restore/undo, immutable_heads bypass, divergent-change resolution, jj split, parallel jj new, conflict-after-rebase, force-push recovery. Contains non-obvious rules (e.g., always `-m` to avoid editor) that prevent broken workflows. Skip for simple commit/push/rebase.
+description: Use when working with jj (jujutsu) version control and the query involves revsets, absorb, evolog, oplog, undo, immutable_heads, conflicts after rebase, divergent changes, or splitting changes. Also use when the user needs jj-specific syntax or workflows that differ from git. Contains critical non-interactive rules that prevent broken workflows. Skip for basic jj operations (commit, push, describe, bookmark).
 ---
 
 # jj Workflow
