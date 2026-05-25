@@ -1,6 +1,5 @@
 # Homebrew packages (macOS)
 # One package per line. Comments and blank lines are ignored.
-bat
 coreutils
 fd
 fzf

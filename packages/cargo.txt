@@ -2,6 +2,7 @@
 # Upgraded via `cargo install-update` (see make upgrade).
 # One package per line. Comments and blank lines are ignored.
 atuin
+bat
 cargo-binstall
 cargo-update
 git-delta
