@@ -31,6 +31,7 @@ file-history/
 ide/
 image-cache/
 mcp-needs-auth-cache.json
+gh-pr-status-cache.json
 node_modules/
 remote-settings.json
 paste-cache/
