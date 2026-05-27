@@ -2,7 +2,7 @@
 name: searching-history
 description: Search past Claude Code sessions to recall prior solutions, commands, fixes, and decisions. Use when the user references earlier work ("how did I fix", "last time we", "pick up where we left off", "a few months ago").
 context: fork
-model: claude-sonnet-4-5
+model: claude-sonnet-4-6
 allowed-tools: Bash
 argument-hint: "<search-query>"
 ---

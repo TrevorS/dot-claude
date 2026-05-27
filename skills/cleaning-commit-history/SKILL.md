@@ -2,7 +2,7 @@
 name: cleaning-commit-history
 description: Reorganize and clean up messy commit history on a feature branch into logical, reviewable commits. Use when cleaning up commits, preparing a branch for review, separating formatting from logic changes, fixing broken intermediate states, or squashing WIP commits.
 context: fork
-model: claude-sonnet-4-5
+model: claude-sonnet-4-6
 ---
 
 # Cleaning Commit History
@@ -72,7 +72,7 @@ Every intermediate state must build and pass tests.
 
 ### Phase 5: Rebuild Commits
 
-**Git**: `git reset --mixed $BASE`, then stage related hunks per planned commit with `git add -p`.
+**Git**: `git reset --mixed $BASE`, then stage specific files per planned commit with `git add <files>`.
 
 **jj workflow**:
 

@@ -99,7 +99,7 @@ Target 3-5 teammates, 5-6 tasks per teammate. Prefer fewer focused teammates ove
 Guidance, not a rule:
 
 - `claude-opus-4-7` — roles that drive architectural decisions, gnarly debugging, cross-cutting refactors with high blast radius, or where a single mistake cascades. Use here freely; this is where Opus earns its keep.
-- `claude-sonnet-4-5` — default for implementation work: most writing-code, refactoring, integration, review. Strong tool use, reliable enough for parallel execution.
+- `claude-sonnet-4-6` — default for implementation work: most writing-code, refactoring, integration, review. Strong tool use, reliable enough for parallel execution.
 - `claude-haiku-4-5` — only roles where the failure mode is cheap and obvious: shell-command runners, file movers, status reporters, well-specified doc generation. Not for anything requiring judgment.
 
 Set `model:` explicitly in each teammate's frontmatter — unset inherits the parent model silently. If a role sits on the Sonnet/Opus boundary, pick Opus. If a role sits on the Haiku/Sonnet boundary, pick Sonnet.

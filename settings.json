@@ -35,7 +35,6 @@
       "Bash(mkdir:*)",
       "Bash(networksetup:*)",
       "Bash(nslookup:*)",
-      "Bash(nvim:*)",
       "Bash(open:*)",
       "Bash(openssl s_client:*)",
       "Bash(openssl x509:*)",
@@ -161,10 +160,6 @@
           {
             "type": "command",
             "command": "$HOME/.claude/hooks/claude-notify.sh"
-          },
-          {
-            "type": "command",
-            "command": "python3 $HOME/.claude/hooks/revise-claude-md-stop.py"
           }
         ]
       }
@@ -190,7 +185,6 @@
     "claude-md-management@claude-plugins-official": true,
     "code-simplifier@claude-plugins-official": true,
     "gopls-lsp@claude-plugins-official": true,
-    "ralph-loop@claude-plugins-official": false,
     "rust-analyzer-lsp@claude-plugins-official": true,
     "swift-lsp@claude-plugins-official": true,
     "typescript-lsp@claude-plugins-official": true,
@@ -217,7 +211,6 @@
   "fileCheckpointingEnabled": false,
   "teammateMode": "auto",
   "remoteControlAtStartup": false,
-  "inputNeededNotifEnabled": false,
   "agentPushNotifEnabled": false,
   "skipAutoPermissionPrompt": true,
   "voiceEnabled": true

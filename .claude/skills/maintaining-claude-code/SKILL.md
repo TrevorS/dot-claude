@@ -22,20 +22,23 @@ Pick the right home before writing anything:
 
 ## Hooks
 
-### Events you'll actually use
+### Hook events
 
-- `PreToolUse` — block/allow a tool call (exit 2 to block, write to stderr)
-- `PostToolUse` — react to a completed tool call; can inject `additionalContext`
-- `UserPromptSubmit` — inject context on every prompt (rounded timestamps to preserve prompt cache)
-- `Stop` / `Notification` — desktop or audio notifications
-- `PostCompact` — log compaction events
-- `SessionStart` / `SubagentStop` — pre-load context or capture subagent output
+Per-session: `SessionStart`, `SessionEnd`, `Setup`
+Per-turn: `UserPromptSubmit`, `UserPromptExpansion`, `Stop`, `StopFailure`
+Per-tool: `PreToolUse`, `PostToolUse`, `PostToolUseFailure`, `PermissionRequest`, `PermissionDenied`, `PostToolBatch`
+Async: `FileChanged`, `CwdChanged`, `ConfigChange`, `InstructionsLoaded`, `WorktreeCreate`, `WorktreeRemove`, `Notification`, `SubagentStart`, `SubagentStop`, `TaskCreated`, `TaskCompleted`, `PreCompact`, `PostCompact`, `TeammateIdle`, `Elicitation`, `ElicitationResult`, `MessageDisplay`
 
 ### Exit codes
 
 - `0` — success, continue
 - `2` — block action; stderr is shown to Claude
 - non-zero (other) — non-blocking warning
+
+### Hook command forms
+
+Shell form (classic): `"command": "shell command string"`
+Exec form (new, avoids quoting issues): `"args": ["program", "arg1", "arg2"]`
 
 ### Output shape
 
@@ -50,12 +53,24 @@ Inject context with JSON on stdout:
 }
 ```
 
+Additional output fields: `updatedToolOutput` (replace tool output, all tools), `terminalSequence` (emit OSC sequences for desktop notifications), `sessionTitle` (set session title, SessionStart only), `reloadSkills: true` (re-scan skill dirs, SessionStart only). `duration_ms` is now included in hook input for all tool events.
+
 ### Common pitfalls
 
 - Cache busting: minute-precision timestamps in `UserPromptSubmit` invalidate prompt cache. Round to the hour.
 - Hook script not executable: `chmod +x` and verify shebang.
 - Reading stdin twice: drain once, parse from a variable.
 - Forgetting `set -euo pipefail` in bash — silent failures otherwise.
+
+## Skills — frontmatter reference
+
+`name`, `description`, `when_to_use`, `argument-hint`, `arguments`, `disable-model-invocation`, `user-invocable`, `allowed-tools`, `disallowed-tools`, `model`, `effort`, `context`, `agent`, `hooks`, `paths`, `shell`.
+
+Dynamic context injection: `` !`command` `` inlines command output before Claude sees skill content. Multi-line: `` ```! \n cmd \n ``` ``.
+
+Variable substitutions: `$ARGUMENTS`, `$ARGUMENTS[N]`, `$N`, `$name`, `${CLAUDE_SESSION_ID}`, `${CLAUDE_EFFORT}`, `${CLAUDE_SKILL_DIR}`.
+
+Visibility control in settings.json: `skillOverrides` — set per-skill to `off`, `user-invocable-only`, or `name-only`.
 
 ## Rules
 

@@ -3,7 +3,7 @@ name: executing-test-plans
 description: Execute a structured test plan and emit a concise results document (JSON + Markdown). Use when running test plans, executing QA workflows, verifying acceptance criteria systematically, or producing test results documentation.
 context: fork
 argument-hint: "[plan-file] [env-profile] [out-dir]"
-model: claude-sonnet-4-5
+model: claude-sonnet-4-6
 allowed-tools:
   - "Bash(curl:*)"
   - "Bash(docker:*)"

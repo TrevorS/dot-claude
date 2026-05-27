@@ -22,19 +22,15 @@ fi
 
 **CRITICAL: Always use `-m` flag with jj** to prevent editor from blocking.
 
-### 2. Clean Up Checkpoints
-
-Abandon/squash any "checkpoint:" commits from Claude's Stop hook.
-
-### 3. Check Branch Safety
+### 2. Check Branch Safety
 
 Read `./CLAUDE.md` for project permissions. If on a protected branch without permission, suggest a feature branch. Cache decisions for future runs.
 
-### 4. Run Validation
+### 3. Run Validation
 
 Auto-detect project type and run: format -> lint -> typecheck. Stop on failure.
 
-### 5. Craft Commit Message
+### 4. Craft Commit Message
 
 Use **conventional commits** format: `type(scope): description`
 
@@ -51,7 +47,7 @@ Choose type from the diff:
 
 Scope is optional but encouraged for multi-module repos. Keep subject under 50 chars, use imperative mood ("add" not "added"). Focus on the "why" not the "what".
 
-### 6. Commit
+### 5. Commit
 
 **jj workflow (preferred)**:
 
@@ -69,7 +65,7 @@ git commit -F /tmp/commit-msg.txt
 
 Use the Write tool for commit message files (avoids shell escaping). Handle pre-commit hook failures by re-staging and retrying once.
 
-### 7. Push (if --push or explicitly requested)
+### 6. Push (if --push or explicitly requested)
 
 **jj**:
 
@@ -84,7 +80,7 @@ jj git push --bookmark <branch>
 git push -u origin HEAD
 ```
 
-### 8. Monitor CI (after push)
+### 7. Monitor CI (after push)
 
 If `.github/workflows/` exists and `ci=github-actions` in hook output:
 
