@@ -295,11 +295,13 @@ vim.api.nvim_create_autocmd("FileType", {
 })
 require("mini.ai").setup()
 require("mini.snippets").setup()
+require("mini.keymap").setup()
 
 -- UI & Appearance
 -- ----------------------------------------------------------------------------
 
 require("mini.icons").setup()
+require("mini.cursorword").setup() -- underline other occurrences of word under cursor
 require("mini.indentscope").setup({ symbol = "│", options = { try_as_border = true } })
 require("mini.trailspace").setup()
 require("mini.tabline").setup()
@@ -311,6 +313,12 @@ vim.notify = require("mini.notify").make_notify()
 
 require("mini.pick").setup()
 require("mini.extra").setup()
+require("mini.jump2d").setup({
+	spotter = require("mini.jump2d").builtin_opts.word_start.spotter,
+	labels = "asdfjkl;ghqwertyuiopzxcvbnm",
+	view = { dim = true, n_steps_ahead = 2 },
+	mappings = { start_jumping = "<CR>" }, -- <CR> jumps to any word start on screen
+})
 require("mini.visits").setup()
 require("mini.bracketed").setup()
 require("mini.move").setup()
@@ -432,6 +440,18 @@ require("catppuccin").setup({
 })
 
 vim.cmd.colorscheme("catppuccin")
+
+-- cursorword: clear the under-cursor word's highlight so only OTHER matches show.
+-- Done post-colorscheme (and on every ColorScheme) because catppuccin's mini
+-- integration force-sets MiniCursorwordCurrent to underline, which a custom_highlights
+-- override can't reliably beat through its deep-merge.
+vim.api.nvim_create_autocmd("ColorScheme", {
+	group = vim.api.nvim_create_augroup("config_cursorword_hl", { clear = true }),
+	callback = function()
+		vim.api.nvim_set_hl(0, "MiniCursorwordCurrent", {})
+	end,
+})
+vim.api.nvim_set_hl(0, "MiniCursorwordCurrent", {})
 
 -- ============================================================================
 -- JJ INTEGRATION
@@ -558,14 +578,12 @@ require("mini.statusline").setup({
 -- KEYMAPS
 -- ============================================================================
 
--- Tab/S-Tab to navigate completion menu
-vim.keymap.set("i", "<Tab>", function()
-	return vim.fn.pumvisible() == 1 and "<C-n>" or "<Tab>"
-end, { expr = true, desc = "Next completion or insert tab" })
-
-vim.keymap.set("i", "<S-Tab>", function()
-	return vim.fn.pumvisible() == 1 and "<C-p>" or "<S-Tab>"
-end, { expr = true, desc = "Prev completion or unindent" })
+-- Tab/S-Tab navigate completion; CR/BS respect mini.pairs (via mini.keymap multistep)
+local map_multistep = require("mini.keymap").map_multistep
+map_multistep("i", "<Tab>", { "pmenu_next" })
+map_multistep("i", "<S-Tab>", { "pmenu_prev" })
+map_multistep("i", "<CR>", { "pmenu_accept", "minipairs_cr" })
+map_multistep("i", "<BS>", { "minipairs_bs" })
 
 vim.keymap.set("n", "<leader>f", vim.lsp.buf.format, { desc = "Format buffer" })
 
