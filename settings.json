@@ -206,12 +206,15 @@
   "autoDreamEnabled": true,
   "showThinkingSummaries": true,
   "skipDangerousModePermissionPrompt": true,
+  "skipWorkflowUsageWarning": true,
   "theme": "custom:catppuccin-mocha",
+  "editorMode": "normal",
   "preferredNotifChannel": "ghostty",
   "fileCheckpointingEnabled": false,
-  "teammateMode": "auto",
+  "teammateMode": "tmux",
   "remoteControlAtStartup": false,
-  "agentPushNotifEnabled": false,
+  "inputNeededNotifEnabled": true,
+  "agentPushNotifEnabled": true,
   "skipAutoPermissionPrompt": true,
   "voiceEnabled": true
 }
