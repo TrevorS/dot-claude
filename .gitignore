@@ -32,6 +32,7 @@ ide/
 image-cache/
 mcp-needs-auth-cache.json
 gh-pr-status-cache.json
+.last-update-result.json
 node_modules/
 remote-settings.json
 paste-cache/
