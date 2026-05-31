@@ -2,6 +2,11 @@
 *.local.md
 settings.local.json
 
+# Environment files
+.env
+.env.*
+!.env.example
+
 # Team plan
 policy-limits.json
 
