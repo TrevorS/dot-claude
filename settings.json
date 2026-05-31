@@ -11,6 +11,7 @@
     "DISABLE_BUG_COMMAND": "1",
     "DISABLE_COST_WARNINGS": "1",
     "DISABLE_ERROR_REPORTING": "1",
+    "JJ_EDITOR": "/Users/trevor/.claude/hooks/jj-reject-editor.sh",
     "MCP_CONNECTION_NONBLOCKING": "1"
   },
   "includeCoAuthoredBy": false,
@@ -149,6 +150,10 @@
           {
             "type": "command",
             "command": "$HOME/.claude/hooks/branch_protection.sh"
+          },
+          {
+            "type": "command",
+            "command": "$HOME/.claude/hooks/jj_interactive_guard.sh"
           }
         ]
       }

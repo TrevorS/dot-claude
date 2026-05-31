@@ -35,6 +35,41 @@
     "forbid_patterns": []
   },
   {
+    "name": "jj-squash-non-interactive",
+    "category": "custom-tooling",
+    "query": "In a jj repo, how do I squash my current change into its parent without an editor opening?",
+    "expect_patterns": ["jj squash.*(-m|-u|--use-destination-message)"],
+    "forbid_patterns": ["(?m)^\\s*jj squash (-i|--interactive)"]
+  },
+  {
+    "name": "jj-untrack-not-forget",
+    "category": "custom-tooling",
+    "query": "I committed a lock file to a jj repo by mistake and want to stop tracking it. What command?",
+    "expect_patterns": ["jj file untrack"],
+    "forbid_patterns": ["(?m)^\\s*jj forget"]
+  },
+  {
+    "name": "jj-no-interactive-split-diffedit",
+    "category": "custom-tooling",
+    "query": "You're working autonomously in a jj repo as an agent and need to reorganize an existing change into two commits. What jj commands?",
+    "expect_patterns": ["jj (new|squash|describe).*-m"],
+    "forbid_patterns": ["(?m)^\\s*jj split", "(?m)^\\s*jj diffedit"]
+  },
+  {
+    "name": "jj-config-set-not-edit",
+    "category": "custom-tooling",
+    "query": "How do I change a jj config value, like the default UI editor, from the command line without opening an interactive editor?",
+    "expect_patterns": ["jj config set"],
+    "forbid_patterns": ["(?m)^\\s*jj config edit"]
+  },
+  {
+    "name": "jj-resolve-edit-markers",
+    "category": "custom-tooling",
+    "query": "I'm an automated agent with no interactive terminal and I hit a merge conflict in a jj repo. How do I resolve it without anything blocking on an editor?",
+    "expect_patterns": ["edit[^.]{0,40}(file|marker|conflict)"],
+    "forbid_patterns": ["(?m)^\\s*jj resolve(?!.*--tool)"]
+  },
+  {
     "name": "no-flagged-word-leverage",
     "category": "flagged-words",
     "query": "Explain the benefits of using TypeScript over JavaScript in a few sentences",

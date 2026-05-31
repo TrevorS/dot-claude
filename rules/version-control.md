@@ -10,10 +10,26 @@ Always pass `-m` — unset opens an editor and blocks the agent:
 jj new -m "msg"
 jj describe -m "msg"
 jj commit -m "msg"
-jj squash -m "msg"
+jj squash -m "msg"   # or -u to reuse the destination commit's message
 ```
 
-Never use `jj split`, `jj squash -i`, or `jj diffedit` — no non-interactive mode.
+**Every command that opens an editor and hangs (jj 0.39) — use the safe form:**
+
+| Command | Opens an editor when… | Safe form |
+| --- | --- | --- |
+| `jj describe` / `jj commit` | no message | add `-m "msg"` (or `--stdin`) |
+| `jj squash` | combining descriptions | add `-m "msg"`, or `-u` to reuse the destination's |
+| `jj commit` / `jj squash` `-i`/`--interactive`/`--tool` | always (diff editor for hunks; `--tool` implies `-i`) | drop the flag — edit files, then `jj squash -m` |
+| `jj split`, `jj diffedit` | always | no non-interactive mode — restructure with `jj squash -m` / `jj new -m` |
+| `jj resolve` | always (merge editor) | edit the conflict markers in the files, then `jj squash -m`; or pass `--tool` |
+| `jj config edit` | always | `jj config set <name> <value>` (`--user`/`--repo` for scope) |
+
+**To untrack a file** use `jj file untrack <path>` — `jj forget` does **not** exist in this jj version.
+
+**Tell for "an editor tried to open":** if a mutating jj command *auto-backgrounds* or seems to vanish, it's blocking on an editor, not a mystery — re-run it with `-m`. Two guards enforce this so a hang becomes a fast error instead:
+
+- `jj_interactive_guard.sh` (PreToolUse hook) blocks editor-opening invocations *before* they run, with the exact fix.
+- `$JJ_EDITOR` → `hooks/jj-reject-editor.sh` fail-fasts any editor jj still tries to open (exit 1, instant), so it never hangs. This is scoped to Claude Code's env only; your interactive `nvim` editor is unaffected.
 
 ## Core concepts
 
