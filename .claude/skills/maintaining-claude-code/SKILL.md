@@ -15,10 +15,12 @@ Pick the right home before writing anything:
 | --- | --- |
 | Run automatically before/after a tool call | **Hook** |
 | Auto-detected capability for a recurring task | **Skill** (use skill-creator) |
-| Heavy isolated workflow | **Skill with `context: fork`** |
+| Heavy isolated workflow, environment-driven | **Skill with `context: fork`** (see caveat) |
 | Always-on behavioral guidance | **CLAUDE.md** (use claude-md-improver) |
 | Path-specific rules | **rules/** with `paths:` frontmatter |
 | External integration | **MCP server** |
+
+**`context: fork` caveat:** a forked skill is isolated from the conversation **and** does not receive the user's message as `$ARGUMENTS` on auto-trigger (only an explicit `/skill <args>` invocation passes them). So use fork only for **environment-driven** work that reads everything from cwd/git/CI (validate, monitor CI, clean history). For any **input-dependent** skill — one that needs the user's words (a search query, an issue title, a plan path) — keep it **inline**, or it will fire with an empty query and bounce the question back. If a forked skill keeps asking "what would you like to search for?", this is why.
 
 ## Hooks
 

@@ -1,9 +1,6 @@
 ---
 name: searching-history
-description: Search past Claude Code sessions to recall prior solutions, commands, fixes, and decisions. Use when the user references earlier work ("how did I fix", "last time we", "pick up where we left off", "a few months ago").
-context: fork
-model: claude-sonnet-4-6
-allowed-tools: Bash
+description: Search past Claude Code sessions to recall prior solutions, commands, fixes, and decisions. Use when the user references earlier work ("how did I fix", "last time we", "pick up where we left off", "a few months ago", "what was that … I set up", "didn't I once").
 argument-hint: "<search-query>"
 ---
 
@@ -11,7 +8,14 @@ argument-hint: "<search-query>"
 
 Search your Claude Code conversation history using hybrid search (text + semantic).
 
-When invoked as `/glhf <query>`, run: `glhf search "$ARGUMENTS" --compact`
+## How to run it (read this first)
+
+Figure out the search query yourself, then run `glhf search` — **never run it empty and never bounce the question back to the user.**
+
+- **Explicit `/glhf <query>`** → use `$ARGUMENTS` as the query: `glhf search "$ARGUMENTS" --compact`
+- **Auto-triggered from the conversation** → `$ARGUMENTS` is empty. Derive concise search terms from what the user is trying to recall (the topic, error text, command, or project they referenced) and run the search with those. Do not ask them to restate it.
+
+Example: user says *"what was that cargo alias I set up?"* → run `glhf search "cargo alias" -t Bash --compact`. Then read the hits and answer; chain into `glhf session <id> --summary` if you need fuller context.
 
 ## Quick Examples
 

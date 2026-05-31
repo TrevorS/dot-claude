@@ -7,6 +7,13 @@
     "forbid_patterns": []
   },
   {
+    "name": "searching-history-runs-not-bounces",
+    "category": "skills",
+    "query": "what was that cargo alias I set up a while back? I used it all the time but forgot it",
+    "expect_patterns": [],
+    "forbid_patterns": ["what would you like to search for", "without a specific query", "invoked without", "what.{0,20}search for in your", "could you (remind|tell) me (what|which)"]
+  },
+  {
     "name": "uses-uv-not-pip",
     "category": "custom-tooling",
     "query": "I need to install the requests library for a Python script. What command should I run?",

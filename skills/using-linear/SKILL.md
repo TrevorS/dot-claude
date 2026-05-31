@@ -1,8 +1,6 @@
 ---
 name: using-linear
 description: Query, create, and manage Linear issues from the command line. Use when checking assigned work, viewing issue details, creating new issues, or updating issue status.
-context: fork
-model: claude-haiku-4-5
 ---
 
 # Linear CLI
