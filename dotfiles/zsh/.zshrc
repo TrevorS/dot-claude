@@ -1,29 +1,59 @@
-# path (last prepend wins — user bins must come after system bins)
-export PATH="/opt/homebrew/opt/sqlite/bin:$PATH"
-export PATH="/opt/homebrew/opt/coreutils/libexec/gnubin:$PATH"
-export PATH="/opt/homebrew/bin:$PATH"
+# ── path ────────────────────────────────────────────────────────────────────
+# last prepend wins — user bins must come after system bins
+# homebrew — macOS (/opt/homebrew) only; Linux already ships GNU coreutils
+if [[ -d /opt/homebrew ]]; then
+  export PATH="/opt/homebrew/opt/sqlite/bin:$PATH"
+  # GNU coreutils without the g-prefix, so sed/ls/etc. behave like Linux
+  export PATH="/opt/homebrew/opt/coreutils/libexec/gnubin:$PATH"
+  export PATH="/opt/homebrew/bin:$PATH"
+  export MANPATH="/opt/homebrew/opt/coreutils/libexec/gnuman:$MANPATH"
+  export LIBRARY_PATH="/opt/homebrew/lib:$LIBRARY_PATH"
+elif [[ -d /home/linuxbrew/.linuxbrew ]]; then
+  eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+fi
+if (( $+commands[brew] )); then
+  export HOMEBREW_NO_AUTO_UPDATE=1
+  export HOMEBREW_NO_ENV_HINTS=1
+  export HOMEBREW_NO_ANALYTICS=1
+  export HOMEBREW_BAT=1
+fi
 export PATH="$HOME/.cache/lm-studio/bin:$PATH"
 export PATH="$HOME/go/bin:$PATH"
 export PATH="$HOME/.cargo/bin:$PATH"
 export PATH="$HOME/.local/bin:$PATH"
-export MANPATH="/opt/homebrew/opt/coreutils/libexec/gnuman:$MANPATH"
-export LIBRARY_PATH=/opt/homebrew/lib:$LIBRARY_PATH
-export HOMEBREW_NO_AUTO_UPDATE=1
-export HOMEBREW_NO_ENV_HINTS=1
-export HOMEBREW_NO_ANALYTICS=1
-export HOMEBREW_BAT=1
 
-# editor
-export EDITOR="nvim"
+# ── command shims ───────────────────────────────────────────────────────────
+# Resolve a command to the first installed candidate so this config stays
+# portable where a tool is absent or renamed (Debian: bat→batcat, fd→fdfind;
+# macOS: BSD sed, GNU sed as gsed). Aliases the name to the winner when it
+# differs and records it in $BIN for the env vars below. No-op when none of the
+# candidates exist, so nothing ever resolves to a missing binary.
+typeset -gA BIN
+shim() {
+  local name=$1 cand
+  for cand in "${@:2}"; do
+    (( $+commands[$cand] )) || continue
+    BIN[$name]=$cand
+    [[ $cand != $name ]] && alias $name="$cand"
+    return 0
+  done
+}
 
-# aliases
-alias ls="ls --color=auto"
+shim cat bat        # macOS/cargo install; plain cat on a bare box
+shim sed gsed sed   # macOS: GNU sed as gsed; Linux sed is already GNU
+shim fd  fd fdfind  # Debian/Ubuntu package fd as fdfind
+
+# ── aliases ─────────────────────────────────────────────────────────────────
+# GNU ls uses --color=auto; BSD ls (macOS sans coreutils) uses -G
+if ls --color=auto -d . >/dev/null 2>&1; then
+  alias ls="ls --color=auto"
+else
+  alias ls="ls -G"
+fi
 alias l="ls"
 alias la="ls -la"
 alias lah="ls -lah"
 alias vim="nvim"
-alias cat="bat"
-alias sed="gsed"
 alias python=python3
 alias pip=pip3
 
@@ -43,7 +73,16 @@ alias yolo="claude --dangerously-skip-permissions"
 alias dcu="docker compose up"
 alias dcd="docker compose down"
 
-# history
+# ── environment ─────────────────────────────────────────────────────────────
+export EDITOR="nvim"
+export PYTHONBREAKPOINT=ipdb.set_trace
+export BAT_THEME="Catppuccin Mocha"
+export FZF_DEFAULT_OPTS="--height 40% --layout=reverse"
+[[ -n $BIN[fd] ]] && export FZF_DEFAULT_COMMAND="$BIN[fd] --type f --hidden --exclude .git"
+[[ -f ~/.config/ripgrep/config ]] && export RIPGREP_CONFIG_PATH="$HOME/.config/ripgrep/config"
+[[ -f ~/.local/share/lscolors.sh ]] && source ~/.local/share/lscolors.sh
+
+# ── shell options ───────────────────────────────────────────────────────────
 export HISTFILE=$HOME/.zsh_history
 export HISTSIZE=10000
 export SAVEHIST=10000
@@ -52,46 +91,33 @@ setopt hist_ignore_dups
 setopt hist_ignore_space
 setopt share_history
 
-# completion
 zstyle ':completion:*' matcher-list '' 'm:{a-zA-Z}={A-Za-z}' 'r:|=*' 'l:|=* r:|=*'
 autoload -Uz compinit && compinit
 
-# python debugging
-export PYTHONBREAKPOINT=ipdb.set_trace
-export BAT_THEME="Catppuccin Mocha"
-export FZF_DEFAULT_COMMAND="fd --type f --hidden --exclude .git"
-export FZF_DEFAULT_OPTS="--height 40% --layout=reverse"
-export RIPGREP_CONFIG_PATH="$HOME/.config/ripgrep/config"
-
-# ls colors
-[ -f ~/.local/share/lscolors.sh ] && source ~/.local/share/lscolors.sh
-
-# tool inits (guarded)
-command -v fnm      >/dev/null && eval "$(fnm env --use-on-cd)"
-command -v starship >/dev/null && eval "$(starship init zsh)"
-command -v rbenv    >/dev/null && eval "$(rbenv init - zsh)"
-# History navigation bindings (esp. over SSH where vi-insert default eats them).
-# Bound unconditionally so they work without atuin; atuin block below overrides ^R + ^P.
+# ── keybindings ─────────────────────────────────────────────────────────────
+# History navigation (esp. over SSH where vi-insert default eats them). Bound
+# unconditionally so they work without atuin; the atuin init below overrides ^R + ^P.
 bindkey '^P' up-line-or-history
 bindkey '^N' down-line-or-history
 bindkey '^R' history-incremental-search-backward
+
+# ── tool inits (guarded) ────────────────────────────────────────────────────
+command -v fnm      >/dev/null && eval "$(fnm env --use-on-cd)"
+command -v starship >/dev/null && eval "$(starship init zsh)"
+command -v rbenv    >/dev/null && eval "$(rbenv init - zsh)"
+command -v uv       >/dev/null && eval "$(uv generate-shell-completion zsh)"
+command -v zoxide   >/dev/null && eval "$(zoxide init zsh)"
 if command -v atuin >/dev/null; then
   eval "$(atuin init zsh)"
   bindkey '^P' atuin-up-search
 fi
-command -v uv       >/dev/null && eval "$(uv generate-shell-completion zsh)"
-command -v zoxide   >/dev/null && eval "$(zoxide init zsh)"
 
-# bun
-if [ -d "$HOME/.bun" ]; then
+if [[ -d "$HOME/.bun" ]]; then
   export BUN_INSTALL="$HOME/.bun"
   export PATH="$BUN_INSTALL/bin:$PATH"
-  [ -s "$HOME/.bun/_bun" ] && source "$HOME/.bun/_bun"
+  [[ -s "$HOME/.bun/_bun" ]] && source "$HOME/.bun/_bun"
 fi
 
-
-# machine-local config (paths, tools — not tracked in version control)
-[ -f ~/.local.zsh ] && source ~/.local.zsh
-
-# secrets (API keys, tokens — not tracked in version control)
-[ -f ~/.secrets.zsh ] && source ~/.secrets.zsh
+# ── machine-local (untracked) ───────────────────────────────────────────────
+[[ -f ~/.local.zsh ]]   && source ~/.local.zsh    # paths, tools
+[[ -f ~/.secrets.zsh ]] && source ~/.secrets.zsh  # API keys, tokens
