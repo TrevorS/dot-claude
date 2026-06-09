@@ -16,6 +16,14 @@ if (( $+commands[brew] )); then
   export HOMEBREW_NO_ENV_HINTS=1
   export HOMEBREW_NO_ANALYTICS=1
   export HOMEBREW_BAT=1
+  # macOS 27 preview ships /usr/bin/curl linked against LibreSSL 3.3.6, which
+  # throws `bad decrypt` (curl exit 56) mid-stream on HTTP/2 cask downloads.
+  # Prefer brewed curl (OpenSSL) when it's installed; the guard means brew never
+  # breaks if curl is absent, and this is harmless once system curl is fixed.
+  [[ -x ${${commands[brew]}:h:h}/opt/curl/bin/curl ]] && export HOMEBREW_FORCE_BREWED_CURL=1
+  # Same bug bites interactive curl — front the keg-only brewed curl so plain
+  # `curl` is the OpenSSL build too. (Uses OpenSSL's CA bundle, not Keychain.)
+  [[ -d ${${commands[brew]}:h:h}/opt/curl/bin ]] && export PATH="${${commands[brew]}:h:h}/opt/curl/bin:$PATH"
 fi
 export PATH="$HOME/.cache/lm-studio/bin:$PATH"
 export PATH="$HOME/go/bin:$PATH"
