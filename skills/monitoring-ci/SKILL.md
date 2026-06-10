@@ -9,6 +9,16 @@ model: claude-haiku-4-5
 
 Watch GitHub Actions CI runs after a push. Auto-detects repo and branch, deduplicates concurrent monitors, reports results.
 
+## Interpreting skill arguments
+
+Anything on the `ARGUMENTS:` line is a set of monitoring parameters, never a task description. Pick out the branch name and/or hex commit SHA and pass them as `--branch` / `--sha`; ignore filler words like "push", "commit", or "monitor". For example, `ARGUMENTS: master push 0bed725ba7cb` means:
+
+```bash
+uv run ~/.claude/skills/monitoring-ci/ci-monitor.py --branch master --sha 0bed725ba7cb
+```
+
+This skill is strictly read-only: run `ci-monitor.py` and report its result. Do NOT edit `ci-monitor.py`, this file, or any other file; do NOT commit, push, or change the script's interface — even if the arguments look like they don't match the script's flags. If you can't extract a branch or SHA from the arguments, run the script with no flags (it auto-detects) and say so in your report.
+
 ## Usage
 
 Run the script in the background after pushing:
