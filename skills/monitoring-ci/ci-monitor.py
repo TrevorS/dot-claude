@@ -6,11 +6,13 @@ Usage:
     ci-monitor.py [--branch BRANCH] [--timeout SECONDS]
 
 Detects repo root via jj or git, finds the latest CI run for the branch,
-and polls until completion. Exits 0 on success, 1 on failure, 2 on timeout.
+and polls until completion. Exits 0 on success, 1 on failure, 2 when the
+result is indeterminate (no run found, watch timeout, or gh API errors).
 """
 
 import argparse
 import json
+import os
 import subprocess
 import sys
 import time
@@ -43,18 +45,45 @@ def current_branch() -> str:
     return r.stdout.strip()
 
 
-def sentinel_path(name: str) -> Path:
-    return Path(f"/tmp/{name}-ci-monitor")
+def sentinel_path(name: str, sha: str | None) -> Path:
+    # Keyed by repo+sha so a monitor for one push never blocks a monitor for
+    # the next push to the same repo; repo-level only when sha is unknown.
+    suffix = f"-{sha[:12]}" if sha else ""
+    return Path(f"/tmp/{name}-ci-monitor{suffix}")
+
+
+def claim_sentinel(sentinel: Path, stale_after: int) -> bool:
+    """Atomically claim the sentinel; True if claimed, False if another live monitor holds it.
+
+    A sentinel older than stale_after is a leftover from a monitor that died
+    without cleanup (SIGKILL skips the finally) — take it over.
+    """
+    try:
+        age = time.time() - float(sentinel.read_text())
+    except FileNotFoundError:
+        age = None
+    except ValueError:
+        age = stale_after  # unreadable content — treat as stale
+    if age is not None:
+        if age < stale_after:
+            return False
+        sentinel.unlink(missing_ok=True)
+    try:
+        fd = os.open(sentinel, os.O_CREAT | os.O_EXCL | os.O_WRONLY)
+    except FileExistsError:
+        return False
+    with os.fdopen(fd, "w") as f:
+        f.write(str(time.time()))
+    return True
 
 
 def head_sha(branch: str) -> str | None:
     """Get the commit SHA that the branch currently points to."""
-    # Try jj first (bookmark may be on @-)
-    for rev in ("@", "@-"):
-        r = run(f"jj log -r '{rev}' --no-graph -T 'commit_id'")
-        if r.returncode == 0 and r.stdout.strip():
-            return r.stdout.strip()
-    # Fallback to git
+    # Resolve the branch/bookmark itself — NOT @/@-: in jj, @ is usually an
+    # empty working-copy commit whose sha has no CI run.
+    r = run(f"jj log -r '{branch}' --no-graph -T 'commit_id' 2>/dev/null")
+    if r.returncode == 0 and r.stdout.strip():
+        return r.stdout.strip()
     r = run(f"git rev-parse {branch}")
     if r.returncode == 0 and r.stdout.strip():
         return r.stdout.strip()
@@ -130,14 +159,14 @@ def find_run(branch: str, max_wait: int = 180, expected_sha: str | None = None) 
 
 
 def watch_run(run_id: str, poll_interval: int = 10, timeout: int = 1800) -> int:
-    """Poll a run's state until completion. Returns 0=success, 1=failure, 2=timeout.
+    """Poll a run's state until completion. Returns 0=success, 1=failure, 2=indeterminate.
 
     Replaces `gh run watch --exit-status`, which crashes hard on transient
     network errors (TCP resets are common over long watches) and doesn't
     distinguish a watch error from a run failure. With direct polling, a
     one-off API hiccup just delays detection by one poll interval instead of
     falsely reporting a CI failure. Tolerates up to ~1 min of consecutive API
-    errors before giving up.
+    errors before giving up with 2 (indeterminate, NOT a CI failure).
     """
     deadline = time.time() + timeout
     consecutive_errors = 0
@@ -147,7 +176,7 @@ def watch_run(run_id: str, poll_interval: int = 10, timeout: int = 1800) -> int:
             consecutive_errors += 1
             if consecutive_errors * poll_interval > 60:
                 print(f"  gh run view failing repeatedly: {r.stderr.strip()}")
-                return 1
+                return 2
             time.sleep(poll_interval)
             continue
         consecutive_errors = 0
@@ -181,35 +210,47 @@ def main() -> int:
 
     name = repo_name()
     branch = args.branch or current_branch()
-    sentinel = sentinel_path(name)
 
     if not branch:
         print("ERROR: Could not detect branch")
         return 1
 
-    if sentinel.exists():
-        print(f"CI monitor already active for {name}")
+    sha = args.sha or head_sha(branch)
+    watch_timeout = 1800
+    sentinel = sentinel_path(name, sha)
+
+    # Stale = older than the longest a healthy monitor can possibly live.
+    if not claim_sentinel(sentinel, stale_after=args.timeout + watch_timeout + 120):
+        print(f"CI monitor already active for {name} @ {sha[:12] if sha else branch}")
         return 0
 
-    sentinel.write_text(str(time.time()))
-
     try:
-        sha = args.sha or head_sha(branch)
         print(f"Watching CI for {name} @ {branch} (sha: {sha or 'unknown'}) ...")
 
         run_id = find_run(branch, max_wait=args.timeout, expected_sha=sha)
         if not run_id:
-            print(f"No CI run found for branch {branch} after polling")
-            return 0
+            print(
+                f"INDETERMINATE: no CI run found for {branch}"
+                f"{f' @ {sha[:12]}' if sha else ''} after {args.timeout}s — "
+                f"check manually: gh run list --limit 10"
+            )
+            return 2
 
         print(f"Found run {run_id} — watching ...")
-        exit_code = watch_run(run_id)
+        exit_code = watch_run(run_id, timeout=watch_timeout)
 
-        if exit_code != 0:
+        if exit_code == 1:
             print(f"\nCI FAILED (run {run_id})\n")
             logs = fetch_failed_logs(run_id)
             print(logs)
             return 1
+
+        if exit_code == 2:
+            print(
+                f"\nINDETERMINATE: run {run_id} still not complete — "
+                f"check manually: gh run view {run_id}"
+            )
+            return 2
 
         print(f"\nCI PASSED (run {run_id})")
         return 0

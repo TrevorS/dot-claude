@@ -52,7 +52,7 @@ Use `run_in_background: true` so it doesn't block the conversation. Tell the use
 ## Features
 
 - **Auto-detects branch**: jj bookmarks first, falls back to git
-- **Deduplicates**: sentinel file at `/tmp/{repo}-ci-monitor` prevents double-watching
+- **Deduplicates per push**: sentinel at `/tmp/{repo}-ci-monitor-{sha12}` prevents double-watching the *same* push, while monitors for different pushes coexist; stale sentinels (dead monitor) are taken over automatically
 - **Polls for run**: waits up to 180s for a CI run to appear on the branch (configurable via `--timeout`); sleeps 5s first so GitHub has time to register the run
 - **Watches until done**: polls `gh run view --json status,conclusion` every 10s — a transient API error delays detection by one poll instead of crashing the watcher (which is what `gh run watch` does on a TCP reset)
 - **Reports failure logs**: on failure, fetches `gh run view --log-failed` (last 3000 chars)
@@ -60,8 +60,9 @@ Use `run_in_background: true` so it doesn't block the conversation. Tell the use
 
 ## Exit Codes
 
-- `0` — CI passed (or no run found)
+- `0` — CI passed (or another monitor already active for this push)
 - `1` — CI failed (logs printed)
+- `2` — indeterminate: no run found, watch timed out, or gh API kept erroring. NOT a pass — report the manual-check command from the output.
 
 ## Requirements
 
