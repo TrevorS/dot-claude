@@ -28,6 +28,7 @@ fi
 export PATH="$HOME/.cache/lm-studio/bin:$PATH"
 export PATH="$HOME/go/bin:$PATH"
 export PATH="$HOME/.cargo/bin:$PATH"
+export PATH="$HOME/.luarocks/bin:$PATH"
 export PATH="$HOME/.local/bin:$PATH"
 
 # ── command shims ───────────────────────────────────────────────────────────

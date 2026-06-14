@@ -98,13 +98,16 @@ def install_apt(upgrade: bool) -> None:
 
 
 def luarocks_flags() -> list[str]:
+    # --local installs into the user tree (~/.luarocks) instead of the system
+    # tree (/opt/homebrew), which avoids sudo. Ensure ~/.luarocks/bin is on PATH.
+    flags = ["--local"]
     if not shutil.which("brew"):
-        return []
+        return flags
     result = run(["brew", "--prefix", "lua@5.4"])
     lua_dir = result.stdout.strip()
     if lua_dir and Path(lua_dir).is_dir():
-        return [f"--lua-dir={lua_dir}"]
-    return []
+        flags.append(f"--lua-dir={lua_dir}")
+    return flags
 
 
 def install_luarocks(upgrade: bool) -> None:
@@ -121,13 +124,13 @@ def install_luarocks(upgrade: bool) -> None:
     for pkg in packages:
         if upgrade:
             print(f"Upgrading luarock {pkg}...")
-            subprocess.run(["sudo", "luarocks", *flags, "install", "--force", pkg])
+            subprocess.run(["luarocks", *flags, "install", "--force", pkg])
             continue
         check = run(["luarocks", *flags, "show", pkg])
         if check.returncode == 0:
             continue
         print(f"Installing luarock {pkg}...")
-        subprocess.run(["sudo", "luarocks", *flags, "install", pkg])
+        subprocess.run(["luarocks", *flags, "install", pkg])
 
 
 def cargo_installed() -> set[str]:
