@@ -1,5 +1,15 @@
 # Homebrew packages (macOS)
 # One package per line. Comments and blank lines are ignored.
+
+# macOS 27 beta ships system curl + ssh linked against LibreSSL 3.3.6, whose
+# libcrypto intermittently corrupts AEAD streams: curl throws `bad decrypt`
+# (exit 56) mid-HTTP/2, ssh drops with corrupted-MAC errors. These brewed
+# builds link OpenSSL 3.x instead and front /usr/bin in PATH, sidestepping it.
+# Remove once Apple ships a fixed LibreSSL. (curl is keg-only — see zshrc PATH
+# block; openssh is not keg-only so /opt/homebrew/bin/ssh wins automatically.)
+curl
+openssh
+
 coreutils
 fd
 fzf
