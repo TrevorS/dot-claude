@@ -83,3 +83,4 @@ channels/
 daemon/
 jobs/
 daemon.*
+daemon-*
