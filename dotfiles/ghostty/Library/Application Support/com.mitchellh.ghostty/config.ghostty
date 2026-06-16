@@ -24,8 +24,21 @@ window-padding-balance = true
 mouse-hide-while-typing = true
 scrollback-limit = 100000
 
+# Shell integration — keep Ghostty defaults but add SSH support so remote hosts
+# get the ghostty terminfo auto-installed (ssh-terminfo) and a sane TERM
+# fallback (ssh-env). Fixes "unknown terminal type xterm-ghostty" / garbled
+# rendering when SSHing into boxes that don't have ghostty's terminfo.
+shell-integration-features = cursor,no-sudo,title,path,ssh-env,ssh-terminfo
+
 # Keybinds
 keybind = shift+enter=text:\n
+# Reset the terminal to a clean state — clears stuck mouse-reporting / alt-screen
+# state left behind when a TUI dies uncleanly (SSH drop, crash). Heavier sibling
+# of the default super+k (clear_screen).
+keybind = super+shift+r=reset
+# System-wide drop-down terminal (needs macOS Accessibility permission).
+# ctrl+` instead of super+` to avoid the macOS cmd+` window-cycle.
+keybind = global:ctrl+backquote=toggle_quick_terminal
 
 # Machine-local overrides (fonts, window size, etc.)
 config-file = ?~/.local/ghostty-overrides
