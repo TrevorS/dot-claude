@@ -27,6 +27,11 @@ if (( $+commands[brew] )); then
 fi
 export PATH="$HOME/.cache/lm-studio/bin:$PATH"
 export PATH="$HOME/go/bin:$PATH"
+# CUDA toolkit (nvcc) — installed at /usr/local/cuda but not on PATH by default
+if [[ -d /usr/local/cuda/bin ]]; then
+  export PATH="/usr/local/cuda/bin:$PATH"
+  export LD_LIBRARY_PATH="/usr/local/cuda/lib64${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+fi
 export PATH="$HOME/.cargo/bin:$PATH"
 export PATH="$HOME/.luarocks/bin:$PATH"
 export PATH="$HOME/.local/bin:$PATH"
