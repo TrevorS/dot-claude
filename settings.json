@@ -15,6 +15,7 @@
     "MCP_CONNECTION_NONBLOCKING": "1"
   },
   "includeCoAuthoredBy": false,
+  "attribution": { "sessionUrl": false },
   "permissions": {
     "allow": [
       "Bash(brew install:*)",
@@ -121,6 +122,37 @@
     "defaultMode": "auto"
   },
   "model": "opus[1m]",
+  "fallbackModel": ["sonnet[1m]", "claude-haiku-4-5-20251001"],
+  "sandbox": {
+    "enabled": true,
+    "excludedCommands": ["docker *", "brew *"],
+    "filesystem": {
+      "allowWrite": ["~/.cargo", "~/.cache", "~/.local/share/uv", "~/.npm", "~/.bun"]
+    },
+    "network": {
+      "allowedDomains": [
+        "github.com",
+        "*.github.com",
+        "crates.io",
+        "registry.npmjs.org",
+        "api.anthropic.com",
+        "platform.claude.com"
+      ]
+    },
+    "credentials": {
+      "files": [
+        { "path": "~/.ssh", "mode": "deny" },
+        { "path": "~/.aws", "mode": "deny" },
+        { "path": "~/.env", "mode": "deny" }
+      ],
+      "envVars": [
+        { "name": "GITHUB_TOKEN", "mode": "deny" },
+        { "name": "NPM_TOKEN", "mode": "deny" }
+      ]
+    },
+    "allowAppleEvents": true,
+    "allowUnsandboxedCommands": true
+  },
   "hooks": {
     "Notification": [
       {
