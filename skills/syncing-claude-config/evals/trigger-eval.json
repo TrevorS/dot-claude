@@ -1,0 +1,16 @@
+{
+  "skill": "syncing-claude-config",
+  "cases": [
+    { "query": "claude code just updated, sync my config", "should_trigger": true },
+    { "query": "what's new in the latest claude code release that I should adopt?", "should_trigger": true },
+    { "query": "did the new version add any settings I'm missing?", "should_trigger": true },
+    { "query": "check my config against the latest claude code", "should_trigger": true },
+    { "query": "are there new config features since my baseline?", "should_trigger": true },
+    { "query": "bump my config to the current claude code version", "should_trigger": true },
+    { "query": "audit my settings.json for dead permissions", "should_trigger": false },
+    { "query": "why isn't my pre-commit hook firing?", "should_trigger": false },
+    { "query": "organize my rules directory", "should_trigger": false },
+    { "query": "write a new skill for me", "should_trigger": false },
+    { "query": "what version of claude code am I running?", "should_trigger": false }
+  ]
+}

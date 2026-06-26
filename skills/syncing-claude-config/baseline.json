@@ -1,0 +1,45 @@
+{
+  "claudeCodeVersion": "2.1.193",
+  "syncedDate": "2026-06-26",
+  "source": "https://api.github.com/repos/anthropics/claude-code/releases",
+  "adopted": [
+    {
+      "feature": "fallbackModel",
+      "surface": "settings.json key",
+      "introducedVersion": "2.1.166",
+      "adoptedDate": "2026-06-26",
+      "value": ["sonnet[1m]", "claude-haiku-4-5-20251001"],
+      "note": "first hop sonnet[1m] preserves 1M context + thinking (alwaysThinkingEnabled); haiku is availability-of-last-resort"
+    },
+    {
+      "feature": "attribution.sessionUrl",
+      "surface": "settings.json key",
+      "introducedVersion": "2.1.183",
+      "adoptedDate": "2026-06-26",
+      "value": false,
+      "note": "matches includeCoAuthoredBy:false; only affects web/Remote Control commits"
+    },
+    {
+      "feature": "sandbox (enabled + credentials + allowAppleEvents)",
+      "surface": "settings.json key",
+      "introducedVersion": "2.1.181",
+      "adoptedDate": "2026-06-26",
+      "status": "one-week trial",
+      "note": "Seatbelt sandbox; docker+brew excluded, creds hardened, allowAppleEvents:true for notify hooks (weakens isolation). Rollback: enabled:false"
+    }
+  ],
+  "declined": [
+    { "feature": "respondToBashCommands", "reason": "kept new auto-respond default; fits !+/copy flow" },
+    { "feature": "autoMode.classifyAllShell", "reason": "would drop ~30-entry allow-list from classifier view, adds friction" },
+    { "feature": "Tool(param:value) permission migration", "reason": "Bash command field can't use param syntax; glob form already correct" },
+    { "feature": "footerLinksRegexes", "reason": "cosmetic footer badges, no fit" },
+    { "feature": "language", "reason": "English default sufficient" },
+    { "feature": "wheelScrollAccelerationEnabled", "reason": "UI polish, no need" },
+    { "feature": "output-styles for status-marks", "reason": "category error; styles change role/tone not markdown enforcement" },
+    { "feature": "disableBundledSkills", "reason": "actively uses /code-review,/batch,/run; no collisions" }
+  ],
+  "deferred": [
+    { "feature": "PostToolUseFailure hook", "status": "optional/future", "note": "wire when failure-specific handling wanted" },
+    { "feature": "CLAUDE_CLIENT_PRESENCE_FILE", "status": "optional/future", "note": "only if mobile push storms at the headless mac mini" }
+  ]
+}
