@@ -124,7 +124,7 @@
   "model": "opus[1m]",
   "fallbackModel": ["sonnet[1m]", "claude-haiku-4-5-20251001"],
   "sandbox": {
-    "enabled": true,
+    "enabled": false,
     "excludedCommands": ["docker *", "brew *"],
     "filesystem": {
       "allowWrite": ["~/.cargo", "~/.cache", "~/.local/share/uv", "~/.npm", "~/.bun"]
