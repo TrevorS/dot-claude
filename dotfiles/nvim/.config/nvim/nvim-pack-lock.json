@@ -1,7 +1,7 @@
 {
   "plugins": {
     "mini.nvim": {
-      "rev": "c248713d3530710f67ec804cfbdfcd5b02b19dee",
+      "rev": "dc8a9918c3b1bc18a5fcd04d39b6d658074c0886",
       "src": "https://github.com/nvim-mini/mini.nvim"
     },
     "nvim": {
@@ -17,7 +17,7 @@
       "src": "https://github.com/stevearc/oil.nvim"
     },
     "smart-splits.nvim": {
-      "rev": "c02d70257e5d6065d4154acd596ec8054a725724",
+      "rev": "0e5bc00d2a32e6c782cd279cb96ab6c7ae49cd94",
       "src": "https://github.com/mrjones2014/smart-splits.nvim"
     }
   }
