@@ -14,8 +14,10 @@
     "JJ_EDITOR": "/Users/trevor/.claude/hooks/jj-reject-editor.sh",
     "MCP_CONNECTION_NONBLOCKING": "1"
   },
+  "attribution": {
+    "sessionUrl": false
+  },
   "includeCoAuthoredBy": false,
-  "attribution": { "sessionUrl": false },
   "permissions": {
     "allow": [
       "Bash(brew install:*)",
@@ -122,37 +124,10 @@
     "defaultMode": "auto"
   },
   "model": "opus[1m]",
-  "fallbackModel": ["sonnet[1m]", "claude-haiku-4-5-20251001"],
-  "sandbox": {
-    "enabled": false,
-    "excludedCommands": ["docker *", "brew *"],
-    "filesystem": {
-      "allowWrite": ["~/.cargo", "~/.cache", "~/.local/share/uv", "~/.npm", "~/.bun"]
-    },
-    "network": {
-      "allowedDomains": [
-        "github.com",
-        "*.github.com",
-        "crates.io",
-        "registry.npmjs.org",
-        "api.anthropic.com",
-        "platform.claude.com"
-      ]
-    },
-    "credentials": {
-      "files": [
-        { "path": "~/.ssh", "mode": "deny" },
-        { "path": "~/.aws", "mode": "deny" },
-        { "path": "~/.env", "mode": "deny" }
-      ],
-      "envVars": [
-        { "name": "GITHUB_TOKEN", "mode": "deny" },
-        { "name": "NPM_TOKEN", "mode": "deny" }
-      ]
-    },
-    "allowAppleEvents": true,
-    "allowUnsandboxedCommands": true
-  },
+  "fallbackModel": [
+    "sonnet[1m]",
+    "claude-haiku-4-5-20251001"
+  ],
   "hooks": {
     "Notification": [
       {
@@ -240,6 +215,60 @@
     }
   },
   "forceLoginMethod": "claudeai",
+  "sandbox": {
+    "enabled": false,
+    "allowUnsandboxedCommands": true,
+    "network": {
+      "allowedDomains": [
+        "github.com",
+        "*.github.com",
+        "crates.io",
+        "registry.npmjs.org",
+        "api.anthropic.com",
+        "platform.claude.com"
+      ]
+    },
+    "filesystem": {
+      "allowWrite": [
+        "~/.cargo",
+        "~/.cache",
+        "~/.local/share/uv",
+        "~/.npm",
+        "~/.bun"
+      ]
+    },
+    "credentials": {
+      "files": [
+        {
+          "path": "~/.ssh",
+          "mode": "deny"
+        },
+        {
+          "path": "~/.aws",
+          "mode": "deny"
+        },
+        {
+          "path": "~/.env",
+          "mode": "deny"
+        }
+      ],
+      "envVars": [
+        {
+          "name": "GITHUB_TOKEN",
+          "mode": "deny"
+        },
+        {
+          "name": "NPM_TOKEN",
+          "mode": "deny"
+        }
+      ]
+    },
+    "allowAppleEvents": true,
+    "excludedCommands": [
+      "docker *",
+      "brew *"
+    ]
+  },
   "alwaysThinkingEnabled": true,
   "autoDreamEnabled": true,
   "showThinkingSummaries": true,
