@@ -1,0 +1,427 @@
+#!/usr/bin/env -S uv run --script
+# /// script
+# requires-python = ">=3.10"
+# dependencies = [
+#   "huggingface_hub>=0.30",
+#   "textual>=1.0",
+# ]
+# ///
+"""hfcache — a tiny TUI to view and prune the Hugging Face cache.
+
+Keys: ↑/↓ or j/k move · g/G top/bottom · space mark · a mark-all · c clear
+      s cycle sort · d delete marked · enter revisions · l log · r rescan · q quit
+"""
+from __future__ import annotations
+
+import logging
+import os
+from dataclasses import dataclass
+from datetime import datetime
+
+from huggingface_hub import scan_cache_dir
+from huggingface_hub.utils import CacheNotFound, CachedRepoInfo, HFCacheInfo
+from textual import work
+from textual.app import App, ComposeResult
+from textual.binding import Binding
+from textual.containers import Center, Middle
+from textual.screen import ModalScreen
+from textual.widgets import DataTable, Footer, Header, Label, LoadingIndicator, RichLog
+
+SORTS = ("size", "name", "accessed")
+
+# huggingface_hub logs deletion progress + swallowed permission/not-found errors
+# through this logger. We capture it so failures surface instead of vanishing.
+HF_LOGGER = "huggingface_hub"
+
+
+def human(n: int) -> str:
+    f = float(n)
+    for unit in ("B", "K", "M", "G", "T", "P"):
+        if f < 1024 or unit == "P":
+            return f"{f:.0f}{unit}" if unit == "B" else f"{f:5.1f}{unit}"
+        f /= 1024
+    return f"{f:.1f}P"
+
+
+def dir_size(path: str) -> int:
+    total = 0
+    for root, _dirs, files in os.walk(path):
+        for name in files:
+            try:
+                total += os.lstat(os.path.join(root, name)).st_size
+            except OSError:
+                pass
+    return total
+
+
+class AppLogHandler(logging.Handler):
+    """Route huggingface_hub log records into the app's log panel.
+
+    When ``capture`` is a list, WARNING+ records (the swallowed permission /
+    not-found errors from ``_try_delete_path``) are also collected so a delete
+    can report exactly what failed.
+    """
+
+    def __init__(self, app: "HFCache") -> None:
+        super().__init__()
+        self.app = app
+        self.capture: list[str] | None = None
+
+    def emit(self, record: logging.LogRecord) -> None:
+        try:
+            msg = record.getMessage()
+        except Exception:
+            return
+        if self.capture is not None and record.levelno >= logging.WARNING:
+            self.capture.append(msg)
+        try:
+            self.app.call_from_thread(self.app.log_line, msg, record.levelno)
+        except Exception:
+            pass  # app loop not running / called from its own thread
+
+
+class VimDataTable(DataTable):
+    """DataTable with vim-style j/k/g/G navigation on top of the arrows."""
+
+    BINDINGS = [
+        Binding("j", "cursor_down", show=False),
+        Binding("k", "cursor_up", show=False),
+        Binding("g", "top", show=False),
+        Binding("G", "bottom", show=False),
+    ]
+
+    def action_top(self) -> None:
+        if self.row_count:
+            self.move_cursor(row=0)
+
+    def action_bottom(self) -> None:
+        if self.row_count:
+            self.move_cursor(row=self.row_count - 1)
+
+
+@dataclass
+class Scan:
+    info: HFCacheInfo
+    repos: list[CachedRepoInfo]
+    xet_size: int
+
+
+class ConfirmDelete(ModalScreen[bool]):
+    BINDINGS = [
+        Binding("y", "confirm", "Yes"),
+        Binding("n,escape", "cancel", "No"),
+    ]
+
+    def __init__(self, count: int, freed: str) -> None:
+        super().__init__()
+        self._count = count
+        self._freed = freed
+
+    def compose(self) -> ComposeResult:
+        with Middle(), Center():
+            yield Label(
+                f"Delete {self._count} repo(s), freeing {self._freed}?\n\n"
+                "[b]y[/b] confirm    [b]n[/b] cancel",
+                id="confirm-box",
+            )
+
+    def action_confirm(self) -> None:
+        self.dismiss(True)
+
+    def action_cancel(self) -> None:
+        self.dismiss(False)
+
+
+class Revisions(ModalScreen[None]):
+    BINDINGS = [Binding("escape,q,enter", "dismiss", "Close")]
+
+    def __init__(self, repo: CachedRepoInfo) -> None:
+        super().__init__()
+        self._repo = repo
+
+    def compose(self) -> ComposeResult:
+        table = VimDataTable(id="rev-table", cursor_type="row")
+        table.add_columns("commit", "size", "files", "modified", "refs")
+        for rev in sorted(self._repo.revisions, key=lambda r: r.size_on_disk, reverse=True):
+            table.add_row(
+                rev.commit_hash[:12],
+                human(rev.size_on_disk),
+                str(rev.nb_files),
+                rev.last_modified_str,
+                ", ".join(sorted(rev.refs)) or "—",
+            )
+        yield Label(f" {self._repo.repo_id}  —  {len(self._repo.revisions)} revision(s)   (esc to close)")
+        yield table
+
+    def action_dismiss(self) -> None:
+        self.dismiss(None)
+
+
+class HFCache(App):
+    CSS = """
+    #confirm-box { padding: 1 3; border: round $warning; background: $surface; }
+    LoadingIndicator { height: 100%; }
+    #rev-table { height: 1fr; }
+    DataTable { height: 1fr; }
+    #log { height: 10; border-top: solid $primary; background: $panel; display: none; }
+    #log.-visible { display: block; }
+    #error { padding: 1 2; color: $error; }
+    """
+    BINDINGS = [
+        Binding("space", "mark", "mark"),
+        Binding("a", "mark_all", "mark all"),
+        Binding("c", "clear", "clear"),
+        Binding("s", "sort", "sort"),
+        Binding("d", "delete", "delete"),
+        Binding("enter", "revisions", "revisions"),
+        Binding("l", "log", "log"),
+        Binding("r", "rescan", "rescan"),
+        Binding("q", "quit", "quit"),
+    ]
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.scan: Scan | None = None
+        self.marked: set[str] = set()
+        self.sort = "size"
+        self.rows: list[CachedRepoInfo] = []
+        self._handler: AppLogHandler | None = None
+
+    def compose(self) -> ComposeResult:
+        yield Header(show_clock=True)
+        yield LoadingIndicator()
+        yield RichLog(id="log", markup=True, wrap=True, max_lines=2000)
+        yield Footer()
+
+    def on_mount(self) -> None:
+        self.title = "hfcache"
+        log = self.query_one("#log", RichLog)
+        log.border_title = "activity log"
+        log.border_subtitle = "l to hide"
+        # Capture huggingface_hub's logger so deletion progress and the
+        # permission/not-found errors it swallows both reach the log panel.
+        self._handler = AppLogHandler(self)
+        hf_log = logging.getLogger(HF_LOGGER)
+        hf_log.addHandler(self._handler)
+        if hf_log.level == logging.NOTSET or hf_log.level > logging.INFO:
+            hf_log.setLevel(logging.INFO)
+        self.do_scan()
+
+    def log_line(self, text: str, level: int = logging.INFO) -> None:
+        glyph, color = {
+            logging.WARNING: ("!", "yellow"),
+            logging.ERROR: ("✗", "red bold"),
+            logging.CRITICAL: ("✗", "red bold"),
+        }.get(level, ("·", "cyan"))
+        ts = datetime.now().strftime("%H:%M:%S")
+        try:
+            self.query_one("#log", RichLog).write(f"[dim]{ts}[/] [{color}]{glyph}[/] {text}")
+        except Exception:
+            pass
+
+    # ---- scanning -----------------------------------------------------------
+    @work(thread=True, exclusive=True)
+    def do_scan(self) -> None:
+        self.call_from_thread(self.log_line, "Scanning cache…")
+        try:
+            info = scan_cache_dir()
+        except CacheNotFound:
+            self.call_from_thread(self._on_scan_error, "No Hugging Face cache found — nothing to manage.")
+            return
+        except Exception as exc:  # unreadable cache root, etc.
+            self.call_from_thread(self._on_scan_error, f"Scan failed: {exc!r}")
+            return
+        repos = list(info.repos)
+        xet_root = os.path.expanduser("~/.cache/huggingface/xet")
+        try:
+            xet_size = dir_size(xet_root) if os.path.isdir(xet_root) else 0
+        except OSError:
+            xet_size = 0
+        self.call_from_thread(self._on_scan, Scan(info, repos, xet_size))
+
+    def _on_scan_error(self, message: str) -> None:
+        try:
+            self.query_one(LoadingIndicator).remove()
+        except Exception:
+            pass
+        if not self.query("#error"):
+            self.mount(Label(message, id="error"), before=self.query_one(Footer))
+        else:
+            self.query_one("#error", Label).update(message)
+        self.log_line(message, logging.ERROR)
+        self.notify(message, severity="error", timeout=10)
+
+    def _on_scan(self, scan: Scan) -> None:
+        self.scan = scan
+        self.marked.clear()
+        for stale in ("LoadingIndicator", "#error"):
+            for w in self.query(stale):
+                w.remove()
+        if self.query("DataTable"):
+            table = self.query_one(DataTable)
+        else:
+            table = VimDataTable(cursor_type="row", zebra_stripes=True)
+            table.add_columns(" ", "type", "repo", "size", "files", "accessed", "refs")
+            self.mount(table, before=self.query_one("#log", RichLog))
+        self.populate()
+        table.focus()
+        self.log_line(f"Scanned: {len(scan.repos)} repos, {human(sum(r.size_on_disk for r in scan.repos))} managed.")
+        if scan.info.warnings:
+            self.log_line(f"{len(scan.info.warnings)} repo(s) could not be parsed during scan:", logging.WARNING)
+            for w in scan.info.warnings[:20]:
+                self.log_line(f"  · {w}", logging.WARNING)
+            self.notify(
+                f"{len(scan.info.warnings)} corrupted/unreadable repo(s) skipped — press 'l' for details",
+                severity="warning", timeout=8,
+            )
+
+    def populate(self) -> None:
+        if not self.scan:
+            return
+        table = self.query_one(DataTable)
+        prev = table.cursor_row
+        table.clear()
+        if self.sort == "size":
+            self.rows = sorted(self.scan.repos, key=lambda r: r.size_on_disk, reverse=True)
+        elif self.sort == "name":
+            self.rows = sorted(self.scan.repos, key=lambda r: r.repo_id.lower())
+        else:
+            self.rows = sorted(self.scan.repos, key=lambda r: r.last_accessed)
+        for repo in self.rows:
+            mark = "[b green]✓[/]" if repo.repo_id in self.marked else " "
+            kind = "ds" if repo.repo_type == "dataset" else repo.repo_type[:5]
+            table.add_row(
+                mark, kind, repo.repo_id, human(repo.size_on_disk),
+                str(repo.nb_files), repo.last_accessed_str,
+                ", ".join(sorted(repo.refs)) or "—",
+                key=repo.repo_id,
+            )
+        if self.rows:
+            table.move_cursor(row=min(prev, len(self.rows) - 1))
+        self._update_subtitle()
+
+    def _update_subtitle(self) -> None:
+        if not self.scan:
+            return
+        total = sum(r.size_on_disk for r in self.scan.repos)
+        marked_size = sum(r.size_on_disk for r in self.scan.repos if r.repo_id in self.marked)
+        parts = [
+            f"{len(self.scan.repos)} repos",
+            f"{human(total)} managed",
+            f"xet {human(self.scan.xet_size)}",
+            f"sort:{self.sort}",
+        ]
+        if self.marked:
+            parts.append(f"[b green]marked {len(self.marked)} · {human(marked_size)}[/]")
+        self.sub_title = "   ".join(parts)
+
+    # ---- current row --------------------------------------------------------
+    def _current(self) -> CachedRepoInfo | None:
+        table = self.query_one(DataTable)
+        if not self.rows or table.cursor_row is None:
+            return None
+        return self.rows[table.cursor_row]
+
+    # ---- actions ------------------------------------------------------------
+    def action_mark(self) -> None:
+        repo = self._current()
+        if not repo:
+            return
+        if repo.repo_id in self.marked:
+            self.marked.discard(repo.repo_id)
+        else:
+            self.marked.add(repo.repo_id)
+        table = self.query_one(DataTable)
+        row = table.cursor_row
+        mark = "[b green]✓[/]" if repo.repo_id in self.marked else " "
+        table.update_cell_at((row, 0), mark)
+        table.move_cursor(row=min(row + 1, len(self.rows) - 1))
+        self._update_subtitle()
+
+    def action_mark_all(self) -> None:
+        self.marked = {r.repo_id for r in self.rows}
+        self.populate()
+
+    def action_clear(self) -> None:
+        self.marked.clear()
+        self.populate()
+
+    def action_sort(self) -> None:
+        self.sort = SORTS[(SORTS.index(self.sort) + 1) % len(SORTS)]
+        self.populate()
+
+    def action_revisions(self) -> None:
+        repo = self._current()
+        if repo:
+            self.push_screen(Revisions(repo))
+
+    def action_log(self) -> None:
+        self.query_one("#log", RichLog).toggle_class("-visible")
+
+    def action_rescan(self) -> None:
+        self.do_scan()
+
+    def action_delete(self) -> None:
+        if not self.scan or not self.marked:
+            self.notify("Nothing marked", severity="warning")
+            return
+        hashes: list[str] = []
+        labels: list[str] = []
+        for repo in self.scan.repos:
+            if repo.repo_id in self.marked:
+                labels.append(repo.repo_id)
+                hashes += [rev.commit_hash for rev in repo.revisions]
+        strategy = self.scan.info.delete_revisions(*hashes)
+
+        def on_confirm(ok: bool | None) -> None:
+            if ok:
+                self._do_delete(strategy, labels)
+
+        self.push_screen(
+            ConfirmDelete(len(self.marked), strategy.expected_freed_size_str), on_confirm
+        )
+
+    @work(thread=True)
+    def _do_delete(self, strategy, labels: list[str]) -> None:
+        expected = strategy.expected_freed_size_str
+        # Paths the strategy will touch — checked afterwards to catch the
+        # PermissionError/FileNotFoundError that execute() logs but swallows.
+        paths = list(strategy.repos) + list(strategy.snapshots) + list(strategy.refs) + list(strategy.blobs)
+        self.call_from_thread(self.log_line, f"Deleting {len(labels)} repo(s) (expect to free {expected}): {', '.join(labels)}")
+        assert self._handler is not None
+        self._handler.capture = []
+        error: Exception | None = None
+        try:
+            strategy.execute()
+        except Exception as exc:  # propagating errors: ENOSPC, read-only FS, dir-not-empty…
+            error = exc
+        warnings = self._handler.capture or []
+        self._handler.capture = None
+        try:
+            remaining = sum(1 for p in paths if p.exists())
+        except OSError:
+            remaining = 0
+
+        def report() -> None:
+            if error is not None:
+                self.log_line(f"Delete aborted: {error!r}", logging.ERROR)
+                self.notify(f"Delete failed: {error}", severity="error", timeout=12)
+            elif warnings or remaining:
+                n = len(warnings) or remaining
+                self.log_line(
+                    f"Partial delete — {len(warnings)} error(s) logged, {remaining} path(s) still present. "
+                    "Likely a permission problem (root-owned files? try sudo).",
+                    logging.ERROR,
+                )
+                self.query_one("#log", RichLog).add_class("-visible")
+                self.notify(f"Partial delete — {n} item(s) could not be removed (log opened)", severity="error", timeout=12)
+            else:
+                self.log_line(f"Deleted OK — freed {expected}.")
+                self.notify(f"Freed {expected}")
+
+        self.call_from_thread(report)
+        self.call_from_thread(self.do_scan)
+
+
+if __name__ == "__main__":
+    HFCache().run()
