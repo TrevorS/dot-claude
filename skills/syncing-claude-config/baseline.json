@@ -1,6 +1,6 @@
 {
-  "claudeCodeVersion": "2.1.193",
-  "syncedDate": "2026-06-26",
+  "claudeCodeVersion": "2.1.201",
+  "syncedDate": "2026-07-06",
   "source": "https://api.github.com/repos/anthropics/claude-code/releases",
   "adopted": [
     {
@@ -26,6 +26,22 @@
       "adoptedDate": "2026-06-26",
       "status": "one-week trial",
       "note": "Seatbelt sandbox; docker+brew excluded, creds hardened, allowAppleEvents:true for notify hooks (weakens isolation). Rollback: enabled:false"
+    },
+    {
+      "feature": "CLAUDE_CODE_RETRY_WATCHDOG",
+      "surface": "env var",
+      "introducedVersion": "2.1.199",
+      "adoptedDate": "2026-07-06",
+      "value": "1",
+      "note": "raises transient-error retries to 300 for unattended sessions (loops, scheduled/background agents); supersedes CLAUDE_CODE_MAX_RETRIES cap of 15"
+    },
+    {
+      "feature": "askUserQuestionTimeout",
+      "surface": "settings.json key",
+      "introducedVersion": "2.1.200",
+      "adoptedDate": "2026-07-06",
+      "value": "5m",
+      "note": "2.1.200 flipped AskUserQuestion to never auto-continue by default; 5m restores auto-continue so unattended sessions don't hang, while leaving time to answer when present. Enum: 60s|5m|10m|never"
     }
   ],
   "declined": [
