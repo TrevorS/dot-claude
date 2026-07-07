@@ -19,7 +19,6 @@
     "sessionUrl": false
   },
   "includeCoAuthoredBy": false,
-  "askUserQuestionTimeout": "5m",
   "permissions": {
     "allow": [
       "Bash(brew install:*)",
@@ -191,6 +190,9 @@
       }
     ]
   },
+  "worktree": {
+    "baseRef": "fresh"
+  },
   "statusLine": {
     "type": "command",
     "command": "$HOME/.claude/hooks/status.sh"
@@ -272,6 +274,7 @@
     ]
   },
   "alwaysThinkingEnabled": true,
+  "askUserQuestionTimeout": "5m",
   "autoDreamEnabled": true,
   "showThinkingSummaries": true,
   "skipDangerousModePermissionPrompt": true,
@@ -279,6 +282,7 @@
   "theme": "custom:catppuccin-mocha",
   "editorMode": "normal",
   "preferredNotifChannel": "ghostty",
+  "switchModelsOnFlag": false,
   "fileCheckpointingEnabled": false,
   "teammateMode": "tmux",
   "remoteControlAtStartup": false,
