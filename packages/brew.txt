@@ -11,6 +11,7 @@ curl
 openssh
 
 coreutils
+emacs
 fd
 fzf
 gh

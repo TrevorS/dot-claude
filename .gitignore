@@ -60,6 +60,12 @@ daemon/
 jobs/
 .last-cleanup
 
+# Emacs runtime state — elpaca packages and savefiles land next to init.el,
+# and `stow --adopt` without --no-folding can fold ~/.config/emacs into the repo
+dotfiles/emacs/.config/emacs/*
+!dotfiles/emacs/.config/emacs/init.el
+!dotfiles/emacs/.config/emacs/early-init.el
+
 # ML models
 models/
 
