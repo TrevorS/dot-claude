@@ -1,3 +1,5 @@
+;;; early-init.el --- Pre-GUI init -*- lexical-binding: t -*-
+
 (setq package-enable-at-startup nil)
 (setq auto-save-list-file-prefix nil) ; no auto-save-list/ dir (auto-save is off in init)
 
