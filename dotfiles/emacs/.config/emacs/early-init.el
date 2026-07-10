@@ -1,4 +1,5 @@
 (setq package-enable-at-startup nil)
+(setq auto-save-list-file-prefix nil) ; no auto-save-list/ dir (auto-save is off in init)
 
 (setq frame-inhibit-implicit-resize t
       inhibit-startup-screen t

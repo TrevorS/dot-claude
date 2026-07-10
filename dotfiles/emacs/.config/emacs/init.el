@@ -1,5 +1,6 @@
 (defvar elpaca-installer-version 0.12)
-(defvar elpaca-directory (expand-file-name "elpaca/" user-emacs-directory))
+(defvar elpaca-directory
+  (expand-file-name "emacs/elpaca/" (or (getenv "XDG_DATA_HOME") "~/.local/share")))
 (defvar elpaca-builds-directory (expand-file-name "builds/" elpaca-directory))
 (defvar elpaca-sources-directory (expand-file-name "sources/" elpaca-directory))
 (defvar elpaca-order '(elpaca :repo "https://github.com/progfolio/elpaca.git"
@@ -39,6 +40,22 @@
 
 (elpaca elpaca-use-package (elpaca-use-package-mode))
 (setq use-package-always-ensure t)
+(elpaca-wait) ; use-package integration must be active before any use-package form below
+
+;; Keep ~/.config/emacs clean: savefiles (recentf, history, places, ...) go to
+;; ~/.local/share/emacs. Must load before recentf/savehist/save-place start below.
+(use-package no-littering
+  :ensure (:wait t)
+  :demand t
+  :init
+  (setq no-littering-var-directory
+        (expand-file-name "emacs/var/" (or (getenv "XDG_DATA_HOME") "~/.local/share"))
+        no-littering-etc-directory
+        (expand-file-name "emacs/etc/" (or (getenv "XDG_DATA_HOME") "~/.local/share")))
+  :config
+  (with-eval-after-load 'recentf
+    (add-to-list 'recentf-exclude (regexp-quote no-littering-var-directory))
+    (add-to-list 'recentf-exclude (regexp-quote no-littering-etc-directory))))
 
 (setq-default
  indent-tabs-mode nil        ; expandtab
