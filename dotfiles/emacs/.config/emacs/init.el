@@ -143,6 +143,20 @@
   (evil-collection-init))
 
 ;; ============================================================================
+;; DIRED (vinegar style, nvim oil.nvim's -)
+;; ============================================================================
+
+;; Replace the dired buffer when navigating (oil/netrw don't accumulate buffers)
+(setq dired-kill-when-opening-new-dired-buffer t)
+
+(with-eval-after-load 'evil
+  ;; - in a file buffer: dired on its directory, point on the file
+  (evil-define-key 'normal 'global (kbd "-") #'dired-jump))
+(with-eval-after-load 'dired
+  ;; - in dired: up a directory
+  (evil-define-key 'normal dired-mode-map (kbd "-") #'dired-up-directory))
+
+;; ============================================================================
 ;; TMUX NAVIGATION (smart-splits.nvim protocol)
 ;; ============================================================================
 ;; tmux.conf checks the @pane-is-vim pane flag: when set it passes C-hjkl

@@ -68,6 +68,7 @@ alias l="ls"
 alias la="ls -la"
 alias lah="ls -lah"
 alias vim="nvim"
+alias emacs="emacs -nw"
 alias python=python3
 alias pip=pip3
 
