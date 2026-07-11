@@ -40,6 +40,7 @@ def run(cmd: list[str], **kwargs) -> subprocess.CompletedProcess[str]:
 def brew_install(packages: list[str]) -> None:
     result = run(["brew", "list", "--formula"])
     installed = set(result.stdout.splitlines())
+    installed.update(run(["brew", "list", "--cask"]).stdout.splitlines())
 
     missing = [p for p in packages if p not in installed]
     if not missing:

@@ -11,7 +11,7 @@ curl
 openssh
 
 coreutils
-emacs
+emacs-app@pretest  # Emacs pretest/preview builds (cask)
 fd
 fzf
 gh
