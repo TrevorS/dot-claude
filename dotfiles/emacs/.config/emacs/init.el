@@ -237,7 +237,7 @@
     (kbd "<leader>r")  #'consult-recent-file)) ; recent files (visits-ish)
 
 ;; ============================================================================
-;; TREE-SITTER (TypeScript & friends)
+;; TREE-SITTER LANGUAGES (parity with nvim's ensure_installed)
 ;; ============================================================================
 
 ;; Grammars compile once into ~/.local/share/emacs/tree-sitter (needs a C compiler).
@@ -250,7 +250,21 @@
         (tsx        "https://github.com/tree-sitter/tree-sitter-typescript" "v0.23.2" "tsx/src")
         (javascript "https://github.com/tree-sitter/tree-sitter-javascript" "v0.23.1")
         (jsdoc      "https://github.com/tree-sitter/tree-sitter-jsdoc"      "v0.23.2")
-        (json       "https://github.com/tree-sitter/tree-sitter-json"       "v0.24.8")))
+        (json       "https://github.com/tree-sitter/tree-sitter-json"       "v0.24.8")
+        (bash       "https://github.com/tree-sitter/tree-sitter-bash"       "v0.25.1")
+        (go         "https://github.com/tree-sitter/tree-sitter-go"         "v0.25.0")
+        (gomod      "https://github.com/camdencheek/tree-sitter-go-mod"     "v1.1.0")
+        (lua        "https://github.com/tree-sitter-grammars/tree-sitter-lua"  "v0.5.0")
+        (python     "https://github.com/tree-sitter/tree-sitter-python"     "v0.25.0")
+        (ruby       "https://github.com/tree-sitter/tree-sitter-ruby"       "v0.23.1")
+        (rust       "https://github.com/tree-sitter/tree-sitter-rust"       "v0.24.2")
+        (toml       "https://github.com/tree-sitter-grammars/tree-sitter-toml" "v0.7.0")
+        (yaml       "https://github.com/tree-sitter-grammars/tree-sitter-yaml" "v0.7.2")
+        (elixir     "https://github.com/elixir-lang/tree-sitter-elixir"     "v0.3.5")
+        (heex       "https://github.com/phoenixframework/tree-sitter-heex"  "v0.9.0")
+        (markdown        "https://github.com/tree-sitter-grammars/tree-sitter-markdown" "v0.5.3" "tree-sitter-markdown/src")
+        (markdown-inline "https://github.com/tree-sitter-grammars/tree-sitter-markdown" "v0.5.3" "tree-sitter-markdown-inline/src")
+        (gleam      "https://github.com/gleam-lang/tree-sitter-gleam"       "v1.1.0")))
 
 (dolist (lang (mapcar #'car treesit-language-source-alist))
   (unless (treesit-language-available-p lang)
@@ -264,6 +278,27 @@
 (add-to-list 'major-mode-remap-alist '(js-mode . js-ts-mode))
 (add-to-list 'major-mode-remap-alist '(javascript-mode . js-ts-mode))
 (add-to-list 'major-mode-remap-alist '(js-json-mode . json-ts-mode))
+
+;; Built-in ts modes that don't register their own file extensions
+(add-to-list 'auto-mode-alist '("\\.go\\'" . go-ts-mode))
+(add-to-list 'auto-mode-alist '("/go\\.mod\\'" . go-mod-ts-mode))
+(add-to-list 'auto-mode-alist '("\\.lua\\'" . lua-ts-mode))
+(add-to-list 'auto-mode-alist '("\\.rs\\'" . rust-ts-mode))
+(add-to-list 'auto-mode-alist '("\\.ya?ml\\'" . yaml-ts-mode))
+(add-to-list 'auto-mode-alist '("\\.exs?\\'" . elixir-ts-mode))
+(add-to-list 'auto-mode-alist '("\\.heex\\'" . heex-ts-mode))
+(add-to-list 'auto-mode-alist '("\\.md\\'" . markdown-ts-mode))
+(add-to-list 'major-mode-remap-alist '(sh-mode . bash-ts-mode))
+(add-to-list 'major-mode-remap-alist '(python-mode . python-ts-mode))
+(add-to-list 'major-mode-remap-alist '(ruby-mode . ruby-ts-mode))
+(add-to-list 'major-mode-remap-alist '(conf-toml-mode . toml-ts-mode))
+
+;; Languages without a built-in ts mode (nvim also has zig/elm/gleam parsers)
+(use-package zig-mode
+  :custom (zig-format-on-save nil)) ; no zig LSP/formatter configured in nvim either
+(use-package elm-mode)
+(use-package gleam-ts-mode
+  :mode "\\.gleam\\'")
 
 ;; ============================================================================
 ;; ELDOC & HOVER (nvim K)
@@ -320,8 +355,23 @@
 (add-hook 'before-save-hook #'delete-trailing-whitespace)
 (defun my/eglot-format-on-save ()
   (when (and (eglot-managed-p)
-             (eglot-server-capable :documentFormattingProvider))
+             (eglot-server-capable :documentFormattingProvider)
+             (not (derived-mode-p 'lua-ts-mode))) ; lua formats with stylua below
     (eglot-format-buffer)))
+
+;; Lua formats with stylua, not lua-ls (nvim BufWritePre: %!stylua -).
+(defun my/stylua-format-buffer ()
+  (when (executable-find "stylua")
+    (let ((out (generate-new-buffer " *stylua*")))
+      (unwind-protect
+          (if (zerop (call-process-region nil nil "stylua" nil (list out nil) nil
+                                          "--stdin-filepath"
+                                          (or buffer-file-name "stdin.lua") "-"))
+              (replace-buffer-contents out)
+            (message "stylua: format failed (syntax error?)"))
+        (kill-buffer out)))))
+(add-hook 'lua-ts-mode-hook
+          (lambda () (add-hook 'before-save-hook #'my/stylua-format-buffer nil t)))
 
 ;; Eglot: built-in LSP client -> vtsls (same server as the nvim config; it
 ;; bundles its own tsserver, so it works on typescript >= 7 workspaces where
@@ -329,7 +379,8 @@
 ;; completion-at-point, flymake diagnostics, eldoc, xref (gd via evil), rename.
 (use-package eglot
   :ensure nil
-  :hook ((typescript-ts-mode tsx-ts-mode js-ts-mode) . eglot-ensure)
+  :hook ((typescript-ts-mode tsx-ts-mode js-ts-mode
+          rust-ts-mode python-ts-mode lua-ts-mode) . eglot-ensure)
   :custom
   (eglot-autoshutdown t)
   (eglot-events-buffer-config '(:size 0)) ; don't accumulate LSP event logs
@@ -339,6 +390,19 @@
                   (tsx-ts-mode :language-id "typescriptreact")
                   (typescript-ts-mode :language-id "typescript"))
                  . ("vtsls" "--stdio")))
+  ;; basedpyright over eglot's pylsp/pyright defaults; lua-language-server as in
+  ;; nvim (rust-analyzer is already eglot's default for rust-ts-mode)
+  (add-to-list 'eglot-server-programs
+               '((python-mode python-ts-mode) . ("basedpyright-langserver" "--stdio")))
+  (add-to-list 'eglot-server-programs
+               '((lua-mode lua-ts-mode) . ("lua-language-server")))
+  ;; Server settings mirroring nvim's vim.lsp.config blocks
+  (setq-default eglot-workspace-configuration
+                '(:rust-analyzer (:cargo (:allFeatures t)
+                                  :check (:command "clippy"))
+                  :basedpyright (:analysis (:autoSearchPaths t
+                                            :useLibraryCodeForTypes t
+                                            :diagnosticMode "openFilesOnly"))))
   (add-hook 'eglot-managed-mode-hook
             (lambda () (add-hook 'before-save-hook #'my/eglot-format-on-save nil t)))
   ;; nvim 0.12 LSP defaults: gd/K come from evil; the rest bound here.

@@ -2,3 +2,4 @@
 # These produce CLI binaries in ~/.local/bin (e.g. pyright-langserver).
 
 pyright
+basedpyright
