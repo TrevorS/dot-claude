@@ -553,6 +553,10 @@
 ;; MAGIT
 ;; ============================================================================
 
+;; Magit needs transient >= 0.13; Emacs 30 ships 0.7 built-in, so install it
+(use-package transient
+  :defer t)
+
 (use-package magit
   :defer t) ; magit-status is autoloaded; loading magit eagerly costs ~500ms
 (with-eval-after-load 'evil
