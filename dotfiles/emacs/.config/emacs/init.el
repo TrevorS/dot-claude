@@ -86,10 +86,17 @@
  use-short-answers t          ; y/n instead of yes/no
  ring-bell-function #'ignore
  echo-keystrokes 0.02
- idle-update-delay 0.25
  inhibit-startup-screen t
  history-length 1000
  recentf-max-saved-items 300)
+
+;; Redisplay performance (benched: j/k cost is ~all redisplay, not commands)
+(setq redisplay-skip-fontification-on-input t ; don't fontify under held keys
+      fast-but-imprecise-scrolling t
+      auto-window-vscroll nil
+      inhibit-compacting-font-caches t
+      bidi-inhibit-bpa t)
+(setq-default bidi-paragraph-direction 'left-to-right)
 
 (column-number-mode 1)
 (global-hl-line-mode 1)
@@ -270,7 +277,8 @@
   (unless (treesit-language-available-p lang)
     (treesit-install-language-grammar lang my/treesit-grammar-directory)))
 
-(setq treesit-font-lock-level 4)        ; richest tree-sitter highlighting
+;; Level 4 costs ~2.3ms/keystroke of redisplay for marginal extra color
+(setq treesit-font-lock-level 3)
 
 (add-to-list 'auto-mode-alist '("\\.ts\\'" . typescript-ts-mode))
 (add-to-list 'auto-mode-alist '("\\.[cm]ts\\'" . typescript-ts-mode))
@@ -344,6 +352,12 @@
   (eglot-autoshutdown t)
   (eglot-events-buffer-config '(:size 0)) ; don't accumulate LSP event logs
   :config
+  ;; Skip jsonrpc log formatting entirely -- measurable win on chatty servers
+  (fset #'jsonrpc--log-event #'ignore)
+  ;; Match nvim's lsp root_markers: a .luarc.json roots its own project, so
+  ;; lua-language-server reads per-project config instead of flagging every
+  ;; nvim `vim` global from the repo root (220 bogus diagnostics benched).
+  (setq project-vc-extra-root-markers '(".luarc.json"))
   (add-to-list 'eglot-server-programs
                '(((js-ts-mode :language-id "javascript")
                   (tsx-ts-mode :language-id "typescriptreact")
@@ -446,9 +460,10 @@
 ;; SMALL QOL (nvim parity odds and ends)
 ;; ============================================================================
 
-;; j/k move by screen line (nvim j -> gj, k -> gk)
+;; j/k: logical lines in code (visual-line movement costs ~2.6ms/keystroke of
+;; redisplay and is identical on unwrapped lines); screen lines in prose
 (with-eval-after-load 'evil
-  (evil-define-key 'normal 'global
+  (evil-define-key 'normal text-mode-map
     "j" #'evil-next-visual-line
     "k" #'evil-previous-visual-line))
 
@@ -608,5 +623,12 @@
   :custom
   (doom-modeline-icon t) ; ghostty runs a nerd font, keep icons in -nw too
   (doom-modeline-buffer-encoding nil)
+  (doom-modeline-buffer-file-name-style 'relative-to-project) ; nvim filename
+  (doom-modeline-check-simple-format t)  ; one worst-severity count, not three
   :config
+  ;; Lean layout (benched ~2ms/redisplay with the kitchen sink): drop vcs
+  ;; (the jj segment in misc-info is our vcs), selection-info, word-count &co.
+  (doom-modeline-def-modeline 'main
+    '(eldoc bar modals buffer-info buffer-position)
+    '(misc-info check lsp major-mode))
   (doom-modeline-mode 1))

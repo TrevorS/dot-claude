@@ -7,6 +7,14 @@
            (>= (string-to-number operating-system-release) 25))
   (setq native-comp-driver-options '("-mmacosx-version-min=26.0")))
 
+;; GC: the 800KB default causes constant collections. Generous during startup,
+;; dialed back (but still far above default) once running.
+(setq gc-cons-threshold (* 100 1024 1024))
+(add-hook 'emacs-startup-hook
+          (lambda ()
+            (setq gc-cons-threshold (* 32 1024 1024)
+                  gc-cons-percentage 0.2)))
+
 (setq package-enable-at-startup nil)
 (setq auto-save-list-file-prefix nil) ; no auto-save-list/ dir (auto-save is off in init)
 
