@@ -319,6 +319,10 @@
   :defer t)
 (use-package gleam-ts-mode
   :mode "\\.gleam\\'")
+(use-package markdown-mode
+  :defer t
+  :mode ("\\.md\\'" . gfm-mode) ; GitHub-flavored for .md; .markdown etc. get plain markdown-mode
+  :custom (markdown-fontify-code-blocks-natively t))
 
 ;; ============================================================================
 ;; LSP (eglot) -- deliberately stock: default eldoc echo, default flymake.
