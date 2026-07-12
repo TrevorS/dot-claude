@@ -103,7 +103,6 @@
 (pixel-scroll-precision-mode 1)
 (electric-pair-mode 1)                  ; auto-close brackets/quotes
 (which-key-mode 1)                      ; key hints (built in, Emacs 30+)
-(add-hook 'prog-mode-hook #'completion-preview-mode) ; inline ghost-text completion
 
 (global-display-line-numbers-mode 1)
 (dolist (h '(term-mode-hook vterm-mode-hook eshell-mode-hook
@@ -135,12 +134,13 @@
 
 (use-package evil-collection
   :after evil
-  :custom
-  ;; evil-collection's eglot module rebinds K to eldoc-doc-buffer in managed
-  ;; buffers, shadowing evil-lookup (our hover popup). Keep K ours everywhere.
-  (evil-collection-key-blacklist '("K"))
   :config
   (evil-collection-init))
+
+(use-package evil-surround
+  :after evil
+  :config
+  (global-evil-surround-mode 1)) ; ys/cs/ds + S in visual (mini.surround keys)
 
 ;; ============================================================================
 ;; DIRED (vinegar style, nvim oil.nvim's -)
@@ -301,53 +301,8 @@
   :mode "\\.gleam\\'")
 
 ;; ============================================================================
-;; ELDOC & HOVER (nvim K)
-;; ============================================================================
-
-;; Diagnostics/signatures surface after 250ms idle (nvim updatetime=250).
-;; Echo area stays one line -- full docs live in the K float.
-(setq eldoc-idle-delay 0.25
-      eldoc-echo-area-use-multiline-p nil)
-
-;; Default eldoc-display-in-buffer pops an *eldoc* window split on interactive
-;; requests. Swap it for format-only so the buffer stays silently current for
-;; the K float, K K, and M-x eldoc-doc-buffer.
-(defun my/eldoc-format-doc-buffer (docs _interactive)
-  "Keep the *eldoc* buffer up to date without displaying it."
-  (eldoc--format-doc-buffer docs))
-(remove-hook 'eldoc-display-functions #'eldoc-display-in-buffer)
-(add-hook 'eldoc-display-functions #'my/eldoc-format-doc-buffer)
-
-;; Hover docs in a floating child frame at point. Emacs 31+ supports child
-;; frames on ttys, so this works inside tmux; a child-frame-less Emacs
-;; (e.g. brew 30.2 fallback) gets the *eldoc* buffer in a window instead.
-(use-package eldoc-box
-  :commands (eldoc-box-help-at-point)
-  :config
-  (with-eval-after-load 'catppuccin-theme
-    (set-face-background 'eldoc-box-border (catppuccin-get-color 'surface1))))
-
-(defun my/hover-doc ()
-  "Show hover docs at point in a floating frame (nvim K); K K focuses the full doc."
-  (interactive)
-  (cond
-   ;; second consecutive K: promote the float to the *eldoc* buffer (nvim K K)
-   ((and (eq last-command #'evil-lookup)
-         (buffer-live-p eldoc--doc-buffer))
-    (eldoc-doc-buffer t)
-    (when-let* ((win (get-buffer-window eldoc--doc-buffer)))
-      (select-window win)))
-   ((not eldoc-mode)
-    (message "No documentation here (eldoc inactive)"))
-   ((or (display-graphic-p) (featurep 'tty-child-frames))
-    (eldoc-box-help-at-point))
-   (t (eldoc-doc-buffer t))))
-
-(with-eval-after-load 'evil
-  (setq evil-lookup-func #'my/hover-doc)) ; evil's K
-
-;; ============================================================================
-;; LSP (eglot)
+;; LSP (eglot) -- deliberately stock: default eldoc echo, default flymake.
+;; evil-collection binds K to eldoc-doc-buffer in eglot buffers.
 ;; ============================================================================
 
 ;; Format on save in LSP buffers + trim trailing whitespace everywhere
@@ -359,17 +314,21 @@
              (not (derived-mode-p 'lua-ts-mode))) ; lua formats with stylua below
     (eglot-format-buffer)))
 
+(defun my/format-buffer-with (cmd &rest args)
+  "Filter the whole buffer through CMD ARGS, keeping contents when CMD fails."
+  (if (not (executable-find cmd))
+      (message "%s not installed" cmd)
+    (let ((out (generate-new-buffer (concat " *" cmd "*"))))
+      (unwind-protect
+          (if (zerop (apply #'call-process-region nil nil cmd nil (list out nil) nil args))
+              (replace-buffer-contents out)
+            (message "%s: format failed (syntax error?)" cmd))
+        (kill-buffer out)))))
+
 ;; Lua formats with stylua, not lua-ls (nvim BufWritePre: %!stylua -).
 (defun my/stylua-format-buffer ()
-  (when (executable-find "stylua")
-    (let ((out (generate-new-buffer " *stylua*")))
-      (unwind-protect
-          (if (zerop (call-process-region nil nil "stylua" nil (list out nil) nil
-                                          "--stdin-filepath"
-                                          (or buffer-file-name "stdin.lua") "-"))
-              (replace-buffer-contents out)
-            (message "stylua: format failed (syntax error?)"))
-        (kill-buffer out)))))
+  (my/format-buffer-with "stylua" "--stdin-filepath"
+                         (or buffer-file-name "stdin.lua") "-"))
 (add-hook 'lua-ts-mode-hook
           (lambda () (add-hook 'before-save-hook #'my/stylua-format-buffer nil t)))
 
@@ -417,3 +376,237 @@
       (kbd "<leader>f")  #'eglot-format-buffer
       (kbd "<leader>xx") #'consult-flymake
       (kbd "<leader>ih") #'eglot-inlay-hints-mode)))
+
+;; ============================================================================
+;; IN-BUFFER COMPLETION (corfu; nvim autocomplete pum + Tab/S-Tab/CR)
+;; ============================================================================
+
+(use-package corfu
+  :custom
+  (corfu-auto t)
+  (corfu-auto-delay 0.1)
+  (corfu-auto-prefix 2)
+  (corfu-cycle t)
+  (corfu-preselect 'prompt) ; nvim noinsert: nothing selected until Tab
+  :config
+  (define-key corfu-map (kbd "TAB") #'corfu-next)
+  (define-key corfu-map [tab] #'corfu-next)
+  (define-key corfu-map (kbd "S-TAB") #'corfu-previous)
+  (define-key corfu-map [backtab] #'corfu-previous)
+  ;; RET accepts only when a candidate is selected, otherwise it falls through
+  ;; to the global binding (nvim: pmenu_accept -> minipairs_cr multistep)
+  (define-key corfu-map (kbd "RET")
+    `(menu-item "" corfu-insert
+                :filter ,(lambda (cmd) (when (>= corfu--index 0) cmd))))
+  (global-corfu-mode 1))
+
+;; ============================================================================
+;; JUMP ANYWHERE (avy ≈ mini.jump2d: RET labels every word start on screen)
+;; ============================================================================
+
+(use-package avy
+  :custom
+  (avy-keys (string-to-list "asdfjkl;ghqwertyuiopzxcvbnm"))
+  (avy-background t)
+  :config
+  (with-eval-after-load 'evil
+    (evil-define-key 'normal 'global (kbd "RET") #'avy-goto-word-0)))
+
+;; ============================================================================
+;; SYSTEM CLIPBOARD (nvim "+ interaction; works in emacs -nw via pbcopy)
+;; ============================================================================
+
+(defun my/clipboard-copy (text)
+  "Copy TEXT to the system clipboard in GUI and terminal frames alike."
+  (if (display-graphic-p)
+      (gui-set-selection 'CLIPBOARD text)
+    (with-temp-buffer
+      (insert text)
+      (call-process-region (point-min) (point-max) "pbcopy")))
+  (message "Copied %d chars to clipboard" (length text)))
+
+(defun my/yank-to-clipboard (beg end)
+  "Yank the visual selection to the system clipboard (nvim <leader>y)."
+  (interactive "r")
+  (my/clipboard-copy (buffer-substring-no-properties beg end))
+  (evil-exit-visual-state))
+
+(defun my/copy-buffer-path ()
+  "Copy the current buffer's file path to the clipboard (nvim <leader>xp)."
+  (interactive)
+  (let ((path (or buffer-file-name default-directory)))
+    (my/clipboard-copy path)
+    (message "Copied path: %s" path)))
+
+(with-eval-after-load 'evil
+  (evil-define-key 'visual 'global (kbd "<leader>y") #'my/yank-to-clipboard)
+  (evil-define-key 'normal 'global (kbd "<leader>xp") #'my/copy-buffer-path))
+
+;; ============================================================================
+;; SMALL QOL (nvim parity odds and ends)
+;; ============================================================================
+
+;; j/k move by screen line (nvim j -> gj, k -> gk)
+(with-eval-after-load 'evil
+  (evil-define-key 'normal 'global
+    "j" #'evil-next-visual-line
+    "k" #'evil-previous-visual-line))
+
+;; < and > keep the visual selection (nvim <gv / >gv)
+(defun my/visual-shift-left ()
+  (interactive)
+  (call-interactively #'evil-shift-left)
+  (evil-normal-state)
+  (evil-visual-restore))
+(defun my/visual-shift-right ()
+  (interactive)
+  (call-interactively #'evil-shift-right)
+  (evil-normal-state)
+  (evil-visual-restore))
+(with-eval-after-load 'evil
+  (evil-define-key 'visual 'global
+    "<" #'my/visual-shift-left
+    ">" #'my/visual-shift-right))
+
+;; No autopairs in prose (nvim disables mini.pairs in markdown/text/gitcommit)
+(add-hook 'text-mode-hook (lambda () (electric-pair-local-mode -1)))
+
+;; On-demand formatters (nvim <leader>jf / <leader>sf)
+(defun my/format-json () (interactive) (my/format-buffer-with "jq" "."))
+(defun my/format-sql () (interactive) (my/format-buffer-with "sleek"))
+
+;; Markdown preview via glow in a tmux popup/split (nvim <leader>mp / <leader>ms)
+(defun my/glow-preview (target)
+  (cond
+   ((not (executable-find "glow")) (message "glow not installed (brew install glow)"))
+   ((not (getenv "TMUX")) (message "Not running inside tmux"))
+   (t (let* ((tmp (make-temp-file "glow-" nil ".md"))
+             (cmd (format "glow -p %s; rm -f %s"
+                          (shell-quote-argument tmp) (shell-quote-argument tmp))))
+        (write-region (point-min) (point-max) tmp nil 'silent)
+        (if (eq target 'popup)
+            (call-process "tmux" nil 0 nil "display-popup" "-E" "-w" "90%" "-h" "90%" cmd)
+          (call-process "tmux" nil 0 nil "split-window" "-h" cmd))))))
+
+(with-eval-after-load 'evil
+  (evil-define-key 'normal 'global
+    (kbd "<leader>jf") #'my/format-json
+    (kbd "<leader>sf") #'my/format-sql
+    (kbd "<leader>mp") (lambda () (interactive) (my/glow-preview 'popup))
+    (kbd "<leader>ms") (lambda () (interactive) (my/glow-preview 'split))
+    ;; edit config files (nvim <leader>ev/ez/eg)
+    (kbd "<leader>ev") (lambda () (interactive) (find-file "~/.config/emacs/init.el"))
+    (kbd "<leader>ez") (lambda () (interactive) (find-file "~/.zshrc"))
+    (kbd "<leader>eg") (lambda () (interactive)
+                         (find-file "~/Library/Application Support/com.mitchellh.ghostty/config"))
+    ;; redraw + clear search highlight (nvim <leader>l)
+    (kbd "<leader>l") (lambda () (interactive) (redraw-display) (evil-ex-nohighlight))
+    ;; trim trailing whitespace on demand (nvim <leader>ts)
+    (kbd "<leader>ts") (lambda () (interactive)
+                         (delete-trailing-whitespace)
+                         (message "Trimmed trailing whitespace"))))
+
+;; Cosmetics: TODO/FIXME highlighting, other-occurrence underline, indent guides
+(use-package hl-todo
+  :config (global-hl-todo-mode 1))
+(use-package highlight-thing
+  :hook (prog-mode . highlight-thing-mode)
+  :custom
+  (highlight-thing-exclude-thing-under-point t) ; only OTHER matches, as in nvim
+  (highlight-thing-delay-seconds 0.25)
+  :config
+  (set-face-attribute 'highlight-thing nil
+                      :inherit nil :underline t :background 'unspecified))
+(use-package indent-bars
+  :hook (prog-mode . indent-bars-mode)
+  :custom
+  (indent-bars-prefer-character t)) ; works in emacs -nw
+
+;; ============================================================================
+;; MAGIT
+;; ============================================================================
+
+(use-package magit
+  :config
+  (with-eval-after-load 'evil
+    (evil-define-key 'normal 'global (kbd "<leader>gs") #'magit-status)))
+
+;; ============================================================================
+;; JJ MODE-LINE (port of the nvim statusline jj segment)
+;; ============================================================================
+
+(defvar-local my/jj-info nil
+  "Plist with jj info for this buffer's file, or nil when not in a jj repo.")
+
+(defface my/jj-dirty '((t :weight bold)) "jj diamond when the change has edits.")
+(defface my/jj-empty '((t)) "jj diamond when the change is empty.")
+(with-eval-after-load 'catppuccin-theme
+  (set-face-attribute 'my/jj-dirty nil :foreground (catppuccin-get-color 'green))
+  (set-face-attribute 'my/jj-empty nil :foreground (catppuccin-get-color 'overlay0)))
+
+(defconst my/jj--template
+  (concat "change_id.shortest() ++ \"\\n\""
+          " ++ bookmarks.filter(|b| b.remote() == \"\").map(|b| b.name()).join(\" \") ++ \"\\n\""
+          " ++ description.first_line() ++ \"\\n\""
+          " ++ if(empty, \"empty\", \"dirty\")"))
+
+(defun my/jj--refresh (&optional buffer)
+  "Asynchronously refresh `my/jj-info' for BUFFER's file."
+  (when-let* ((buf (or buffer (current-buffer)))
+              (file (buffer-file-name buf))
+              (dir (file-name-directory file))
+              ((file-directory-p dir)))
+    (let ((proc-buf (generate-new-buffer " *jj-modeline*"))
+          (default-directory dir))
+      (make-process
+       :name "jj-modeline" :buffer proc-buf :noquery t :connection-type 'pipe
+       :command (list "jj" "log" "-r" "@" "--no-graph" "-T" my/jj--template
+                      "--ignore-working-copy")
+       :sentinel
+       (lambda (proc _event)
+         (when (memq (process-status proc) '(exit signal))
+           (let ((ok (zerop (process-exit-status proc)))
+                 (out (with-current-buffer proc-buf (buffer-string))))
+             (kill-buffer proc-buf)
+             (when (buffer-live-p buf)
+               (with-current-buffer buf
+                 (setq my/jj-info
+                       (when (and ok (not (string-empty-p out)))
+                         (let ((lines (split-string out "\n")))
+                           (list :id (car (split-string (or (nth 0 lines) "")))
+                                 :bookmark (car (split-string (or (nth 1 lines) "")))
+                                 :desc (string-trim (or (nth 2 lines) ""))
+                                 :empty (string-prefix-p "empty" (or (nth 3 lines) ""))))))
+                 (force-mode-line-update))))))))))
+
+(add-hook 'find-file-hook #'my/jj--refresh)
+(add-hook 'after-save-hook #'my/jj--refresh)
+
+(defun my/jj-modeline ()
+  "Render `my/jj-info' as ◆/◇ + change id + bookmark + description."
+  (when my/jj-info
+    (let* ((desc (or (plist-get my/jj-info :desc) ""))
+           (desc (if (> (length desc) 30) (concat (substring desc 0 27) "...") desc))
+           (bookmark (or (plist-get my/jj-info :bookmark) "")))
+      (concat
+       (if (plist-get my/jj-info :empty)
+           (propertize "◇" 'face 'my/jj-empty)
+         (propertize "◆" 'face 'my/jj-dirty))
+       " " (plist-get my/jj-info :id)
+       (unless (string-empty-p bookmark) (concat " " bookmark))
+       (unless (string-empty-p desc) (concat " " desc))
+       " "))))
+
+(add-to-list 'mode-line-misc-info '(:eval (my/jj-modeline)) t)
+
+;; ============================================================================
+;; MODELINE (doom-modeline; shows the jj segment via misc-info)
+;; ============================================================================
+
+(use-package nerd-icons)
+(use-package doom-modeline
+  :custom
+  (doom-modeline-icon t) ; ghostty runs a nerd font, keep icons in -nw too
+  (doom-modeline-buffer-encoding nil)
+  :config
+  (doom-modeline-mode 1))

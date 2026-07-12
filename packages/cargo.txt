@@ -7,5 +7,6 @@ cargo-binstall
 cargo-update
 git-delta
 jj-cli
+sleek
 stylua
 tree-sitter-cli
