@@ -95,7 +95,8 @@
       fast-but-imprecise-scrolling t
       auto-window-vscroll nil
       inhibit-compacting-font-caches t
-      bidi-inhibit-bpa t)
+      bidi-inhibit-bpa t
+      jit-lock-stealth-time 1.0)  ; pre-fontify off-screen while idle
 (setq-default bidi-paragraph-direction 'left-to-right)
 
 (column-number-mode 1)
@@ -111,6 +112,8 @@
 (electric-pair-mode 1)                  ; auto-close brackets/quotes
 (which-key-mode 1)                      ; key hints (built in, Emacs 30+)
 
+(setq-default display-line-numbers-width 4)    ; nvim numberwidth; avoids
+(setq display-line-numbers-grow-only t)        ; per-scroll width recompute
 (global-display-line-numbers-mode 1)
 (dolist (h '(term-mode-hook vterm-mode-hook eshell-mode-hook
              dired-mode-hook Info-mode-hook help-mode-hook))
@@ -219,6 +222,7 @@
   (completion-category-overrides '((file (styles basic partial-completion)))))
 
 (use-package consult
+  :defer t ; all entry points autoloaded
   :custom
   (consult-async-min-input 2)
   ;; search hidden paths too (dotfile repos live under .config/ etc.), skip .git
@@ -273,9 +277,14 @@
         (markdown-inline "https://github.com/tree-sitter-grammars/tree-sitter-markdown" "v0.5.3" "tree-sitter-markdown-inline/src")
         (gleam      "https://github.com/gleam-lang/tree-sitter-gleam"       "v1.1.0")))
 
-(dolist (lang (mapcar #'car treesit-language-source-alist))
-  (unless (treesit-language-available-p lang)
-    (treesit-install-language-grammar lang my/treesit-grammar-directory)))
+;; Availability probes dlopen every grammar (~65ms) -- run off the critical
+;; path. Fresh machines get grammars a moment after startup.
+(run-with-idle-timer
+ 2 nil
+ (lambda ()
+   (dolist (lang (mapcar #'car treesit-language-source-alist))
+     (unless (treesit-language-available-p lang)
+       (treesit-install-language-grammar lang my/treesit-grammar-directory)))))
 
 ;; Level 4 costs ~2.3ms/keystroke of redisplay for marginal extra color
 (setq treesit-font-lock-level 3)
@@ -301,10 +310,13 @@
 (add-to-list 'major-mode-remap-alist '(ruby-mode . ruby-ts-mode))
 (add-to-list 'major-mode-remap-alist '(conf-toml-mode . toml-ts-mode))
 
-;; Languages without a built-in ts mode (nvim also has zig/elm/gleam parsers)
+;; Languages without a built-in ts mode (nvim also has zig/elm/gleam parsers).
+;; All defer; their autoloads register the file extensions.
 (use-package zig-mode
+  :defer t
   :custom (zig-format-on-save nil)) ; no zig LSP/formatter configured in nvim either
-(use-package elm-mode)
+(use-package elm-mode
+  :defer t)
 (use-package gleam-ts-mode
   :mode "\\.gleam\\'")
 
@@ -419,12 +431,12 @@
 ;; ============================================================================
 
 (use-package avy
+  :defer t ; avy-goto-word-0 is autoloaded
   :custom
   (avy-keys (string-to-list "asdfjkl;ghqwertyuiopzxcvbnm"))
-  (avy-background t)
-  :config
-  (with-eval-after-load 'evil
-    (evil-define-key 'normal 'global (kbd "RET") #'avy-goto-word-0)))
+  (avy-background t))
+(with-eval-after-load 'evil
+  (evil-define-key 'normal 'global (kbd "RET") #'avy-goto-word-0))
 
 ;; ============================================================================
 ;; SYSTEM CLIPBOARD (nvim "+ interaction; works in emacs -nw via pbcopy)
@@ -523,7 +535,7 @@
 
 ;; Cosmetics: TODO/FIXME highlighting, other-occurrence underline, indent guides
 (use-package hl-todo
-  :config (global-hl-todo-mode 1))
+  :hook ((prog-mode text-mode) . hl-todo-mode))
 (use-package highlight-thing
   :hook (prog-mode . highlight-thing-mode)
   :custom
@@ -542,9 +554,9 @@
 ;; ============================================================================
 
 (use-package magit
-  :config
-  (with-eval-after-load 'evil
-    (evil-define-key 'normal 'global (kbd "<leader>gs") #'magit-status)))
+  :defer t) ; magit-status is autoloaded; loading magit eagerly costs ~500ms
+(with-eval-after-load 'evil
+  (evil-define-key 'normal 'global (kbd "<leader>gs") #'magit-status))
 
 ;; ============================================================================
 ;; JJ MODE-LINE (port of the nvim statusline jj segment)
