@@ -36,6 +36,14 @@ export PATH="$HOME/.cargo/bin:$PATH"
 export PATH="$HOME/.luarocks/bin:$PATH"
 export PATH="$HOME/.local/bin:$PATH"
 
+# ── terminal ────────────────────────────────────────────────────────────────
+# SSH doesn't forward COLORTERM, and neither tmux-256color nor xterm-ghostty
+# terminfo advertises RGB — so truecolor apps (Emacs especially) silently fall
+# back to 256 colors (catppuccin degrades to a blue-ish palette). Every
+# terminal that reaches this config is truecolor-capable; claim it unless the
+# terminal is genuinely limited.
+[[ $TERM != (dumb|linux|vt*) ]] && export COLORTERM=${COLORTERM:-truecolor}
+
 # ── command shims ───────────────────────────────────────────────────────────
 # Resolve a command to the first installed candidate so this config stays
 # portable where a tool is absent or renamed (Debian: bat→batcat, fd→fdfind;
