@@ -32,3 +32,8 @@ repos:
         language: system
         types: [lua]
         files: ^dotfiles/nvim/
+      - id: elisp-check
+        name: elisp check (parens + byte-compile)
+        entry: scripts/elisp-check.sh
+        language: script
+        files: '\.el$'
