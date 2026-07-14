@@ -4,9 +4,12 @@
 ;; PLUGIN MANAGEMENT (elpaca)
 ;; ============================================================================
 
+;; Machine-local data root shared by elpaca, no-littering, and tree-sitter.
+(defconst my/data-dir
+  (expand-file-name "emacs/" (or (getenv "XDG_DATA_HOME") "~/.local/share")))
+
 (defvar elpaca-installer-version 0.12)
-(defvar elpaca-directory
-  (expand-file-name "emacs/elpaca/" (or (getenv "XDG_DATA_HOME") "~/.local/share")))
+(defvar elpaca-directory (expand-file-name "elpaca/" my/data-dir))
 (defvar elpaca-builds-directory (expand-file-name "builds/" elpaca-directory))
 (defvar elpaca-sources-directory (expand-file-name "sources/" elpaca-directory))
 (defvar elpaca-order '(elpaca :repo "https://github.com/progfolio/elpaca.git"
@@ -54,10 +57,8 @@
   :ensure (:wait t)
   :demand t
   :init
-  (setq no-littering-var-directory
-        (expand-file-name "emacs/var/" (or (getenv "XDG_DATA_HOME") "~/.local/share"))
-        no-littering-etc-directory
-        (expand-file-name "emacs/etc/" (or (getenv "XDG_DATA_HOME") "~/.local/share")))
+  (setq no-littering-var-directory (expand-file-name "var/" my/data-dir)
+        no-littering-etc-directory (expand-file-name "etc/" my/data-dir))
   :config
   (with-eval-after-load 'recentf
     (add-to-list 'recentf-exclude (regexp-quote no-littering-var-directory))
@@ -86,9 +87,39 @@
  use-short-answers t          ; y/n instead of yes/no
  ring-bell-function #'ignore
  echo-keystrokes 0.02
- inhibit-startup-screen t
  history-length 1000
  recentf-max-saved-items 300)
+
+;; vim scrolloff semantics: the margin stops at the last line instead of
+;; scrolling blank space into view (emacs applies scroll-margin past EOB).
+;; Clamp it per command to the lines actually remaining below point.
+(defun my/clamp-scroll-margin ()
+  (setq-local scroll-margin
+              (min (default-value 'scroll-margin)
+                   (- (default-value 'scroll-margin)
+                      (save-excursion
+                        (forward-line (default-value 'scroll-margin)))))))
+(add-hook 'post-command-hook #'my/clamp-scroll-margin)
+
+;; vim also never rests the cursor on the phantom line after the final newline
+;; (emacs buffers really contain that line; vim hides it). evil-adjust-cursor
+;; is evil's "may the cursor sit here?" chokepoint -- it already pulls point
+;; off line ends after every motion and on normal-state entry, so teach it the
+;; last-line rule too. Insert state is untouched (evil doesn't adjust there).
+(with-eval-after-load 'evil
+  (define-advice evil-adjust-cursor (:before (&optional _) my/no-phantom-line)
+    (when (and (eobp) (bolp) (not (bobp)))
+      (backward-char)
+      ;; evil restores the motion's goal column before adjusting, i.e. onto
+      ;; the phantom line -- re-apply it here on the real last line (the
+      ;; advised body then handles the end-of-line rule as usual)
+      (when (memq this-command '(next-line previous-line))
+        (let ((col (if (consp temporary-goal-column)
+                       (+ (car temporary-goal-column)
+                          (cdr temporary-goal-column))
+                     temporary-goal-column)))
+          (unless (>= col most-positive-fixnum)
+            (move-to-column (truncate col))))))))
 
 ;; Redisplay performance (benched: j/k cost is ~all redisplay, not commands)
 (setq redisplay-skip-fontification-on-input t ; don't fontify under held keys
@@ -102,9 +133,10 @@
 (column-number-mode 1)
 (global-hl-line-mode 1)
 (show-paren-mode 1)
-(setq show-paren-delay 0)
+(setq auto-revert-avoid-polling t)      ; kqueue notifies; don't stat every 5s
 (global-auto-revert-mode 1)
 (setq global-auto-revert-non-file-buffers t)
+(setq recentf-auto-cleanup 300)         ; stat the list when idle, not at startup
 (recentf-mode 1)
 (savehist-mode 1)                       ; command/minibuffer history
 (save-place-mode 1)
@@ -114,10 +146,10 @@
 
 (setq-default display-line-numbers-width 4)    ; nvim numberwidth; avoids
 (setq display-line-numbers-grow-only t)        ; per-scroll width recompute
-(global-display-line-numbers-mode 1)
-(dolist (h '(term-mode-hook vterm-mode-hook eshell-mode-hook
-             dired-mode-hook Info-mode-hook help-mode-hook))
-  (add-hook h (lambda () (display-line-numbers-mode -1))))
+;; Numbers only where nvim has them (file/edit buffers); special-mode buffers
+;; (dired, help, magit, term, ...) stay clean without a per-mode blacklist.
+(dolist (h '(prog-mode-hook text-mode-hook conf-mode-hook))
+  (add-hook h #'display-line-numbers-mode))
 
 ;; ============================================================================
 ;; THEME
@@ -134,6 +166,11 @@
 ;; ============================================================================
 
 (use-package evil
+  ;; Synchronous, like no-littering: evil loads eagerly anyway, and having it
+  ;; active here lets every evil-define-key below be a plain top-level form
+  ;; instead of a with-eval-after-load wrapper.
+  :ensure (:wait t)
+  :demand t
   :custom
   (evil-want-keybinding nil)   ; must be nil before evil loads (evil-collection)
   (evil-undo-system 'undo-redo) ; wire vim u / C-r to native undo-redo
@@ -159,12 +196,9 @@
 ;; Replace the dired buffer when navigating (oil/netrw don't accumulate buffers)
 (setq dired-kill-when-opening-new-dired-buffer t)
 
-(with-eval-after-load 'evil
-  ;; - in a file buffer: dired on its directory, point on the file
-  (evil-define-key 'normal 'global (kbd "-") #'dired-jump))
-(with-eval-after-load 'dired
-  ;; - in dired: up a directory
-  (evil-define-key 'normal dired-mode-map (kbd "-") #'dired-up-directory))
+;; - in a file buffer: dired on its directory, point on the file
+;; (- in dired itself is dired-up-directory via evil-collection)
+(evil-define-key 'normal 'global (kbd "-") #'dired-jump)
 
 ;; ============================================================================
 ;; TMUX NAVIGATION (smart-splits.nvim protocol)
@@ -172,14 +206,16 @@
 ;; tmux.conf checks the @pane-is-vim pane flag: when set it passes C-hjkl
 ;; through; we move between Emacs windows and hop to the tmux pane at an edge.
 
-(defun my/tmux--set-pane-is-vim (val)
+(defun my/tmux--set-pane-is-vim (val &optional wait)
+  "Set the tmux @pane-is-vim flag; fire-and-forget unless WAIT.
+Clearing must WAIT: on kill/suspend the async child could die before tmux acts."
   (when (getenv "TMUX_PANE")
-    (call-process "tmux" nil nil nil "set-option" "-p"
+    (call-process "tmux" nil (unless wait 0) nil "set-option" "-p"
                   "-t" (getenv "TMUX_PANE") "@pane-is-vim" val)))
 
-(my/tmux--set-pane-is-vim "1")
-(add-hook 'kill-emacs-hook (lambda () (my/tmux--set-pane-is-vim "0")))
-(add-hook 'suspend-hook (lambda () (my/tmux--set-pane-is-vim "0")))
+(my/tmux--set-pane-is-vim "1") ; async: don't block startup on a tmux round-trip
+(add-hook 'kill-emacs-hook (lambda () (my/tmux--set-pane-is-vim "0" t)))
+(add-hook 'suspend-hook (lambda () (my/tmux--set-pane-is-vim "0" t)))
 (add-hook 'suspend-resume-hook (lambda () (my/tmux--set-pane-is-vim "1")))
 
 (defun my/window-nav (move-fn tmux-flag)
@@ -188,19 +224,19 @@
       (funcall move-fn)
     ;; user-error = no window in that direction (windmove is autoloaded)
     (user-error (when (getenv "TMUX_PANE")
-                  (call-process "tmux" nil nil nil "select-pane" tmux-flag)))))
+                  ;; destination 0 = fire-and-forget; no ~10ms edge-hit stall
+                  (call-process "tmux" nil 0 nil "select-pane" tmux-flag)))))
 
 (defun my/window-left ()  (interactive) (my/window-nav #'windmove-left  "-L"))
 (defun my/window-down ()  (interactive) (my/window-nav #'windmove-down  "-D"))
 (defun my/window-up ()    (interactive) (my/window-nav #'windmove-up    "-U"))
 (defun my/window-right () (interactive) (my/window-nav #'windmove-right "-R"))
 
-(with-eval-after-load 'evil
-  (evil-define-key '(normal visual motion) 'global
-    (kbd "C-h") #'my/window-left
-    (kbd "C-j") #'my/window-down
-    (kbd "C-k") #'my/window-up
-    (kbd "C-l") #'my/window-right))
+(evil-define-key '(normal visual motion) 'global
+  (kbd "C-h") #'my/window-left
+  (kbd "C-j") #'my/window-down
+  (kbd "C-k") #'my/window-up
+  (kbd "C-l") #'my/window-right)
 
 ;; ============================================================================
 ;; MINIBUFFER COMPLETION (vertico + orderless + consult)
@@ -211,9 +247,48 @@
 (use-package vertico
   :custom
   (vertico-cycle t)
+  (vertico-count 15) ; taller miniwindow pickers (buffer-mode ones size from window)
+  ;; telescope layout for the file/grep pickers: candidates in a window on the
+  ;; left, live preview in the original window on the right
+  (vertico-buffer-display-action
+   '(display-buffer-in-direction (direction . left) (window-width . 0.5)))
+  ;; grep pickers key on their completion category so wrappers like
+  ;; <leader>* are covered automatically; consult-fd must stay command-keyed
+  ;; (its category is plain `file', shared with every find-file prompt)
+  (vertico-multiform-categories '((consult-grep buffer)))
+  (vertico-multiform-commands '((consult-fd buffer)))
   :config
   (vertico-mode 1)
+  (vertico-multiform-mode 1)
   (add-hook 'minibuffer-setup-hook #'vertico-repeat-save)) ; for <leader>P resume
+
+;; On tty the hardware cursor always sits in the selected window -- the
+;; minibuffer -- so vertico-buffer's GUI trick of hiding the minibuffer prompt
+;; (pixel-scroll, a tty no-op) leaves a duplicated input line and a cursor
+;; blinking at the bottom. Do the telescope thing instead: keep prompt, input,
+;; and the real cursor in the minibuffer, and hide the prompt copy at the top
+;; of the picker window with a window-scoped overlay.
+(defvar my/vertico-tty-prompt-ov nil)
+(defun my/vertico-tty-prompt-ov-cleanup ()
+  (when my/vertico-tty-prompt-ov
+    (delete-overlay my/vertico-tty-prompt-ov)
+    (setq my/vertico-tty-prompt-ov nil))
+  (remove-hook 'minibuffer-exit-hook #'my/vertico-tty-prompt-ov-cleanup))
+(with-eval-after-load 'vertico-buffer
+  (setq vertico-buffer-hide-prompt nil) ; prompt + real cursor stay in minibuffer
+  (define-advice vertico-buffer--setup (:after () my/tty-prompt-at-bottom)
+    (unless (display-graphic-p)
+      (setq my/vertico-tty-prompt-ov (make-overlay (point-min) (point-max) nil nil t))
+      (overlay-put my/vertico-tty-prompt-ov 'window
+                   (overlay-get vertico--candidates-ov 'window))
+      ;; show the picker's base directory in place of the hidden prompt copy
+      (overlay-put my/vertico-tty-prompt-ov 'display
+                   (propertize (abbreviate-file-name default-directory)
+                               'face 'shadow))
+      ;; the count belongs to the minibuffer line; scope it out of the picker
+      (when vertico--count-ov
+        (overlay-put vertico--count-ov 'window (active-minibuffer-window)))
+      (add-hook 'minibuffer-exit-hook #'my/vertico-tty-prompt-ov-cleanup))))
 
 (use-package orderless
   :custom
@@ -225,12 +300,34 @@
   :defer t ; all entry points autoloaded
   :custom
   (consult-async-min-input 2)
-  ;; search hidden paths too (dotfile repos live under .config/ etc.), skip .git
-  (consult-fd-args '("fd" "--full-path" "--color=never" "--hidden" "--exclude" ".git"))
-  (consult-ripgrep-args
-   "rg --null --line-buffered --color=never --max-columns=1000 --path-separator /\
-   --smart-case --no-heading --with-filename --line-number --search-zip\
-   --hidden --glob=!.git/"))
+  ;; files only; search hidden paths too (dotfiles live under .config/), skip .git
+  (consult-fd-args
+   '("fd" "--type" "f" "--full-path" "--color=never" "--hidden" "--exclude" ".git"))
+  :config
+  ;; extend consult's default rg flags rather than forking the whole string
+  (unless (string-match-p "--hidden" consult-ripgrep-args)
+    (setq consult-ripgrep-args
+          (concat consult-ripgrep-args " --hidden --glob=!.git/")))
+  ;; start populated like telescope find_files: allow empty input through
+  ;; (grep pickers keep the global 2-char minimum) ...
+  (defvar consult-async-min-input) ; declare special so the let binds dynamically
+  (define-advice consult-fd (:around (fn &rest args) my/start-populated)
+    (let ((consult-async-min-input 0))
+      (apply fn args)))
+  ;; ... and run a pattern-less fd for it (the stock builder bails on "").
+  ;; Return shape must be (cmd . nil): the highlight stage funcalls the cdr.
+  (define-advice consult--fd-make-builder (:around (fn paths) my/match-all-on-empty)
+    (let ((builder (funcall fn paths)))
+      (lambda (input)
+        (or (funcall builder input)
+            (list (append (consult--build-args consult-fd-args)
+                          (mapcan (lambda (x) (list "--search-path" x)) paths)))))))
+  ;; telescope-style live preview: consult-fd ships without a :state, so the
+  ;; selected file never previews; inject the stock file preview (debounced so
+  ;; holding C-n doesn't open every candidate)
+  (consult-customize consult-fd
+                     :state (consult--file-preview)
+                     :preview-key '(:debounce 0.2 any)))
 
 (defun my/consult-ripgrep-cword ()
   "Ripgrep for the symbol at point (nvim <leader>*)."
@@ -238,22 +335,20 @@
   (consult-ripgrep nil (thing-at-point 'symbol)))
 
 ;; Picker keymaps mirroring nvim mini.pick binds.
-(with-eval-after-load 'evil
-  (evil-define-key 'normal 'global
-    (kbd "<leader>p")  #'consult-fd            ; find files
-    (kbd "<leader>b")  #'consult-buffer        ; buffers (+ recent files)
-    (kbd "<leader>gg") #'consult-ripgrep       ; live grep
-    (kbd "<leader>*")  #'my/consult-ripgrep-cword
-    (kbd "<leader>P")  #'vertico-repeat        ; resume last picker
-    (kbd "<leader>r")  #'consult-recent-file)) ; recent files (visits-ish)
+(evil-define-key 'normal 'global
+  (kbd "<leader>p")  #'consult-fd            ; find files
+  (kbd "<leader>b")  #'consult-buffer        ; buffers (+ recent files)
+  (kbd "<leader>gg") #'consult-ripgrep       ; live grep
+  (kbd "<leader>*")  #'my/consult-ripgrep-cword
+  (kbd "<leader>P")  #'vertico-repeat        ; resume last picker
+  (kbd "<leader>r")  #'consult-recent-file)  ; recent files (visits-ish)
 
 ;; ============================================================================
 ;; TREE-SITTER LANGUAGES (parity with nvim's ensure_installed)
 ;; ============================================================================
 
 ;; Grammars compile once into ~/.local/share/emacs/tree-sitter (needs a C compiler).
-(defvar my/treesit-grammar-directory
-  (expand-file-name "emacs/tree-sitter/" (or (getenv "XDG_DATA_HOME") "~/.local/share")))
+(defvar my/treesit-grammar-directory (expand-file-name "tree-sitter/" my/data-dir))
 (add-to-list 'treesit-extra-load-path my/treesit-grammar-directory)
 
 (setq treesit-language-source-alist
@@ -289,26 +384,13 @@
 ;; Level 4 costs ~2.3ms/keystroke of redisplay for marginal extra color
 (setq treesit-font-lock-level 3)
 
-(add-to-list 'auto-mode-alist '("\\.ts\\'" . typescript-ts-mode))
+;; Emacs 31: every built-in ts mode autoload-registers a `-maybe' dispatcher in
+;; auto-mode-alist; this custom's :set turns them all on and merges the ts
+;; entries into major-mode-remap-alist. Only extensions the built-ins don't
+;; claim need listing by hand.
+(setopt treesit-enabled-modes t)
 (add-to-list 'auto-mode-alist '("\\.[cm]ts\\'" . typescript-ts-mode))
-(add-to-list 'auto-mode-alist '("\\.[jt]sx\\'" . tsx-ts-mode))
-(add-to-list 'major-mode-remap-alist '(js-mode . js-ts-mode))
-(add-to-list 'major-mode-remap-alist '(javascript-mode . js-ts-mode))
-(add-to-list 'major-mode-remap-alist '(js-json-mode . json-ts-mode))
-
-;; Built-in ts modes that don't register their own file extensions
-(add-to-list 'auto-mode-alist '("\\.go\\'" . go-ts-mode))
-(add-to-list 'auto-mode-alist '("/go\\.mod\\'" . go-mod-ts-mode))
-(add-to-list 'auto-mode-alist '("\\.lua\\'" . lua-ts-mode))
-(add-to-list 'auto-mode-alist '("\\.rs\\'" . rust-ts-mode))
-(add-to-list 'auto-mode-alist '("\\.ya?ml\\'" . yaml-ts-mode))
-(add-to-list 'auto-mode-alist '("\\.exs?\\'" . elixir-ts-mode))
-(add-to-list 'auto-mode-alist '("\\.heex\\'" . heex-ts-mode))
-(add-to-list 'auto-mode-alist '("\\.md\\'" . markdown-ts-mode))
-(add-to-list 'major-mode-remap-alist '(sh-mode . bash-ts-mode))
-(add-to-list 'major-mode-remap-alist '(python-mode . python-ts-mode))
-(add-to-list 'major-mode-remap-alist '(ruby-mode . ruby-ts-mode))
-(add-to-list 'major-mode-remap-alist '(conf-toml-mode . toml-ts-mode))
+(add-to-list 'auto-mode-alist '("\\.jsx\\'" . tsx-ts-mode))
 
 ;; Languages without a built-in ts mode (nvim also has zig/elm/gleam parsers).
 ;; All defer; their autoloads register the file extensions.
@@ -329,13 +411,25 @@
 ;; evil-collection binds K to eldoc-doc-buffer in eglot buffers.
 ;; ============================================================================
 
-;; Format on save in LSP buffers + trim trailing whitespace everywhere
-;; (nvim BufWritePre: mini.trailspace.trim + vim.lsp.buf.format).
+;; Format on save + trim trailing whitespace everywhere (nvim BufWritePre:
+;; mini.trailspace.trim + vim.lsp.buf.format). One buffer-local formatter
+;; drives both save and <leader>f, so on-save and on-demand can't diverge;
+;; eglot attach sets it, mode hooks override it (lua -> stylua).
 (add-hook 'before-save-hook #'delete-trailing-whitespace)
-(defun my/eglot-format-on-save ()
+
+(defvar-local my/format-buffer-function nil
+  "Formatter for this buffer, or nil for none.")
+
+(defun my/format-buffer ()
+  "Format the buffer with `my/format-buffer-function' (nvim <leader>f)."
+  (interactive)
+  (when my/format-buffer-function
+    (funcall my/format-buffer-function)))
+(add-hook 'before-save-hook #'my/format-buffer)
+
+(defun my/eglot-format-when-capable ()
   (when (and (eglot-managed-p)
-             (eglot-server-capable :documentFormattingProvider)
-             (not (derived-mode-p 'lua-ts-mode))) ; lua formats with stylua below
+             (eglot-server-capable :documentFormattingProvider))
     (eglot-format-buffer)))
 
 (defun my/format-buffer-with (cmd &rest args)
@@ -345,7 +439,7 @@
     (let ((out (generate-new-buffer (concat " *" cmd "*"))))
       (unwind-protect
           (if (zerop (apply #'call-process-region nil nil cmd nil (list out nil) nil args))
-              (replace-buffer-contents out)
+              (replace-region-contents (point-min) (point-max) out)
             (message "%s: format failed (syntax error?)" cmd))
         (kill-buffer out)))))
 
@@ -354,7 +448,7 @@
   (my/format-buffer-with "stylua" "--stdin-filepath"
                          (or buffer-file-name "stdin.lua") "-"))
 (add-hook 'lua-ts-mode-hook
-          (lambda () (add-hook 'before-save-hook #'my/stylua-format-buffer nil t)))
+          (lambda () (setq my/format-buffer-function #'my/stylua-format-buffer)))
 
 ;; Eglot: built-in LSP client -> vtsls (same server as the nvim config; it
 ;; bundles its own tsserver, so it works on typescript >= 7 workspaces where
@@ -392,20 +486,22 @@
                   :basedpyright (:analysis (:autoSearchPaths t
                                             :useLibraryCodeForTypes t
                                             :diagnosticMode "openFilesOnly"))))
+  ;; a mode hook (e.g. lua -> stylua) wins over the LSP formatter
   (add-hook 'eglot-managed-mode-hook
-            (lambda () (add-hook 'before-save-hook #'my/eglot-format-on-save nil t)))
+            (lambda ()
+              (unless my/format-buffer-function
+                (setq my/format-buffer-function #'my/eglot-format-when-capable))))
   ;; nvim 0.12 LSP defaults: gd/K come from evil; the rest bound here.
-  (with-eval-after-load 'evil
-    (evil-define-key 'normal eglot-mode-map
-      (kbd "g r a") #'eglot-code-actions
-      (kbd "g r n") #'eglot-rename
-      (kbd "g r r") #'xref-find-references
-      (kbd "g r i") #'eglot-find-implementation
-      (kbd "g r t") #'eglot-find-typeDefinition
-      (kbd "g O")   #'imenu                          ; document symbols
-      (kbd "<leader>f")  #'eglot-format-buffer
-      (kbd "<leader>xx") #'consult-flymake
-      (kbd "<leader>ih") #'eglot-inlay-hints-mode)))
+  (evil-define-key 'normal eglot-mode-map
+    (kbd "g r a") #'eglot-code-actions
+    (kbd "g r n") #'eglot-rename
+    (kbd "g r r") #'xref-find-references
+    (kbd "g r i") #'eglot-find-implementation
+    (kbd "g r t") #'eglot-find-typeDefinition
+    (kbd "g O")   #'imenu                          ; document symbols
+    (kbd "<leader>f")  #'my/format-buffer
+    (kbd "<leader>xx") #'consult-flymake
+    (kbd "<leader>ih") #'eglot-inlay-hints-mode))
 
 ;; ============================================================================
 ;; IN-BUFFER COMPLETION (corfu; nvim autocomplete pum + Tab/S-Tab/CR)
@@ -439,27 +535,28 @@
   :custom
   (avy-keys (string-to-list "asdfjkl;ghqwertyuiopzxcvbnm"))
   (avy-background t))
-(with-eval-after-load 'evil
-  (evil-define-key 'normal 'global (kbd "RET") #'avy-goto-word-0))
+(evil-define-key 'normal 'global (kbd "RET") #'avy-goto-word-0)
 
 ;; ============================================================================
-;; SYSTEM CLIPBOARD (nvim "+ interaction; works in emacs -nw via pbcopy)
+;; SYSTEM CLIPBOARD (nvim "+ interaction; works in emacs -nw via OSC 52)
 ;; ============================================================================
+
+;; terminal-init-tmux replaces the global capability check with this list;
+;; setSelection turns on OSC 52, which tmux forwards (set-clipboard on) to
+;; ghostty. Makes gui-set-selection -- and evil's "+ register -- work in -nw.
+(setq xterm-tmux-extra-capabilities '(modifyOtherKeys setSelection))
 
 (defun my/clipboard-copy (text)
-  "Copy TEXT to the system clipboard in GUI and terminal frames alike."
-  (if (display-graphic-p)
-      (gui-set-selection 'CLIPBOARD text)
-    (with-temp-buffer
-      (insert text)
-      (call-process-region (point-min) (point-max) "pbcopy")))
-  (message "Copied %d chars to clipboard" (length text)))
+  "Copy TEXT to the system clipboard (OSC 52 in terminal frames).
+Callers own the echo-area feedback."
+  (gui-set-selection 'CLIPBOARD text))
 
 (defun my/yank-to-clipboard (beg end)
   "Yank the visual selection to the system clipboard (nvim <leader>y)."
   (interactive "r")
   (my/clipboard-copy (buffer-substring-no-properties beg end))
-  (evil-exit-visual-state))
+  (evil-exit-visual-state)
+  (message "Copied %d chars to clipboard" (- end beg)))
 
 (defun my/copy-buffer-path ()
   "Copy the current buffer's file path to the clipboard (nvim <leader>xp)."
@@ -468,9 +565,8 @@
     (my/clipboard-copy path)
     (message "Copied path: %s" path)))
 
-(with-eval-after-load 'evil
-  (evil-define-key 'visual 'global (kbd "<leader>y") #'my/yank-to-clipboard)
-  (evil-define-key 'normal 'global (kbd "<leader>xp") #'my/copy-buffer-path))
+(evil-define-key 'visual 'global (kbd "<leader>y") #'my/yank-to-clipboard)
+(evil-define-key 'normal 'global (kbd "<leader>xp") #'my/copy-buffer-path)
 
 ;; ============================================================================
 ;; SMALL QOL (nvim parity odds and ends)
@@ -478,26 +574,21 @@
 
 ;; j/k: logical lines in code (visual-line movement costs ~2.6ms/keystroke of
 ;; redisplay and is identical on unwrapped lines); screen lines in prose
-(with-eval-after-load 'evil
-  (evil-define-key 'normal text-mode-map
-    "j" #'evil-next-visual-line
-    "k" #'evil-previous-visual-line))
+(evil-define-key 'normal text-mode-map
+  "j" #'evil-next-visual-line
+  "k" #'evil-previous-visual-line)
 
 ;; < and > keep the visual selection (nvim <gv / >gv)
-(defun my/visual-shift-left ()
-  (interactive)
-  (call-interactively #'evil-shift-left)
+(defun my/visual-shift (cmd)
+  "Shift the visual selection with CMD and reselect it."
+  (call-interactively cmd)
   (evil-normal-state)
   (evil-visual-restore))
-(defun my/visual-shift-right ()
-  (interactive)
-  (call-interactively #'evil-shift-right)
-  (evil-normal-state)
-  (evil-visual-restore))
-(with-eval-after-load 'evil
-  (evil-define-key 'visual 'global
-    "<" #'my/visual-shift-left
-    ">" #'my/visual-shift-right))
+(defun my/visual-shift-left ()  (interactive) (my/visual-shift #'evil-shift-left))
+(defun my/visual-shift-right () (interactive) (my/visual-shift #'evil-shift-right))
+(evil-define-key 'visual 'global
+  "<" #'my/visual-shift-left
+  ">" #'my/visual-shift-right)
 
 ;; No autopairs in prose (nvim disables mini.pairs in markdown/text/gitcommit)
 (add-hook 'text-mode-hook (lambda () (electric-pair-local-mode -1)))
@@ -519,23 +610,33 @@
             (call-process "tmux" nil 0 nil "display-popup" "-E" "-w" "90%" "-h" "90%" cmd)
           (call-process "tmux" nil 0 nil "split-window" "-h" cmd))))))
 
-(with-eval-after-load 'evil
-  (evil-define-key 'normal 'global
-    (kbd "<leader>jf") #'my/format-json
-    (kbd "<leader>sf") #'my/format-sql
-    (kbd "<leader>mp") (lambda () (interactive) (my/glow-preview 'popup))
-    (kbd "<leader>ms") (lambda () (interactive) (my/glow-preview 'split))
-    ;; edit config files (nvim <leader>ev/ez/eg)
-    (kbd "<leader>ev") (lambda () (interactive) (find-file "~/.config/emacs/init.el"))
-    (kbd "<leader>ez") (lambda () (interactive) (find-file "~/.zshrc"))
-    (kbd "<leader>eg") (lambda () (interactive)
-                         (find-file "~/Library/Application Support/com.mitchellh.ghostty/config"))
-    ;; redraw + clear search highlight (nvim <leader>l)
-    (kbd "<leader>l") (lambda () (interactive) (redraw-display) (evil-ex-nohighlight))
-    ;; trim trailing whitespace on demand (nvim <leader>ts)
-    (kbd "<leader>ts") (lambda () (interactive)
-                         (delete-trailing-whitespace)
-                         (message "Trimmed trailing whitespace"))))
+(defun my/close-buffer-or-quit ()
+  "Kill the current buffer, or `:q' if it's the last (nvim <leader>q).
+Listed approximates nvim `buflisted': file-visiting or plain-named.
+With no listed buffers at all (e.g. only *scratch* left), quit emacs."
+  (interactive)
+  (let ((listed (match-buffers '(or buffer-file-name (not "\\`[ *]")))))
+    (if (or (null listed) (equal listed (list (current-buffer))))
+        (evil-quit)
+      (kill-current-buffer))))
+
+(evil-define-key 'normal 'global
+  (kbd "<leader>jf") #'my/format-json
+  (kbd "<leader>sf") #'my/format-sql
+  (kbd "<leader>mp") (lambda () (interactive) (my/glow-preview 'popup))
+  (kbd "<leader>ms") (lambda () (interactive) (my/glow-preview 'split))
+  ;; edit config files (nvim <leader>ev/ez/eg)
+  (kbd "<leader>ev") (lambda () (interactive) (find-file "~/.config/emacs/init.el"))
+  (kbd "<leader>ez") (lambda () (interactive) (find-file "~/.zshrc"))
+  (kbd "<leader>eg") (lambda () (interactive)
+                       (find-file "~/Library/Application Support/com.mitchellh.ghostty/config"))
+  (kbd "<leader>q") #'my/close-buffer-or-quit
+  ;; redraw + clear search highlight (nvim <leader>l)
+  (kbd "<leader>l") (lambda () (interactive) (redraw-display) (evil-ex-nohighlight))
+  ;; trim trailing whitespace on demand (nvim <leader>ts)
+  (kbd "<leader>ts") (lambda () (interactive)
+                       (delete-trailing-whitespace)
+                       (message "Trimmed trailing whitespace")))
 
 ;; Cosmetics: TODO/FIXME highlighting, other-occurrence underline, indent guides
 (use-package hl-todo
@@ -545,6 +646,10 @@
   :custom
   (highlight-thing-exclude-thing-under-point t) ; only OTHER matches, as in nvim
   (highlight-thing-delay-seconds 0.25)
+  ;; each idle fire rescans + re-overlays; keep it to +/-50 lines in big files
+  ;; so a common symbol can't cons thousands of redisplay-slowing overlays
+  (highlight-thing-limit-to-region-in-large-buffers-p t)
+  (highlight-thing-narrow-region-lines 50)
   :config
   (set-face-attribute 'highlight-thing nil
                       :inherit nil :underline t :background 'unspecified))
@@ -563,21 +668,24 @@
 
 (use-package magit
   :defer t) ; magit-status is autoloaded; loading magit eagerly costs ~500ms
-(with-eval-after-load 'evil
-  (evil-define-key 'normal 'global (kbd "<leader>gs") #'magit-status))
+(evil-define-key 'normal 'global (kbd "<leader>gs") #'magit-status)
 
 ;; ============================================================================
 ;; JJ MODE-LINE (port of the nvim statusline jj segment)
 ;; ============================================================================
 
-(defvar-local my/jj-info nil
-  "Plist with jj info for this buffer's file, or nil when not in a jj repo.")
+(defvar-local my/jj-modeline-string nil
+  "Pre-rendered jj segment, or nil when not in a jj repo.
+Built once per refresh in the process sentinel, not per redisplay.")
 
-(defface my/jj-dirty '((t :weight bold)) "jj diamond when the change has edits.")
-(defface my/jj-empty '((t)) "jj diamond when the change is empty.")
-(with-eval-after-load 'catppuccin-theme
-  (set-face-attribute 'my/jj-dirty nil :foreground (catppuccin-get-color 'green))
-  (set-face-attribute 'my/jj-empty nil :foreground (catppuccin-get-color 'overlay0)))
+;; Semantic inheritance: any theme styles these (catppuccin maps success ->
+;; green, shadow -> overlay), and they follow flavor changes automatically.
+(defface my/jj-dirty '((t :inherit success :weight bold))
+  "jj diamond when the change has edits."
+  :group 'mode-line-faces)
+(defface my/jj-empty '((t :inherit shadow))
+  "jj diamond when the change is empty."
+  :group 'mode-line-faces)
 
 (defconst my/jj--template
   (concat "change_id.shortest() ++ \"\\n\""
@@ -585,8 +693,23 @@
           " ++ description.first_line() ++ \"\\n\""
           " ++ if(empty, \"empty\", \"dirty\")"))
 
+(defun my/jj--render (lines)
+  "Render jj log output LINES as ◆/◇ + change id + bookmark + description."
+  (let* ((id (car (split-string (or (nth 0 lines) ""))))
+         (bookmark (or (car (split-string (or (nth 1 lines) ""))) ""))
+         (desc (string-trim (or (nth 2 lines) "")))
+         (desc (if (> (length desc) 30) (concat (substring desc 0 27) "...") desc)))
+    (concat
+     (if (string-prefix-p "empty" (or (nth 3 lines) ""))
+         (propertize "◇" 'face 'my/jj-empty)
+       (propertize "◆" 'face 'my/jj-dirty))
+     " " id
+     (unless (string-empty-p bookmark) (concat " " bookmark))
+     (unless (string-empty-p desc) (concat " " desc))
+     " ")))
+
 (defun my/jj--refresh (&optional buffer)
-  "Asynchronously refresh `my/jj-info' for BUFFER's file."
+  "Asynchronously refresh `my/jj-modeline-string' for BUFFER's file."
   (when-let* ((buf (or buffer (current-buffer)))
               (file (buffer-file-name buf))
               (dir (file-name-directory file))
@@ -605,34 +728,15 @@
              (kill-buffer proc-buf)
              (when (buffer-live-p buf)
                (with-current-buffer buf
-                 (setq my/jj-info
+                 (setq my/jj-modeline-string
                        (when (and ok (not (string-empty-p out)))
-                         (let ((lines (split-string out "\n")))
-                           (list :id (car (split-string (or (nth 0 lines) "")))
-                                 :bookmark (car (split-string (or (nth 1 lines) "")))
-                                 :desc (string-trim (or (nth 2 lines) ""))
-                                 :empty (string-prefix-p "empty" (or (nth 3 lines) ""))))))
+                         (my/jj--render (split-string out "\n"))))
                  (force-mode-line-update))))))))))
 
 (add-hook 'find-file-hook #'my/jj--refresh)
 (add-hook 'after-save-hook #'my/jj--refresh)
 
-(defun my/jj-modeline ()
-  "Render `my/jj-info' as ◆/◇ + change id + bookmark + description."
-  (when my/jj-info
-    (let* ((desc (or (plist-get my/jj-info :desc) ""))
-           (desc (if (> (length desc) 30) (concat (substring desc 0 27) "...") desc))
-           (bookmark (or (plist-get my/jj-info :bookmark) "")))
-      (concat
-       (if (plist-get my/jj-info :empty)
-           (propertize "◇" 'face 'my/jj-empty)
-         (propertize "◆" 'face 'my/jj-dirty))
-       " " (plist-get my/jj-info :id)
-       (unless (string-empty-p bookmark) (concat " " bookmark))
-       (unless (string-empty-p desc) (concat " " desc))
-       " "))))
-
-(add-to-list 'mode-line-misc-info '(:eval (my/jj-modeline)) t)
+(add-to-list 'mode-line-misc-info '(:eval my/jj-modeline-string) t)
 
 ;; ============================================================================
 ;; MODELINE (doom-modeline; shows the jj segment via misc-info)
@@ -640,11 +744,11 @@
 
 (use-package nerd-icons)
 (use-package doom-modeline
+  ;; icons stay on in -nw (the default) -- ghostty runs a nerd font
   :custom
-  (doom-modeline-icon t) ; ghostty runs a nerd font, keep icons in -nw too
   (doom-modeline-buffer-encoding nil)
   (doom-modeline-buffer-file-name-style 'relative-to-project) ; nvim filename
-  (doom-modeline-check-simple-format t)  ; one worst-severity count, not three
+  (doom-modeline-check 'simple)  ; one worst-severity count, not three
   :config
   ;; Lean layout (benched ~2ms/redisplay with the kitchen sink): drop vcs
   ;; (the jj segment in misc-info is our vcs), selection-info, word-count &co.
