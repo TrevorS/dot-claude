@@ -1,6 +1,6 @@
 {
-  "claudeCodeVersion": "2.1.201",
-  "syncedDate": "2026-07-06",
+  "claudeCodeVersion": "2.1.209",
+  "syncedDate": "2026-07-14",
   "source": "https://api.github.com/repos/anthropics/claude-code/releases",
   "adopted": [
     {
@@ -52,7 +52,8 @@
     { "feature": "language", "reason": "English default sufficient" },
     { "feature": "wheelScrollAccelerationEnabled", "reason": "UI polish, no need" },
     { "feature": "output-styles for status-marks", "reason": "category error; styles change role/tone not markdown enforcement" },
-    { "feature": "disableBundledSkills", "reason": "actively uses /code-review,/batch,/run; no collisions" }
+    { "feature": "disableBundledSkills", "reason": "actively uses /code-review,/batch,/run; no collisions" },
+    { "feature": "Dynamic workflow size (/config, 2.1.202)", "reason": "advisory sizing; default fine, flip in /config if workflows over/under-scale" }
   ],
   "deferred": [
     { "feature": "PostToolUseFailure hook", "status": "optional/future", "note": "wire when failure-specific handling wanted" },
