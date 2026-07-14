@@ -1,11 +1,12 @@
-.PHONY: help install upgrade validate clean pre-commit pre-commit-install pre-commit-update dotfiles tpm typecheck deps
+.PHONY: help install upgrade validate clean pre-commit pre-commit-install pre-commit-update dotfiles tpm typecheck deps emacs-plugins
 
 # Default target
 help:
 	@echo "Available targets:"
 	@echo "  install           - Install all dependencies and stow dotfiles"
 	@echo "  deps              - Install system packages from packages/*.txt"
-	@echo "  upgrade           - Bump managed brew/cargo/luarocks packages to latest"
+	@echo "  upgrade           - Bump managed brew/cargo/luarocks packages + Emacs plugins to latest"
+	@echo "  emacs-plugins     - Update Emacs packages (elpaca) headlessly"
 	@echo "  validate          - Format and lint all files (all-in-one)"
 	@echo "  clean             - Clean up generated files"
 	@echo "  dotfiles          - Stow all dotfile packages into ~"
@@ -55,6 +56,18 @@ deps:
 
 upgrade:
 	@python3 scripts/install-deps.py --upgrade
+	@$(MAKE) emacs-plugins
+
+EMACS_INIT := $(HOME)/.config/emacs/init.el
+
+emacs-plugins:
+	@if ! command -v emacs >/dev/null 2>&1; then \
+		echo "emacs not found — skipping plugin updates"; \
+	elif [ ! -e "$(EMACS_INIT)" ]; then \
+		echo "$(EMACS_INIT) not found — skipping plugin updates"; \
+	else \
+		emacs --batch -l "$(EMACS_INIT)" -l scripts/update-emacs-plugins.el; \
+	fi
 
 MACOS_ONLY_PKGS := ghostty
 
