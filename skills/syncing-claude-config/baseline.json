@@ -1,6 +1,6 @@
 {
-  "claudeCodeVersion": "2.1.209",
-  "syncedDate": "2026-07-14",
+  "claudeCodeVersion": "2.1.212",
+  "syncedDate": "2026-07-17",
   "source": "https://api.github.com/repos/anthropics/claude-code/releases",
   "adopted": [
     {
@@ -8,7 +8,10 @@
       "surface": "settings.json key",
       "introducedVersion": "2.1.166",
       "adoptedDate": "2026-06-26",
-      "value": ["sonnet[1m]", "claude-haiku-4-5-20251001"],
+      "value": [
+        "sonnet[1m]",
+        "claude-haiku-4-5-20251001"
+      ],
       "note": "first hop sonnet[1m] preserves 1M context + thinking (alwaysThinkingEnabled); haiku is availability-of-last-resort"
     },
     {
@@ -45,18 +48,57 @@
     }
   ],
   "declined": [
-    { "feature": "respondToBashCommands", "reason": "kept new auto-respond default; fits !+/copy flow" },
-    { "feature": "autoMode.classifyAllShell", "reason": "would drop ~30-entry allow-list from classifier view, adds friction" },
-    { "feature": "Tool(param:value) permission migration", "reason": "Bash command field can't use param syntax; glob form already correct" },
-    { "feature": "footerLinksRegexes", "reason": "cosmetic footer badges, no fit" },
-    { "feature": "language", "reason": "English default sufficient" },
-    { "feature": "wheelScrollAccelerationEnabled", "reason": "UI polish, no need" },
-    { "feature": "output-styles for status-marks", "reason": "category error; styles change role/tone not markdown enforcement" },
-    { "feature": "disableBundledSkills", "reason": "actively uses /code-review,/batch,/run; no collisions" },
-    { "feature": "Dynamic workflow size (/config, 2.1.202)", "reason": "advisory sizing; default fine, flip in /config if workflows over/under-scale" }
+    {
+      "feature": "respondToBashCommands",
+      "reason": "kept new auto-respond default; fits !+/copy flow"
+    },
+    {
+      "feature": "autoMode.classifyAllShell",
+      "reason": "would drop ~30-entry allow-list from classifier view, adds friction"
+    },
+    {
+      "feature": "Tool(param:value) permission migration",
+      "reason": "Bash command field can't use param syntax; glob form already correct"
+    },
+    {
+      "feature": "footerLinksRegexes",
+      "reason": "cosmetic footer badges, no fit"
+    },
+    {
+      "feature": "language",
+      "reason": "English default sufficient"
+    },
+    {
+      "feature": "wheelScrollAccelerationEnabled",
+      "reason": "UI polish, no need"
+    },
+    {
+      "feature": "output-styles for status-marks",
+      "reason": "category error; styles change role/tone not markdown enforcement"
+    },
+    {
+      "feature": "disableBundledSkills",
+      "reason": "actively uses /code-review,/batch,/run; no collisions"
+    },
+    {
+      "feature": "Dynamic workflow size (/config, 2.1.202)",
+      "reason": "advisory sizing; default fine, flip in /config if workflows over/under-scale"
+    },
+    {
+      "feature": "CLAUDE_CODE_MAX_SUBAGENTS_PER_SESSION=1000",
+      "reason": "default 200 per-session cap fine (2.1.212); /clear resets budget — raise only if a workflow actually hits it"
+    }
   ],
   "deferred": [
-    { "feature": "PostToolUseFailure hook", "status": "optional/future", "note": "wire when failure-specific handling wanted" },
-    { "feature": "CLAUDE_CLIENT_PRESENCE_FILE", "status": "optional/future", "note": "only if mobile push storms at the headless mac mini" }
+    {
+      "feature": "PostToolUseFailure hook",
+      "status": "optional/future",
+      "note": "wire when failure-specific handling wanted"
+    },
+    {
+      "feature": "CLAUDE_CLIENT_PRESENCE_FILE",
+      "status": "optional/future",
+      "note": "only if mobile push storms at the headless mac mini"
+    }
   ]
 }
