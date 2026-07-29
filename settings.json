@@ -301,6 +301,7 @@
     "executing-test-plans": "user-invocable-only"
   },
   "alwaysThinkingEnabled": true,
+  "effortLevel": "xhigh",
   "askUserQuestionTimeout": "5m",
   "emojiCompletionEnabled": false,
   "autoDreamEnabled": true,
