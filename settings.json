@@ -124,7 +124,7 @@
     ],
     "defaultMode": "auto"
   },
-  "model": "claude-fable-5[1m]",
+  "model": "opus[1m]",
   "fallbackModel": [
     "sonnet[1m]",
     "claude-haiku-4-5-20251001"
