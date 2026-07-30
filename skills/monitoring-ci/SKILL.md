@@ -35,19 +35,19 @@ uv run ~/.claude/skills/monitoring-ci/ci-monitor.py --branch my-feature
 
 ## How to Invoke from Claude
 
-After a push, resolve the HEAD SHA *before* launching the background command, then pass it via `--sha`:
+After a push, pass the branch and let the script resolve the SHA:
 
 ```bash
-# Get the SHA that was just pushed (jj or git)
-SHA=$(jj log -r '@-' --no-graph -T 'commit_id' 2>/dev/null || git rev-parse HEAD)
-
-# Run in background with SHA pinning
-uv run ~/.claude/skills/monitoring-ci/ci-monitor.py --branch <branch-name> --sha "$SHA"
+uv run ~/.claude/skills/monitoring-ci/ci-monitor.py --branch <branch-name>
 ```
 
 Use `run_in_background: true` so it doesn't block the conversation. Tell the user: "CI monitor running in background — you'll be notified when it completes."
 
-**IMPORTANT**: Always pass `--sha` to avoid watching a stale run from a previous push. The monitor matches runs by SHA, so it will wait for the correct run to appear.
+**Do NOT pre-resolve the SHA yourself.** The script already resolves it from the bookmark/branch (`sha = args.sha or head_sha(branch)`), which is correct under every workflow. Passing a hand-computed `--sha` only overrides that with something more likely to be wrong.
+
+In particular, never derive it from `@-`. That is the *parent* of the working copy, which is only the pushed commit in the git-style flow where `@` is a fresh empty change on top. In the `jj describe @` + `jj bookmark move --to @` flow the pushed commit **is** `@`, so `@-` resolves to the commit before it. The failure is silent and dangerous: the monitor watches the previous commit's already-finished run and reports *its* conclusion, so a green predecessor yields a false pass on unverified work.
+
+Pass `--sha` only when a SHA was given explicitly on the `ARGUMENTS:` line.
 
 ## Features
 
