@@ -55,14 +55,6 @@
       "note": "strips Anthropic/cloud creds from Bash, hooks, and MCP stdio subprocesses. Adopted because sandbox.enabled is false, which makes the whole sandbox.credentials block inert -- this delivers the same hardening without the sandbox. gh authenticates via keychain, not GITHUB_TOKEN, so it is unaffected"
     },
     {
-      "feature": "includeGitInstructions",
-      "surface": "settings.json key",
-      "introducedVersion": "2.1.69",
-      "adoptedDate": "2026-07-29",
-      "value": false,
-      "note": "removes built-in commit/PR instructions AND the git status snapshot from the system prompt; rules/version-control.md (jj-first) + pr-safety.md already override them, and the UserPromptSubmit hook supplies vcs/trunk/change/dirty. Recent-commits list is the one thing lost"
-    },
-    {
       "feature": "emojiCompletionEnabled",
       "surface": "settings.json key",
       "introducedVersion": "2.1.217",
@@ -118,7 +110,7 @@
       "surface": "statusLine script",
       "introducedVersion": "2.1.145 (pr) / undated (fast_mode, context_window_size, cost.*)",
       "adoptedDate": "2026-07-29",
-      "note": "PASS 3 (2026-07-29) added rate_limits.*.resets_at, a burn-rate pacing signal, an 8-cell context bar, ANSI threshold colours, and statusLine.refreshInterval=60. Pace = used% vs elapsed% of the window; green <=125, yellow <=175, red above, suppressed under 15% used, with absolute overrides at 75/90. A 'fast' word appears only past the warn band. Renders in ~50ms. PASS 2 note follows -- second pass after auditing all ~40 documented payload fields against the 12 in use. fast_mode matters because Opus 5 fast mode is $10/$50 per Mtok and the state drifts (2.1.219 fixed stale fast-mode on Remote Control). context_window_size disambiguates ctx% -- a fallbackModel hop to Haiku silently drops 1M to 200k, previously invisible. exceeds_200k_tokens folded into the size as a trailing '+' (long-context premium marker) instead of its own segment. Line churn uses the up/down arrow notation from rules/status-marks.md. PR label wrapped in OSC 8 with plain text inside per the linked-labels rule. Dropped the standalone 'think' segment: alwaysThinkingEnabled makes it near-constant"
+      "note": "PASS 4 (2026-07-29) removed exceeds_200k_tokens entirely: it rendered as a bare \"+\" on the window size (\"of 1M+\"), unreadable without knowing the rule, and it signals long-context premium PRICING -- the same reason cost.total_cost_usd is omitted (DISABLE_COST_WARNINGS=1). Also stripped the \"(1M context)\" suffix from model.display_name so the window is stated once, not twice; renamed the pacing marker from \"fast\" (which collided with the fast_mode segment) to an explicit multiple, \"2.2x pace\"; switched burn_rate to tenths-of-a-percent precision because whole percent reported 4.5x for a true 5.4x; and made the context bar 5 cells of thin rules (━/─) instead of 8 of block shading, with rounded rather than floored cell counts so 18% is not a visually empty bar. PASS 3 (2026-07-29) added rate_limits.*.resets_at, a burn-rate pacing signal, an 8-cell context bar, ANSI threshold colours, and statusLine.refreshInterval=60. Pace = used% vs elapsed% of the window; green <=125, yellow <=175, red above, suppressed under 15% used, with absolute overrides at 75/90. A 'fast' word appears only past the warn band. Renders in ~50ms. PASS 2 note follows -- second pass after auditing all ~40 documented payload fields against the 12 in use. fast_mode matters because Opus 5 fast mode is $10/$50 per Mtok and the state drifts (2.1.219 fixed stale fast-mode on Remote Control). context_window_size disambiguates ctx% -- a fallbackModel hop to Haiku silently drops 1M to 200k, previously invisible. exceeds_200k_tokens folded into the size as a trailing '+' (long-context premium marker) instead of its own segment. Line churn uses the up/down arrow notation from rules/status-marks.md. PR label wrapped in OSC 8 with plain text inside per the linked-labels rule. Dropped the standalone 'think' segment: alwaysThinkingEnabled makes it near-constant"
     }
   ],
   "declined": [
@@ -205,6 +197,10 @@
     {
       "feature": "subagentStatusLine",
       "reason": "not adopted 2026-07-29; payload gained model+effort in 2.1.214 and would suit the agent-teams setup, but no row-body customisation wanted yet"
+    },
+    {
+      "feature": "includeGitInstructions",
+      "reason": "adopted false on 2026-07-29, then reverted to the default (true) the same day at Teej's request. Turning it off removes the built-in commit/PR guidance -- redundant with rules/version-control.md (jj-first) and pr-safety.md -- but it ALSO removes the git status snapshot, and with it the recent-commits list, which project-context.sh does not supply. Losing session-start commit history outweighed dropping redundant prose. Key left absent rather than set to true, since true is the default"
     }
   ],
   "deferred": [
