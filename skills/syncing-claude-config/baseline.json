@@ -1,6 +1,6 @@
 {
-  "claudeCodeVersion": "2.1.212",
-  "syncedDate": "2026-07-17",
+  "claudeCodeVersion": "2.1.220",
+  "syncedDate": "2026-07-29",
   "source": "https://api.github.com/repos/anthropics/claude-code/releases",
   "adopted": [
     {
@@ -45,6 +45,80 @@
       "adoptedDate": "2026-07-06",
       "value": "5m",
       "note": "2.1.200 flipped AskUserQuestion to never auto-continue by default; 5m restores auto-continue so unattended sessions don't hang, while leaving time to answer when present. Enum: 60s|5m|10m|never"
+    },
+    {
+      "feature": "CLAUDE_CODE_SUBPROCESS_ENV_SCRUB",
+      "surface": "env var",
+      "introducedVersion": "2.1.83",
+      "adoptedDate": "2026-07-29",
+      "value": "1",
+      "note": "strips Anthropic/cloud creds from Bash, hooks, and MCP stdio subprocesses. Adopted because sandbox.enabled is false, which makes the whole sandbox.credentials block inert -- this delivers the same hardening without the sandbox. gh authenticates via keychain, not GITHUB_TOKEN, so it is unaffected"
+    },
+    {
+      "feature": "includeGitInstructions",
+      "surface": "settings.json key",
+      "introducedVersion": "2.1.69",
+      "adoptedDate": "2026-07-29",
+      "value": false,
+      "note": "removes built-in commit/PR instructions AND the git status snapshot from the system prompt; rules/version-control.md (jj-first) + pr-safety.md already override them, and the UserPromptSubmit hook supplies vcs/trunk/change/dirty. Recent-commits list is the one thing lost"
+    },
+    {
+      "feature": "emojiCompletionEnabled",
+      "surface": "settings.json key",
+      "introducedVersion": "2.1.217",
+      "adoptedDate": "2026-07-29",
+      "value": false,
+      "note": "suppresses :shortcode: -> emoji in the prompt input; matches the no-emoji convention in rules/status-marks.md and stops ':' in pasted paths/revsets opening a popup"
+    },
+    {
+      "feature": "skillOverrides",
+      "surface": "settings.json key",
+      "introducedVersion": "2.1.129",
+      "adoptedDate": "2026-07-29",
+      "value": {
+        "syncing-claude-config": "user-invocable-only",
+        "cleaning-commit-history": "user-invocable-only",
+        "executing-test-plans": "user-invocable-only"
+      },
+      "note": "adopted for trigger precision, NOT context budget -- all 10 skill descriptions total only ~790 tokens. These three are always invoked by name and should never self-start. using-jj/committing-changes/monitoring-ci/validating-project/searching-history stay on because auto-trigger is the point. Enum: on|name-only|user-invocable-only|off"
+    },
+    {
+      "feature": "SessionStart hook + hookSpecificOutput.sessionTitle",
+      "surface": "hook event",
+      "introducedVersion": "2.1.152",
+      "adoptedDate": "2026-07-29",
+      "value": "hooks/session-title.sh",
+      "note": "titles sessions as <folder>/<bookmark-or-branch>, degrading to <folder> on trunk or an unnamed ref. Chose SessionStart over UserPromptSubmit (2.1.94) because only SessionStart receives session_title as input, so only it can avoid clobbering /rename. Must be command-type (2.1.142 rejects prompt/agent-type here)"
+    },
+    {
+      "feature": "TeammateIdle hook",
+      "surface": "hook event",
+      "introducedVersion": "2.1.33",
+      "adoptedDate": "2026-07-29",
+      "value": "hooks/teammate-idle.sh",
+      "note": "gates teammate idle on `make validate`; exit 2 feeds stderr back and the teammate keeps working. Fires once per teammate turn-end. Supports no matchers, so the Makefile-has-validate check lives in the script"
+    },
+    {
+      "feature": "background: false on cleaning-commit-history",
+      "surface": "skill frontmatter field",
+      "introducedVersion": "2.1.218",
+      "adoptedDate": "2026-07-29",
+      "value": false,
+      "note": "2.1.218 made context:fork skills background by default. Opted this one out because it rewrites history and pr-safety.md requires stopping to ask before touching a reviewed branch -- backgrounded, that checkpoint degrades to a parked needs-input request. monitoring-ci and validating-project stay backgrounded"
+    },
+    {
+      "feature": "statusLine payload fields (rate_limits fix + model/effort/thinking/exceeds_200k/pr/worktree)",
+      "surface": "statusLine script",
+      "introducedVersion": "2.1.80/2.1.119/2.1.145/2.1.214",
+      "adoptedDate": "2026-07-29",
+      "note": "FIXED A LIVE BUG: hooks/status.sh read .rate_limits[0].used_percentage but rate_limits is an object keyed by five_hour/seven_day, so the rl segment had never rendered. Rewrote as two rows, one jq pass. ctx now reports used rather than remaining so ctx and rl both mean consumed. Cost omitted to match DISABLE_COST_WARNINGS. Neither row is character-sliced -- both carry escapes and cutting mid-sequence corrupts the terminal"
+    },
+    {
+      "feature": "statusLine payload: fast_mode, context_window_size, cost line churn, pr.url via OSC 8",
+      "surface": "statusLine script",
+      "introducedVersion": "2.1.145 (pr) / undated (fast_mode, context_window_size, cost.*)",
+      "adoptedDate": "2026-07-29",
+      "note": "PASS 3 (2026-07-29) added rate_limits.*.resets_at, a burn-rate pacing signal, an 8-cell context bar, ANSI threshold colours, and statusLine.refreshInterval=60. Pace = used% vs elapsed% of the window; green <=125, yellow <=175, red above, suppressed under 15% used, with absolute overrides at 75/90. A 'fast' word appears only past the warn band. Renders in ~50ms. PASS 2 note follows -- second pass after auditing all ~40 documented payload fields against the 12 in use. fast_mode matters because Opus 5 fast mode is $10/$50 per Mtok and the state drifts (2.1.219 fixed stale fast-mode on Remote Control). context_window_size disambiguates ctx% -- a fallbackModel hop to Haiku silently drops 1M to 200k, previously invisible. exceeds_200k_tokens folded into the size as a trailing '+' (long-context premium marker) instead of its own segment. Line churn uses the up/down arrow notation from rules/status-marks.md. PR label wrapped in OSC 8 with plain text inside per the linked-labels rule. Dropped the standalone 'think' segment: alwaysThinkingEnabled makes it near-constant"
     }
   ],
   "declined": [
@@ -87,6 +161,50 @@
     {
       "feature": "CLAUDE_CODE_MAX_SUBAGENTS_PER_SESSION=1000",
       "reason": "default 200 per-session cap fine (2.1.212); /clear resets budget — raise only if a workflow actually hits it"
+    },
+    {
+      "feature": "cleanupPeriodDays",
+      "reason": "explicitly declined 2026-07-29. Default 30d does prune transcripts (24 on disk vs 127 in glhf's index), but glhf's own DB outlives them. Note the DB lives in ~/Library/Caches/glhf/ and a purge + rebuild would only recover 30 days"
+    },
+    {
+      "feature": "vimInsertModeRemaps",
+      "reason": "declined 2026-07-29; the changelog's own `jj`->Escape example is actively wrong here since 'jj' is typed constantly as the VCS name"
+    },
+    {
+      "feature": "TaskCompleted hook",
+      "reason": "declined in favour of TeammateIdle; TaskCompleted fires on every TaskUpdate completion including routine solo-session task churn, so a validation gate there would run constantly"
+    },
+    {
+      "feature": "autoMode.allow / autoMode.hard_deny / permissions.ask",
+      "reason": "deferred by Teej 2026-07-29 — 'dont worry about auto mode or permissions ask for now'"
+    },
+    {
+      "feature": "cost.total_cost_usd in statusLine",
+      "reason": "omitted from the row-2 rewrite to match DISABLE_COST_WARNINGS=1; trivially re-added if wanted"
+    },
+    {
+      "feature": "powerline separators / Nerd Font glyphs in statusLine",
+      "reason": "declined 2026-07-29 after surveying prior art. ghostty is configured with plain 'Berkeley Mono' (not the NerdFont variant), so U+E0B0 would render via font fallback with possible cell-alignment seams; and starship.toml is deliberately glyph-free (every language symbol = \"\"), so a powerline row 2 would clash with row 1. Block glyphs used instead -- present in Berkeley Mono"
+    },
+    {
+      "feature": "truecolor hex colours in statusLine",
+      "reason": "declined in favour of ANSI named colours, which follow ghostty's Catppuccin Mocha mapping and survive a theme switch; starship row 1 also uses named colours, so the two rows stay coherent"
+    },
+    {
+      "feature": "polling /api/oauth/usage for quota",
+      "reason": "declined 2026-07-29; jtbr's script does this but a cache TTL under 180s risks rate-limiting and /login-minted tokens lack user:profile scope so it fails silently. The native rate_limits field on stdin is the same data with zero API calls"
+    },
+    {
+      "feature": "remaining-vs-remaining pacing ratio (benabraham)",
+      "reason": "tried and rejected 2026-07-29: it answers 'will I run out before reset', which under-reacts early -- 18% burned 10min into a 5h window scored a mild 0.85 while the observed rate was 5.4x even pace. Replaced with used%-vs-elapsed% burn rate (jtbr's pacing-marker metric)"
+    },
+    {
+      "feature": "sandbox.network.strictAllowlist / filesystem.disabled / deniedDomains / failIfUnavailable",
+      "reason": "all gated on sandbox.enabled, which is false — the June 2026 trial was rolled back. Revisit together if the sandbox is re-enabled"
+    },
+    {
+      "feature": "subagentStatusLine",
+      "reason": "not adopted 2026-07-29; payload gained model+effort in 2.1.214 and would suit the agent-teams setup, but no row-body customisation wanted yet"
     }
   ],
   "deferred": [

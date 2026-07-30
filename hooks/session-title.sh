@@ -1,0 +1,47 @@
+#!/bin/bash
+# Hook: SessionStart — name the session from worktree/bookmark/branch/folder.
+#
+# Added 2026-07-29 (feature landed in v2.1.152). SessionStart is used rather than
+# UserPromptSubmit because only SessionStart receives `session_title` as input,
+# so only here can the hook detect an existing title and decline to clobber it.
+# `sessionTitle` applies on source startup|resume|fork and is ignored on
+# clear|compact, so no work is wasted on those.
+#
+# Input:  JSON on stdin (session_title, cwd)
+# Output: JSON with hookSpecificOutput.sessionTitle, or nothing when a title exists
+
+input=$(cat)
+
+# Never overwrite a title the user set explicitly (--name / /rename) or one
+# already generated for this session.
+existing=$(jq -r '.session_title // ""' <<<"$input" 2>/dev/null)
+[[ -n "$existing" ]] && exit 0
+
+dir=$(jq -r '.cwd // ""' <<<"$input" 2>/dev/null)
+[[ -n "$dir" && -d "$dir" ]] || exit 0
+cd "$dir" || exit 0
+
+base=$(basename "$dir")
+ref=""
+
+# Named refs only. A change id or detached short hash is meaningless in a title
+# and churns every time the change is rewritten, so those degrade to bare $base.
+if [[ -d .jj ]]; then
+  ref=$(jj log -r @ --no-graph -T 'bookmarks.join(",")' 2>/dev/null)
+elif [[ -d .git ]]; then
+  ref=$(git branch --show-current 2>/dev/null)
+fi
+
+# Trunk adds no information beyond the folder name.
+case "$ref" in
+  master | main | trunk) ref="" ;;
+esac
+
+if [[ -n "$ref" ]]; then
+  title="$base/$ref"
+else
+  title="$base"
+fi
+
+esc=$(printf '%s' "$title" | sed 's/\\/\\\\/g; s/"/\\"/g')
+printf '{"hookSpecificOutput":{"hookEventName":"SessionStart","sessionTitle":"%s"}}\n' "$esc"

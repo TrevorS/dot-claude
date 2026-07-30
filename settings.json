@@ -6,6 +6,7 @@
     "CLAUDE_CODE_NEW_INIT": "1",
     "CLAUDE_CODE_NO_FLICKER": "1",
     "CLAUDE_CODE_RETRY_WATCHDOG": "1",
+    "CLAUDE_CODE_SUBPROCESS_ENV_SCRUB": "1",
     "CLAUDE_CODE_TMUX_TRUECOLOR": "1",
     "CLAUDE_CODE_WORKFLOWS": "1",
     "CLAUDE_NOTIFY_SOUND": "",
@@ -19,6 +20,7 @@
     "sessionUrl": false
   },
   "includeCoAuthoredBy": false,
+  "includeGitInstructions": false,
   "permissions": {
     "allow": [
       "Bash(brew install:*)",
@@ -167,6 +169,16 @@
         ]
       }
     ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$HOME/.claude/hooks/session-title.sh"
+          }
+        ]
+      }
+    ],
     "Stop": [
       {
         "matcher": "",
@@ -174,6 +186,16 @@
           {
             "type": "command",
             "command": "$HOME/.claude/hooks/claude-notify.sh"
+          }
+        ]
+      }
+    ],
+    "TeammateIdle": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$HOME/.claude/hooks/teammate-idle.sh"
           }
         ]
       }
@@ -195,7 +217,8 @@
   },
   "statusLine": {
     "type": "command",
-    "command": "$HOME/.claude/hooks/status.sh"
+    "command": "$HOME/.claude/hooks/status.sh",
+    "refreshInterval": 60
   },
   "enabledPlugins": {
     "clangd-lsp@claude-plugins-official": true,
@@ -273,8 +296,14 @@
       "brew *"
     ]
   },
+  "skillOverrides": {
+    "syncing-claude-config": "user-invocable-only",
+    "cleaning-commit-history": "user-invocable-only",
+    "executing-test-plans": "user-invocable-only"
+  },
   "alwaysThinkingEnabled": true,
   "askUserQuestionTimeout": "5m",
+  "emojiCompletionEnabled": false,
   "autoDreamEnabled": true,
   "showThinkingSummaries": true,
   "skipDangerousModePermissionPrompt": true,
