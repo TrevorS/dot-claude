@@ -6,7 +6,6 @@
     "CLAUDE_CODE_NEW_INIT": "1",
     "CLAUDE_CODE_NO_FLICKER": "1",
     "CLAUDE_CODE_RETRY_WATCHDOG": "1",
-    "CLAUDE_CODE_SUBPROCESS_ENV_SCRUB": "1",
     "CLAUDE_CODE_TMUX_TRUECOLOR": "1",
     "CLAUDE_CODE_WORKFLOWS": "1",
     "CLAUDE_NOTIFY_SOUND": "",
@@ -129,6 +128,11 @@
     "sonnet[1m]",
     "claude-sonnet-5"
   ],
+  "skillOverrides": {
+    "syncing-claude-config": "user-invocable-only",
+    "cleaning-commit-history": "user-invocable-only",
+    "executing-test-plans": "user-invocable-only"
+  },
   "hooks": {
     "Notification": [
       {
@@ -294,15 +298,10 @@
       "brew *"
     ]
   },
-  "skillOverrides": {
-    "syncing-claude-config": "user-invocable-only",
-    "cleaning-commit-history": "user-invocable-only",
-    "executing-test-plans": "user-invocable-only"
-  },
   "alwaysThinkingEnabled": true,
   "effortLevel": "xhigh",
-  "askUserQuestionTimeout": "5m",
   "emojiCompletionEnabled": false,
+  "askUserQuestionTimeout": "5m",
   "autoDreamEnabled": true,
   "showThinkingSummaries": true,
   "skipDangerousModePermissionPrompt": true,
