@@ -113,7 +113,12 @@ This produces a comparison table showing which variants produce intelligible spe
 ## Docker / NGC Container Usage
 
 When testing on a GPU box inside an NGC container (e.g. for CUDA flash-attn builds),
-ffmpeg isn't available and apt can be slow. Two workarounds:
+ffmpeg isn't available and apt can be slow. Two workarounds.
+
+**The `pip install` calls below are deliberate and container-scoped** — they install
+into the NGC container's own Python, which usually has no `uv`. This is the one place
+`rules/python.md`'s never-pip rule doesn't apply; on your own machine use the
+`uv run --no-project --with ...` form shown above instead.
 
 1. **Static ffmpeg binary** (fast, no apt):
 

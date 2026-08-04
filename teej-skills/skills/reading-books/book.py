@@ -12,12 +12,15 @@
 """
 Book Reader - Read and search digital books (PDF, EPUB, MOBI, TXT).
 
-Usage:
-    uvx book_reader.py info <file>
-    uvx book_reader.py toc <file>
-    uvx book_reader.py read <file> [--chapter N] [--page N] [--start N --length N]
-    uvx book_reader.py search <file> <query>
-    uvx book_reader.py extract <file>
+Usage (PEP 723 inline deps — `uv run` resolves them; `uvx` cannot run a local script):
+    uv run book.py info <file>
+    uv run book.py toc <file>
+    uv run book.py read <file> [--chapter N] [--page N] [--start N --length N]
+    uv run book.py search <file> <query> [--top N]
+    uv run book.py extract <file>
+
+From the skill, paths are plugin-relative:
+    uv run ${CLAUDE_PLUGIN_ROOT}/skills/reading-books/book.py info <file>
 """
 from __future__ import annotations
 

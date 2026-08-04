@@ -7,14 +7,19 @@ description: Upload model weights to HuggingFace at high speed using best practi
 
 ## Prerequisites
 
-```bash
-# Install fast transfer backends
-uv pip install hf_transfer hf_xet
+Pull the CLI and the fast-transfer backend in as inline deps rather than installing
+them into an ambient environment (matches `downloading-hf-models`):
 
-# Must be logged in
-huggingface-cli login
-# or set HF_TOKEN env var
+```bash
+# Log in once (or set HF_TOKEN instead)
+uv run --with huggingface_hub hf auth login
+
+# Every upload command takes the transfer backend as an inline dep
+uv run --with huggingface_hub --with hf_transfer hf upload ...
 ```
+
+`hf` is the current CLI — `huggingface-cli` is the retired name and is not installed
+here. Subcommands live under `hf auth` (`login`, `logout`, `whoami`).
 
 ## Best Practices
 
@@ -80,20 +85,35 @@ If using LoRA/PEFT, call `model.merge_and_unload()` before `save_pretrained()`. 
 
 Always save as `.safetensors`, never `.bin` or `.pth`. Safer and faster.
 
-## CLI Tool
+## Uploading
 
-A standalone upload script is at `~/.local/bin/hf-upload`:
+`hf upload` takes `REPO_ID [LOCAL_PATH] [PATH_IN_REPO]` and creates the repo if it
+doesn't exist. Per §3, create it private and flip to public after verifying:
 
 ```bash
-hf-upload models/my-model username/repo-name          # private by default
-hf-upload models/my-model username/repo-name --public  # public
-hf-upload models/my-model username/repo-name --dry-run # list files only
+# One shard at a time (per §2 — each file commits independently)
+uv run --with huggingface_hub --with hf_transfer \
+  hf upload username/repo-name models/my-model/model-00001-of-00003.safetensors \
+  --private
+
+# Whole folder, skipping the transformers cache dir (per §6)
+uv run --with huggingface_hub --with hf_transfer \
+  hf upload username/repo-name models/my-model --private --exclude ".cache/*"
+
+# Dry-run equivalent: there is no --dry-run, so list what would go up first
+uv run --with huggingface_hub hf upload --help
 ```
+
+Useful flags: `--include` / `--exclude` (globs), `--commit-message`,
+`--create-pr`, `--repo-type model|dataset|space`. For very large trees
+`hf upload-large-folder` resumes across interruptions.
 
 ## Running via nohup (for large uploads)
 
 ```bash
-HF_HUB_ENABLE_HF_TRANSFER=1 nohup hf-upload models/my-model user/repo > upload.log 2>&1 &
+HF_HUB_ENABLE_HF_TRANSFER=1 HF_HUB_DISABLE_XET=1 \
+  nohup uv run --with huggingface_hub --with hf_transfer \
+  hf upload user/repo models/my-model --private > upload.log 2>&1 &
 echo "PID: $! — tail -f upload.log"
 ```
 
