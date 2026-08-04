@@ -2,11 +2,12 @@
 # Hook: PreToolUse (Bash) — Block jj invocations that would open an interactive
 # editor (text, diff, or merge) and hang the agent, or use a renamed subcommand.
 # Command set verified against jj 0.43 CLI reference (docs.jj-vcs.dev).
-# KNOWN OVER-BLOCK: `jj split` is rejected unconditionally below, but since 0.43 it
-# only opens an editor when no filesets are given (`-i` is the default in that case).
-# `jj split -r <rev> -m "msg" <paths>` is safe. Teaching the check that exception
-# needs positional-vs-flag parsing, so it is left strict for now — see the caveat in
-# rules/version-control.md for the restore-based workaround.
+#
+# `jj split` is allowed in exactly one shape — filesets + -m, with no
+# -i/--interactive/--tool/--editor. Three separate editors can open otherwise:
+#   * no filesets      -> -i is the documented default, so the diff editor opens
+#   * no -m/--message  -> the description editor opens (-m is "don't open editor")
+#   * -i/--tool        -> diff editor;  --editor -> description editor even with -m
 #
 # Backstop relationship: $JJ_EDITOR (jj-reject-editor.sh) already fail-fasts any
 # *text* editor. This hook stops the command BEFORE it runs with a precise fix,
@@ -32,6 +33,52 @@ MSG
 # inside a -m message can't false-match). Pipe-separated alternatives.
 has() { [[ " $bare " =~ [[:space:]](${1})([[:space:]]|=|$) ]]; }
 
+# True when a `jj split` segment names at least one positional fileset.
+#
+# Parses the ORIGINAL segment rather than $bare: quote-stripping would turn
+# `-m "msg"` into a bare `-m`, and the following path would then be swallowed as
+# its value. Tokenizes quote-aware by hand — never eval/word-split untrusted
+# command text, which would execute any $(...) inside it. Only called on a
+# `jj split` segment, so the character loop costs nothing on other commands.
+split_has_fileset() {
+  local s="$1" c q="" tok="" had_tok=0 skip_next=0 seen_ddash=0 i
+  local -a toks=()
+  for (( i = 0; i < ${#s}; i++ )); do
+    c="${s:i:1}"
+    if [ -n "$q" ]; then
+      if [ "$c" = "$q" ]; then q=""; else tok+="$c"; fi
+      had_tok=1
+    elif [ "$c" = '"' ] || [ "$c" = "'" ]; then
+      q="$c"
+      had_tok=1
+    elif [ "$c" = " " ] || [ "$c" = $'\t' ]; then
+      if [ "$had_tok" -eq 1 ]; then toks+=("$tok"); tok=""; had_tok=0; fi
+    else
+      tok+="$c"
+      had_tok=1
+    fi
+  done
+  [ "$had_tok" -eq 1 ] && toks+=("$tok")
+
+  # Skip toks[0]=jj and toks[1]=split.
+  for (( i = 2; i < ${#toks[@]}; i++ )); do
+    tok="${toks[i]}"
+    if [ "$skip_next" -eq 1 ]; then skip_next=0; continue; fi
+    if [ "$seen_ddash" -eq 1 ]; then return 0; fi
+    case "$tok" in
+      --) seen_ddash=1 ;;
+      # Flags that take a value as a SEPARATE token. Attached forms (-r@-,
+      # --message=x) fall through to the -* arm below and consume nothing.
+      -r | --revision | -o | --onto | -A | --insert-after | -B | --insert-before \
+        | -m | --message | --tool | -R | --repository | --at-operation | --color \
+        | --config | --config-file) skip_next=1 ;;
+      -*) ;;
+      *) return 0 ;;
+    esac
+  done
+  return 1
+}
+
 # Split chained commands (&& || ; newline) and inspect each jj segment.
 segments=$(printf '%s' "$command" | sed -E 's/\&\&|\|\||;/\n/g')
 while IFS= read -r seg; do
@@ -43,11 +90,32 @@ while IFS= read -r seg; do
   # --help / -h just prints usage; never opens an editor.
   [[ "$bare" =~ (^|[[:space:]])(-h|--help)([[:space:]]|$) ]] && continue
 
-  # 1. No non-interactive mode at all.
-  if [[ "$bare" =~ ^jj[[:space:]]+(split|diffedit)([[:space:]]|$) ]]; then
+  # 1. diffedit has no non-interactive mode at all.
+  if [[ "$bare" =~ ^jj[[:space:]]+diffedit([[:space:]]|$) ]]; then
     block "  $seg
-  -> jj ${BASH_REMATCH[1]} has no non-interactive mode. Restructure with
+  -> jj diffedit has no non-interactive mode. Restructure with
      \`jj squash -m\`, \`jj new -m\`, or \`jj describe -m\` instead."
+  fi
+
+  # 1b. split is safe only as: filesets + -m, no -i/--interactive/--tool/--editor.
+  if [[ "$bare" =~ ^jj[[:space:]]+split([[:space:]]|$) ]]; then
+    if has '-i|--interactive|--tool|--editor'; then
+      block "  $seg
+  -> -i/--interactive/--tool opens the diff editor; --editor opens the
+     description editor even with -m. Drop the flag — name the paths instead:
+     \`jj split -r <rev> -m \"msg\" <paths>\`."
+    fi
+    if ! has '-m|--message'; then
+      block "  $seg
+  -> jj split without -m opens the description editor for the split-out
+     commit. Add -m \"msg\"."
+    fi
+    if ! split_has_fileset "$seg"; then
+      block "  $seg
+  -> jj split with no filesets defaults to -i and opens the diff editor.
+     Name the paths to make it non-interactive:
+     \`jj split -r <rev> -m \"msg\" <paths>\`."
+    fi
   fi
 
   # 2. config edit opens the editor; use the non-interactive setter.

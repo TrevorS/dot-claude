@@ -1,6 +1,6 @@
 ---
 name: using-jj
-description: Jujutsu (jj) version control reference. MUST load this skill whenever a query mentions jj, jujutsu, revsets, absorb, evolog, oplog, immutable_heads, divergent changes, or jj-specific concepts — jj differs from git in non-obvious ways and the skill contains critical constraints (e.g., always pass -m, never use split/diffedit) that prevent broken workflows. Skip only for trivial jj commands you're certain about (describe, new, commit, push).
+description: Jujutsu (jj) version control reference. MUST load this skill whenever a query mentions jj, jujutsu, revsets, absorb, evolog, oplog, immutable_heads, divergent changes, or jj-specific concepts — jj differs from git in non-obvious ways and the skill contains critical constraints (e.g., always pass -m, the exact non-interactive form of split, never use diffedit) that prevent broken workflows. Skip only for trivial jj commands you're certain about (describe, new, commit, push).
 ---
 
 # jj Workflow
@@ -25,10 +25,17 @@ is in the always-loaded `rules/version-control.md` — not repeated here. The on
 version: **always pass `-m`**, never pass `-i`/`--interactive`/`--tool`, and never
 reach for `jj diffedit` or `jj resolve` without `--tool`.
 
-`jj split` is the exception worth knowing: as of jj 0.43 it only opens an editor when
-**no filesets** are given, so `jj split -r <rev> -m "msg" <paths>` is non-interactive.
-`hooks/jj_interactive_guard.sh` still blocks all `jj split` though — see the caveat in
-`rules/version-control.md` for the restore-based workaround.
+`jj split` is the exception worth knowing: it has a non-interactive form (verified
+against jj 0.44), but it needs **both** paths and `-m`:
+
+```bash
+jj split -r <rev> -m "first part" path/a path/b   # rest stays in the child commit
+```
+
+Without filesets `-i` is the default (diff editor); without `-m` the description editor
+opens; `--editor` forces one even with `-m`. `hooks/jj_interactive_guard.sh` allows only
+the safe shape, so a wrong form blocks instantly instead of hanging. This is the clean
+way to break one change into several commits — no restore/copy dance needed.
 
 Two guards enforce it: `hooks/jj_interactive_guard.sh` blocks editor-opening
 invocations pre-run, and `$JJ_EDITOR` (`hooks/jj-reject-editor.sh`) fail-fasts any

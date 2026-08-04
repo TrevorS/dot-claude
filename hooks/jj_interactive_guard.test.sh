@@ -28,6 +28,14 @@ run BLOCK 'jj describe'
 run BLOCK 'jj commit'
 run BLOCK 'jj split'
 run BLOCK 'jj split --tool meld'
+# split: each of the three editor paths must still block
+run BLOCK 'jj split -m "msg"'                          # -m but no filesets -> -i default
+run BLOCK 'jj split -r @- -m "msg"'                    # revision is not a fileset
+run BLOCK 'jj split foo.txt'                           # filesets but no -m -> desc editor
+run BLOCK 'jj split -i -m "msg" foo.txt'               # explicit -i
+run BLOCK 'jj split -m "msg" --editor foo.txt'         # --editor forces desc editor
+run BLOCK 'jj split --tool meld -m "msg" foo.txt'      # --tool implies -i
+run BLOCK 'jj split -m "add foo.txt to repo"'          # path only inside the message
 run BLOCK 'jj diffedit -r @-'
 run BLOCK 'jj forget foo.txt'
 run BLOCK 'jj resolve'
@@ -51,6 +59,14 @@ run PASS 'jj log -r @ --no-graph'
 run PASS 'jj resolve --tool :ours'
 run PASS 'jj config set ui.editor nvim'
 run PASS 'jj config get ui.editor'
+# split: the one safe shape — filesets + -m, no interactive flag
+run PASS 'jj split -m "first half" foo.txt'
+run PASS 'jj split -r @- -m "first half" src/a.py src/b.py'
+run PASS 'jj split -m "msg" -- weird-name'
+run PASS 'jj split --message="msg" foo.txt'
+run PASS 'jj split -m "msg" --parallel foo.txt'
+run PASS 'jj split -m "keep -i out of this" foo.txt'
+run PASS 'jj split -m "msg" "path with spaces.txt"'
 run PASS 'jj squash --message="combine -i please"'
 run PASS 'jj describe -m "use -i for interactive"'
 run PASS 'jj commit --help'
