@@ -1,7 +1,12 @@
 #!/bin/bash
 # Hook: PreToolUse (Bash) — Block jj invocations that would open an interactive
 # editor (text, diff, or merge) and hang the agent, or use a renamed subcommand.
-# Command set verified against jj 0.39 CLI reference (docs.jj-vcs.dev).
+# Command set verified against jj 0.43 CLI reference (docs.jj-vcs.dev).
+# KNOWN OVER-BLOCK: `jj split` is rejected unconditionally below, but since 0.43 it
+# only opens an editor when no filesets are given (`-i` is the default in that case).
+# `jj split -r <rev> -m "msg" <paths>` is safe. Teaching the check that exception
+# needs positional-vs-flag parsing, so it is left strict for now — see the caveat in
+# rules/version-control.md for the restore-based workaround.
 #
 # Backstop relationship: $JJ_EDITOR (jj-reject-editor.sh) already fail-fasts any
 # *text* editor. This hook stops the command BEFORE it runs with a precise fix,

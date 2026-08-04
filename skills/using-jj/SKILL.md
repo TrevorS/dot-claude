@@ -23,7 +23,12 @@ For daily-command tables, git equivalents, troubleshooting, parallel-experiment 
 The full editor-hazard table (every command that opens an editor, and its safe form)
 is in the always-loaded `rules/version-control.md` — not repeated here. The one-line
 version: **always pass `-m`**, never pass `-i`/`--interactive`/`--tool`, and never
-reach for `jj split` / `jj diffedit` / `jj resolve` without `--tool`.
+reach for `jj diffedit` or `jj resolve` without `--tool`.
+
+`jj split` is the exception worth knowing: as of jj 0.43 it only opens an editor when
+**no filesets** are given, so `jj split -r <rev> -m "msg" <paths>` is non-interactive.
+`hooks/jj_interactive_guard.sh` still blocks all `jj split` though — see the caveat in
+`rules/version-control.md` for the restore-based workaround.
 
 Two guards enforce it: `hooks/jj_interactive_guard.sh` blocks editor-opening
 invocations pre-run, and `$JJ_EDITOR` (`hooks/jj-reject-editor.sh`) fail-fasts any
