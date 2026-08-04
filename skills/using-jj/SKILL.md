@@ -20,29 +20,14 @@ For daily-command tables, git equivalents, troubleshooting, parallel-experiment 
 
 ## CRITICAL: AI-specific rules
 
-Always pass `-m` — unset opens an editor and blocks the agent:
+The full editor-hazard table (every command that opens an editor, and its safe form)
+is in the always-loaded `rules/version-control.md` — not repeated here. The one-line
+version: **always pass `-m`**, never pass `-i`/`--interactive`/`--tool`, and never
+reach for `jj split` / `jj diffedit` / `jj resolve` without `--tool`.
 
-```bash
-jj new -m "msg"
-jj describe -m "msg"
-jj commit -m "msg"
-jj squash -m "msg"
-```
-
-These open an editor and hang the agent (jj 0.39). Two guards enforce this —
-`hooks/jj_interactive_guard.sh` blocks them pre-run, and `$JJ_EDITOR`
-(`hooks/jj-reject-editor.sh`) fail-fasts any editor jj still opens — but get
-them right the first time:
-
-- `jj describe` / `jj commit` with no `-m` → add `-m "msg"`
-- `jj squash` with no message → add `-m "msg"`, or `-u` to reuse the destination's
-- `jj commit` / `jj squash` with `-i` / `--interactive` / `--tool` → opens the hunk
-  picker even *with* `-m`; drop the flag, edit files, then `jj squash -m`
-- `jj split`, `jj diffedit` → no non-interactive mode; restructure with `jj squash -m` / `jj new -m`
-- `jj resolve` → edit the conflict markers in the files, then `jj squash -m`; or pass `--tool`
-- `jj config edit` → use `jj config set <name> <value>`
-
-Renamed: untrack a file with `jj file untrack <path>` — `jj forget` is gone.
+Two guards enforce it: `hooks/jj_interactive_guard.sh` blocks editor-opening
+invocations pre-run, and `$JJ_EDITOR` (`hooks/jj-reject-editor.sh`) fail-fasts any
+editor jj still opens.
 
 ## Core concepts
 

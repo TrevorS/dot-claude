@@ -1,8 +1,8 @@
 # Status Marks & Indicators
 
-Conventions for per-item status lines, diff/duration indicators, and report layout. Many GFM features don't render in the Claude Code TUI for this terminal/theme — these rules pick the subset that actually displays distinctly.
+Conventions for per-item status lines and diff/duration indicators. Many GFM features don't render in the Claude Code TUI for this terminal/theme — these rules pick the subset that displays distinctly.
 
-Skills running in a fork context should reference `~/.claude/references/status-marks.md` (compact subset, not auto-loaded) rather than this file.
+Layout galleries, worked examples, and the full rationale live in `~/.claude/references/status-marks.md` (not auto-loaded). Read it when composing a multi-block report; skills in a fork context should reference it rather than this file.
 
 ## Status marks
 
@@ -11,8 +11,6 @@ Skills running in a fork context should reference `~/.claude/references/status-m
 - ❨`✗`❩ — fail / error
 
 Always wrap the inner flag in inline code; keep the parenthesis ornaments (`❨` U+2768 / `❩` U+2769) plain. Never use emoji checkmarks (`✅`, `❌`, `✔️`) — they render inconsistently and violate the no-emoji default.
-
-## Example
 
 ❨`✓`❩ Validate — *9/9 passed*
 ❨`~`❩ Cooldown — *active until 00:35*
@@ -34,92 +32,26 @@ Glyphs need a space before the number (`` `↑` `` 213, not `` `↑` ``213). Dif
 
 - *italic* — descriptive prose ("*9/9 passed*", "*active until 00:35*")
 - `code` — terse data, file paths, identifiers, SHAs
-- *`italic-code`* — italic wrapping a code span; both render together for emphasis on terse data
+- *`italic-code`* — italic wrapping a code span; both render together
 
 Don't rely on bold — it renders identical to plain in this terminal/theme.
 
-## Linked labels
-
-When the label points to a clickable target (commit, PR, CI run, issue, file in repo), put plain text inside the link — code styling overrides link color:
+When the label points to a clickable target (commit, PR, CI run, issue), put **plain text** inside the link — code styling overrides link color:
 
 ❨`✓`❩ [Format and Lint Check](https://...) — `✓` 9/9
 
-If the SHA itself is the label, choose: link color (`[79ed823](url)`) or code color (`` `79ed823` `` + separate link elsewhere). Can't have both on one span.
+Don't link without an actionable target.
 
-Don't link without an actionable target. Skip the markdown link if no useful URL.
+## Splitting long detail
 
-## Layout
+Detail that would wrap past one terminal row goes on continuation lines — never joined with `;` and never stuffed into a parenthetical:
 
-**Single-line with `·` interpunct** — for terse status:
+- `` `├─` `` / `` `╰─` `` — plain detail (non-last / last child)
+- `` `├─▶` `` / `` `╰─▶` `` — when the child is a result or action
 
-❨`✓`❩ Action `→` target · `↑` N `↓` N · `⏱` Xm · `✓` N/N
+Indent the glyph one space so it sits under the `✓` (the space goes *outside* the code span); leave a blank line after the last child; never wrap branch glyphs in `❨ ❩`.
 
-**Multi-line line-items** — when detail matters:
-
-❨`✓`❩ Diff — `↑` 213 `↓` 15 across 5 files
-❨`✓`❩ Commits — 2 `→` master (`79ed823`, `637f804`)
-❨`✓`❩ CI — `⏱` 7m, `✓` 9/9 jobs
-
-Markdown collapses internal whitespace; don't rely on visual column alignment with spaces.
-
-**Tables** — for 3+ rows of comparable data:
-
-| Commit    | Diff           | Time   | Jobs    |
-| --------- | -------------- | ------ | ------- |
-| `637f804` | `↑` 213 `↓` 15 | `⏱` 7m | `✓` 9/9 |
-| `79ed823` | `↑` 200 `↓` 0  | `⏱` 5m | `✓` 9/9 |
-| `092d4bd` | `↑` 12 `↓` 4   | `⏱` 3m | `✓` 9/9 |
-
-**Blockquotes** — small amounts of text only (a one-liner banner, a brief callout). Wide content in a blockquote pushes text too far right and reads poorly. Don't blockquote multi-paragraph or wide content.
-
-## Continuation lines
-
-When detail under a status line would push past one terminal row, split onto continuation lines using rounded box-drawing branches. Don't jam two clauses with `;` or wrap detail in parentheticals — splitting always reads better than wrapping.
-
-- `` `├─` `` — non-last child, plain detail
-- `` `╰─` `` — last child, plain detail
-- `` `├─▶` `` / `` `╰─▶` `` — when the child is a result or action, not just descriptive detail
-
-Indent the branch glyph by one space so it sits directly under the `✓` of `❨✓❩` — the tree visually descends from the status mark. The leading space goes *outside* the code span (markdownlint MD038 forbids spaces inside code spans).
-
-Leave a blank line after the last child (`╰─`) before the next status line. The tree-continuation is a block; the blank line separates one block from the next so the children can't be misread as siblings of the following status mark.
-
-Branch glyphs stand alone — don't wrap them in the parenthesis ornaments (`❨├─❩` ✗). `❨ ❩` is only for the status flag (`✓` / `~` / `✗`).
-
-**Plain detail** (no arrow):
-
-❨`✓`❩ Conflict — *settings.json Stop block*
- `├─` kept new `revise-claude-md-stop.py` hook (`~` → `$HOME`)
- `╰─` dropped re-introduced `PostCompact` / `post-compact.sh`
-
-**Result / action** (arrow):
-
-❨`✓`❩ Push — `0da48f3d` `→` `master`
- `├─▶` 6 files (`↑` 15 `↓` 148)
- `╰─▶` CI run #25952834388 triggered
-
-## Categorical lists
-
-For multi-item *proposals* (fix lists, audit findings, change packages, refactor scope) prefer flat-but-grouped bullets under H4 mini-headers. Group by intent or kind, not by chronology. Categorical contrast does more readability work than visual tree branches when the items are peers, not children.
-
-Use real `####` headings rather than `**Bold**` on its own line — H4 collapses to plain text in this TUI (see Anti-patterns), so the rendering is identical, but `####` is lint-clean (markdownlint MD036 forbids emphasis-as-heading) and semantically a heading.
-
-### Example
-
-#### Bugs
-
-- `--timeout` is dead code — parsed but never read.
-- `find_run`'s 60s `max_wait` is too tight against GH's 30–90s registration latency.
-
-#### Polish
-
-- 5s grace before the first poll.
-- `--limit` 10 → 30 for headroom.
-- Skip the trailing sleep on the final iteration.
-
-Pick contrasting categories, not arbitrary buckets — Bugs/Polish, Must/Nice, Blocker/Follow-up. Two crisp groups beat four wishy-washy ones. Keep each bullet to one rendered line; if it would wrap, split it (see the list-continuation anti-pattern below).
-
-Reserve the Continuation lines tree (`├─` / `╰─`) for parent-child *status reporting* — one status mark with sub-results — not for any multi-item list.
+For multi-item *proposals* (fix lists, findings, change packages) use flat bullets under real `####` headings grouped by intent — not the branch tree, which is for one status mark with its sub-results. Layout options (single-line `·`, multi-line line-items, tables, blockquotes) are in the reference.
 
 ## Anti-patterns (silently broken in this terminal)
 
@@ -132,7 +64,7 @@ Reserve the Continuation lines tree (`├─` / `╰─`) for parent-child *stat
 - Italic on the ⏱ stopwatch glyph specifically — doesn't slant; use code wrap only
 - Italic inside an inline code span (`` `*x*` ``) — markers shown literally
 - Wrapping link text in inline code (`` [`text`](url) ``) — code color wins, link color lost
-- List-item continuation indent — bullets and numbered items collapse continuation lines flush-left regardless of source indent (2 or 4 spaces). Keep bullets to one rendered line; if it would wrap, split it or drop out of the list.
+- List-item continuation indent — bullets collapse continuation lines flush-left regardless of source indent. Keep bullets to one rendered line; if it would wrap, split it or drop out of the list.
 
 ## When this applies
 
