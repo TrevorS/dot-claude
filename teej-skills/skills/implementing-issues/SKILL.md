@@ -75,17 +75,25 @@ git push -u origin HEAD
 
 **PR creation**:
 
+Write the body with the Write tool, then pass it by path — no heredocs:
+
 ```bash
-gh pr create --title "[Issue #<number>] Title" --body "$(cat <<'EOF'
+gh pr create --title "[Issue #<number>] Title" --body-file <scratchpad>/pr-body.md
+```
+
+Body template:
+
+```markdown
 ## Summary
 <bullets>
 
 ## Test plan
 - [ ] Tests pass
 - [ ] Manual verification
-EOF
-)"
 ```
+
+In a jj-colocated repo git HEAD is detached, so also pass `--head <bookmark>` —
+`gh` cannot infer the branch. See the `using-jj` skill.
 
 ## Command Reference
 

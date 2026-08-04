@@ -89,9 +89,9 @@ Every intermediate state must build and pass tests.
 # Squash related changes (always use -m!)
 jj squash --from <change1> --into <change2> -m "combined message"
 
-# Selective restore (jj split is interactive, avoid it)
-jj new -m "first part"
-jj restore --from @- <files-for-first-commit>
+# Split one change into several — non-interactive, needs BOTH paths and -m.
+# The named paths go to the split-out commit; the rest stays in the child.
+jj split -r <change> -m "first part" path/a path/b
 
 # Reorder
 jj rebase -r <change> -d <new-parent>

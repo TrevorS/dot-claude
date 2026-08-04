@@ -60,12 +60,20 @@ jj describe -m "feat: message here"
 
 ```bash
 git add <specific-files>
-git commit -F /tmp/commit-msg.txt
+git commit -F <scratchpad>/commit-msg.txt
 ```
 
-Use the Write tool for commit message files (avoids shell escaping). Handle pre-commit hook failures by re-staging and retrying once.
+Use the Write tool for commit message files (avoids shell escaping). Write them to the session scratchpad directory given in the environment context — not `/tmp`. There is no env var for it; substitute the literal path. Handle pre-commit hook failures by re-staging and retrying once.
 
 ### 6. Push (if --push or explicitly requested)
+
+**PR-safety gate first.** If the branch already has an open PR, check for review activity before pushing anything that rewrites what's there:
+
+```bash
+gh pr view <branch> --json reviews,comments 2>/dev/null
+```
+
+Plain new commits on top are always safe. But if `reviews` or `comments` is non-empty and this push would rewrite already-pushed commits (amended description, squash, rebase), **stop and ask Teej** — force-pushing detaches review threads from their line anchors. See `rules/pr-safety.md`.
 
 **jj**:
 

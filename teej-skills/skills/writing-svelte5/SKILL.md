@@ -102,6 +102,6 @@ Always use Svelte 5 runes. Never use Svelte 4 patterns.
 
 Load these when needed:
 
-- **[references/typescript.md](references/typescript.md)** — Typing props, state, derived, snippets, events, context
-- **[references/patterns.md](references/patterns.md)** — Context API, controlled inputs, forwarding props, async data, debouncing
-- **[references/gotchas.md](references/gotchas.md)** — Reactivity edge cases, effect pitfalls, binding quirks
+- **[typescript.md](typescript.md)** — Typing props, state, derived, snippets, events, context
+- **[patterns.md](patterns.md)** — Context API, controlled inputs, forwarding props, async data, debouncing
+- **[gotchas.md](gotchas.md)** — Reactivity edge cases, effect pitfalls, binding quirks

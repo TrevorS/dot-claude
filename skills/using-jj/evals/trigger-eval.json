@@ -49,7 +49,11 @@
   },
   {
     "query": "create a new bookmark and push it",
-    "should_trigger": false
+    "should_trigger": true
+  },
+  {
+    "query": "should I set my bookmark to @ or @- before pushing?",
+    "should_trigger": true
   },
   {
     "query": "rebase onto the latest main",

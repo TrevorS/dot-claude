@@ -161,7 +161,7 @@ Use `.background(.ultraThinMaterial)` for adaptive backgrounds. See REFERENCE.md
 
 ## Resources
 
-For detailed examples, anti-patterns, debuggging techniques, and migration strategies, see [REFERENCE.md](REFERENCE.md).
+For detailed examples, anti-patterns, debugging techniques, and migration strategies, see [REFERENCE.md](REFERENCE.md).
 
 ## Questions Before Starting
 

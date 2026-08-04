@@ -152,7 +152,7 @@
     },
     {
       "feature": "CLAUDE_CODE_MAX_SUBAGENTS_PER_SESSION=1000",
-      "reason": "default 200 per-session cap fine (2.1.212); /clear resets budget — raise only if a workflow actually hits it"
+      "reason": "OBSOLETE as of 2.1.224, which removed the 200-subagent-per-session spawn cap entirely; there is no longer a cap to raise. Concurrency and depth limits still apply. Originally declined 2026-07-29 on the grounds that the default 200 cap (2.1.212) was fine and /clear reset the budget"
     },
     {
       "feature": "cleanupPeriodDays",
@@ -225,6 +225,24 @@
       "feature": "CLAUDE_CLIENT_PRESENCE_FILE",
       "status": "optional/future",
       "note": "only if mobile push storms at the headless mac mini"
+    },
+    {
+      "feature": "crossSessionInbound",
+      "introducedVersion": "2.1.224",
+      "reason": "declined 2026-08-10; left unset so the dynamic per-message default applies. The default keys off permission-mode CLASS, and auto/acceptEdits/dontAsk all count as prompting -- so with permissions.defaultMode=auto, everyday sessions already deliver peer messages with zero friction. The hold only fires in bypassPermissions sessions (which skipDangerousModePermissionPrompt:true means Teej does run), and there the approval dialog is the ONLY remaining gate, since a bypass session has no permission prompts left to catch what the message asks for. A user-scope \"accept\" would remove that gate globally to buy convenience in the minority case. Enum: accept|hold|refuse, ordered accept<hold<refuse; project/local settings may only tighten. NOTE the -p gap: a headless worker cannot render the approval dialog, so a held message stays held forever there -- fix per-invocation with `claude -p --settings '{\"crossSessionInbound\":\"accept\"}'`, never at user scope"
+    },
+    {
+      "feature": "dialogExpiry",
+      "introducedVersion": "2.1.224",
+      "reason": "declined 2026-08-10; the 5m default is already correct and matches askUserQuestionTimeout=5m. Semantics differ though: askUserQuestionTimeout auto-CONTINUES on expiry, while dialogExpiry DROPS the held cross-session message. \"never\" would preserve messages but also hangs the remote-client model-choice-after-refusal dialog that shares this deadline, which contradicts the unattended-session posture. Key left absent rather than set to \"5m\", since 5m is the default. Enum: 60s|5m|10m|never; CLAUDE_CODE_USER_DIALOG_TIMEOUT_MS overrides it"
+    },
+    {
+      "feature": "isolatePeerMachines",
+      "reason": "not adopted 2026-08-10; docs-surfaced sibling of the 2.1.224 cross-session work, not itself in the 2.1.222-226 changelog. Would require explicit approval before any SendMessage leaves the machine. Left unset because the cross-machine path is already mostly closed here: it rides the Remote Control connection and remoteControlAtStartup is false, and cross-machine is reply-only in any case. Revisit if Remote Control starts auto-connecting"
+    },
+    {
+      "feature": "permissions.deny on SendMessage / ListAgents",
+      "reason": "not adopted 2026-08-10; this is the full opt-out from cross-session messaging (both take the bare tool name, no specifier). Declined because the feature is wanted -- and note denying SendMessage would ALSO remove messaging to subagents and agent-team teammates, which share the same tool, breaking the CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS + teammateMode:tmux setup"
     }
   ]
 }

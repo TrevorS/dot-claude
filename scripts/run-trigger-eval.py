@@ -68,7 +68,13 @@ def run_single_query(
                     replaced = True
                 else:
                     new_lines.append(line)
-            skill_file.write_text("\n".join(new_lines))
+            # splitlines() drops the trailing newline; restore it so the swapped
+            # file is byte-identical to the original apart from the description.
+            # Workers share one SKILL.md, so a racing worker can capture this
+            # rewrite as its own "original_content" and restore *that* — without
+            # this, every run left the file one byte short and dirtied the tree.
+            trailing = "\n" if original_content.endswith("\n") else ""
+            skill_file.write_text("\n".join(new_lines) + trailing)
 
         cmd = [
             "claude",
@@ -161,6 +167,48 @@ def parse_skill_md(skill_path: Path) -> tuple[str, str, str]:
     return name, description, content
 
 
+def auto_trigger_disabled(skill_name: str, skill_path: Path) -> str | None:
+    """Return a reason string when this skill cannot auto-trigger at all.
+
+    Two independent causes, both of which produce a uniform 0.0 trigger rate that
+    reads as a broken description rather than a disabled skill:
+
+    1. `skillOverrides` set to user-invocable-only / name-only / off.
+    2. The skill belongs to a plugin that is disabled in `enabledPlugins`.
+
+    Guarding both is the difference between "your description needs work" and
+    "this measurement was never capable of passing".
+    """
+    settings = Path.home() / ".claude" / "settings.json"
+    if not settings.exists():
+        return None
+    try:
+        cfg = json.loads(settings.read_text())
+    except (json.JSONDecodeError, OSError):
+        return None
+
+    mode = cfg.get("skillOverrides", {}).get(skill_name)
+    if mode in ("user-invocable-only", "name-only", "off"):
+        return f'settings.json skillOverrides sets it to "{mode}"'
+
+    # Walk up for a plugin manifest, then check whether that plugin is enabled.
+    for parent in [skill_path.resolve(), *skill_path.resolve().parents]:
+        manifest = parent / ".claude-plugin" / "plugin.json"
+        if not manifest.exists():
+            continue
+        try:
+            plugin_name = json.loads(manifest.read_text()).get("name")
+        except (json.JSONDecodeError, OSError):
+            return None
+        if not plugin_name:
+            return None
+        for key, enabled in cfg.get("enabledPlugins", {}).items():
+            if key.split("@")[0] == plugin_name and enabled is False:
+                return f'it belongs to plugin "{key}", which is disabled in enabledPlugins'
+        return None
+    return None
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--eval-set", required=True)
@@ -172,6 +220,11 @@ def main():
     parser.add_argument("--trigger-threshold", type=float, default=0.5)
     parser.add_argument("--model", default=None)
     parser.add_argument("--verbose", action="store_true")
+    parser.add_argument(
+        "--allow-disabled",
+        action="store_true",
+        help="run even when skillOverrides blocks auto-triggering (results will be all-zero)",
+    )
     args = parser.parse_args()
 
     eval_set = json.loads(Path(args.eval_set).read_text())
@@ -179,6 +232,21 @@ def main():
     name, original_description, _ = parse_skill_md(skill_path)
     description = args.description or original_description
     project_root = find_project_root()
+
+    blocked = auto_trigger_disabled(name, skill_path)
+    if blocked and not args.allow_disabled:
+        print(
+            f"refusing to run: `{name}` cannot auto-trigger ({blocked}), so every\n"
+            f"should_trigger=true case is guaranteed to fail and the result says\n"
+            f"nothing about description quality.\n\n"
+            f"Fix one of:\n"
+            f"  - re-enable the skill (drop the skillOverrides entry, or\n"
+            f"    `claude plugin enable <plugin>`) if it is meant to auto-trigger\n"
+            f"  - set every should_trigger to false in {args.eval_set}\n"
+            f"  - pass --allow-disabled to measure the description anyway",
+            file=sys.stderr,
+        )
+        return 2
 
     if args.verbose:
         print(f"Evaluating: {description}", file=sys.stderr)
@@ -250,4 +318,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main() or 0)

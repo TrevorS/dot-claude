@@ -29,7 +29,9 @@ Pick the right home before writing anything:
 Per-session: `SessionStart`, `SessionEnd`, `Setup`
 Per-turn: `UserPromptSubmit`, `UserPromptExpansion`, `Stop`, `StopFailure`
 Per-tool: `PreToolUse`, `PostToolUse`, `PostToolUseFailure`, `PermissionRequest`, `PermissionDenied`, `PostToolBatch`
-Async: `FileChanged`, `CwdChanged`, `ConfigChange`, `InstructionsLoaded`, `WorktreeCreate`, `WorktreeRemove`, `Notification`, `SubagentStart`, `SubagentStop`, `TaskCreated`, `TaskCompleted`, `PreCompact`, `PostCompact`, `TeammateIdle`, `Elicitation`, `ElicitationResult`, `MessageDisplay`
+Async: `FileChanged`, `CwdChanged`, `DirectoryAdded`, `ConfigChange`, `InstructionsLoaded`, `WorktreeCreate`, `WorktreeRemove`, `Notification`, `SubagentStart`, `SubagentStop`, `TaskCreated`, `TaskCompleted`, `PreCompact`, `PostCompact`, `TeammateIdle`, `Elicitation`, `ElicitationResult`, `MessageDisplay`
+
+That is all 31 documented events (verified against the hooks reference, 2026-08-10).
 
 ### Exit codes
 
@@ -79,6 +81,8 @@ Visibility control in settings.json: `skillOverrides` — set per-skill to `on`,
 Default to frontmatter so the setting travels with the skill. **Exception — the two are not interchangeable:** `disable-model-invocation: true` *also* blocks the skill from being preloaded into subagents and (since 2.1.196) from running when a scheduled task fires with the skill as its prompt. `skillOverrides: "user-invocable-only"` suppresses auto-triggering without taking those away. So when a skill must stay reachable from a scheduled task or a subagent, use `skillOverrides`.
 
 That is why `syncing-claude-config`, `cleaning-commit-history`, and `executing-test-plans` are pinned in `settings.json` rather than in their own frontmatter.
+
+**Trigger evals and suppressed skills don't mix.** `user-invocable-only`, `name-only`, and `off` all stop a skill from auto-loading, so a trigger eval against one returns a flat 0.0 trigger rate — which reads as a broken description rather than a disabled skill. `scripts/run-trigger-eval.py` now refuses to run in that case (exit 2) and names the override; pass `--allow-disabled` to override. The three eval sets above are kept as-is on purpose: they describe what those skills *would* serve, so they become meaningful again the moment an override is dropped.
 
 ## Rules
 

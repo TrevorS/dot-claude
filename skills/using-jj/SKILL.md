@@ -1,6 +1,6 @@
 ---
 name: using-jj
-description: Jujutsu (jj) version control reference. MUST load this skill whenever a query mentions jj, jujutsu, revsets, absorb, evolog, oplog, immutable_heads, divergent changes, or jj-specific concepts — jj differs from git in non-obvious ways and the skill contains critical constraints (e.g., always pass -m, the exact non-interactive form of split, never use diffedit) that prevent broken workflows. Skip only for trivial jj commands you're certain about (describe, new, commit, push).
+description: Jujutsu (jj) version control reference. MUST load this skill whenever a query mentions jj, jujutsu, revsets, bookmarks, absorb, evolog, oplog, immutable_heads, divergent changes, or jj-specific concepts — jj differs from git in non-obvious ways and the skill contains critical constraints (e.g., always pass -m, the exact non-interactive form of split, which revision a bookmark must target before pushing) that prevent broken workflows. Skip only for trivial jj commands you're certain about (describe, new, commit, push).
 ---
 
 # jj Workflow
@@ -80,12 +80,18 @@ From `@`, `jj absorb` routes each hunk to the ancestor where those lines were la
 
 ## Bookmarks & pushing
 
-Bookmarks don't auto-advance — move them explicitly. `@` is typically empty; target `@-`.
+Bookmarks don't auto-advance — move them explicitly. **Target whichever revision
+actually holds the work**, which depends on the flow you just used:
 
 ```bash
-jj bookmark set <name> -r @-
+jj bookmark set <name> -r @-    # after `jj squash`/`jj commit`: @ is a fresh empty change
+jj bookmark set <name> -r @     # after `jj describe -m` alone: @ IS the work
 jj git push
 ```
+
+Getting this wrong is silent: pushing `@-` when `@` holds the work publishes the
+previous commit, and CI then reports a green result for code you never pushed.
+Check with `jj log -r @` before setting the bookmark if you're unsure.
 
 ## Don't rewrite reviewed PR history
 
@@ -94,19 +100,23 @@ If a PR has review comments, do NOT squash or rewrite the original commits — r
 Default (safe — preserves comment anchors):
 
 ```bash
-jj new feature-x- -m "address feedback"
+jj new feature-x -m "fixup: address feedback"
 # ... make changes ...
-jj describe -m "fixup: address feedback"
-jj bookmark set feature-x -r @-
+jj bookmark set feature-x -r @
 jj git push
 ```
+
+`jj new feature-x` (no trailing `-`) stacks the fix **on top of** the bookmark.
+`feature-x-` is the revset for *parents of* `feature-x`, so it would branch a
+sibling off the reviewed commit and `bookmark set -r @-` would then drag the
+bookmark backwards, dropping the very commit the reviewers annotated.
 
 ## Creating PRs (jj + gh)
 
 In jj-colocated repos, git HEAD is detached — `gh pr create` fails with "not on any branch". **Always pass `--head <bookmark>`** — never rely on git auto-detection:
 
 ```bash
-jj bookmark set feature-x -r @-
+jj bookmark set feature-x -r @-   # or -r @ — see "Bookmarks & pushing" above
 jj git push
 gh pr create --head feature-x --title "..." --body "..."
 ```

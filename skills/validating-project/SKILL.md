@@ -13,7 +13,7 @@ Auto-detect project tooling and run validation steps in the correct order.
 
 ## Process
 
-1. Check `./CLAUDE.md` for validation tools and project permissions
+1. Check `./CLAUDE.md` **and** `./.claude/CLAUDE.md` for validation tools and project permissions — this repo keeps its project instructions in the latter
 2. Auto-detect project type if needed (package.json, pyproject.toml, Cargo.toml, Makefile, go.mod)
 3. Run validation pipeline: **Format -> Lint -> Type Check -> Test**
 4. Stop immediately on failures

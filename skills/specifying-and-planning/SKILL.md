@@ -47,8 +47,16 @@ Focus on functional decomposition. No timeline or phases -- clean technical brea
 
 Create GitHub issues from task breakdown:
 
+Write the body with the Write tool, then pass it by path — no heredocs (they break on
+nested quotes and are painful to edit):
+
 ```bash
-gh issue create --title "Clear title" --body "$(cat <<'EOF'
+gh issue create --title "Clear title" --body-file <scratchpad>/issue-body.md
+```
+
+Body template:
+
+```markdown
 ## Description
 Task description
 
@@ -61,9 +69,10 @@ Technical strategy
 
 ## Dependencies
 - Requires #<issue>
-EOF
-)"
 ```
+
+Keep the `- [ ]` task-list syntax here — it renders as real checkboxes in the GitHub
+UI (see `rules/status-marks.md`).
 
 Apply labels: component (frontend, backend), type (feature, refactor), complexity (small, medium, large).
 

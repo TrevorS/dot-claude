@@ -16,6 +16,13 @@ allowed-tools:
 
 Execute test plans end-to-end with strict state control and concise reporting.
 
+**Note on `allowed-tools`:** the frontmatter list is turn-scoped *pre-approval*, not a
+whitelist — it suppresses permission prompts for those Bash prefixes while this skill
+runs and clears on the next message. It does not restrict the tool pool, so Read/Write
+stay available for the output documents below. It does mean `mysql`, `aws sqs`, and
+`docker` run unprompted here while `settings.json` keeps them prompting everywhere
+else; that is deliberate for unattended QA runs, but worth knowing before invoking.
+
 ## Policy (per section, in order)
 
 1. **Sense-check** section; if incoherent, propose minimal fix -> `suggested_adjustments`

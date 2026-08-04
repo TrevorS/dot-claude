@@ -37,3 +37,9 @@ repos:
         entry: scripts/elisp-check.sh
         language: script
         files: '\.el$'
+      - id: skill-lint
+        name: skill lint (frontmatter, links, known-bad snippets)
+        entry: scripts/skill-lint.py
+        language: script
+        pass_filenames: false
+        files: '^(skills|\.claude/skills|teej-skills/skills)/.*/SKILL\.md$|^rules/.*\.md$|^scripts/skill-lint\.py$'
