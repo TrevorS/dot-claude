@@ -2,7 +2,9 @@
 name: validating-project
 description: Auto-detect and run formatters, linters, type checkers, and tests for the current project. Use when validating a project, running all checks, checking code quality before committing, or verifying the build passes.
 context: fork
-model: claude-haiku-4-5
+model: claude-sonnet-5
+effort: low
+disallowed-tools: AskUserQuestion
 ---
 
 # Validating Project
@@ -38,11 +40,13 @@ uv run pytest
 
 ### Node.js / TypeScript
 
+Prefer `bun`, fall back to `pnpm` then `yarn` (see `rules/typescript.md`):
+
 ```bash
-pnpm run format        # or npx prettier --write .
-pnpm run lint          # or npx eslint .
-pnpm run typecheck     # or npx tsc --noEmit
-pnpm test
+bun run format         # or pnpm run format, npx prettier --write .
+bun run lint           # or pnpm run lint, npx eslint .
+bun run typecheck      # or pnpm run typecheck, npx tsc --noEmit
+bun test
 ```
 
 ### Rust
@@ -58,6 +62,7 @@ cargo test
 ```bash
 gofmt -w .
 go vet ./...
+staticcheck ./...     # or golangci-lint run, when available (rules/go.md)
 go test ./...
 ```
 

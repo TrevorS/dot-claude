@@ -24,7 +24,7 @@ fi
 
 ### 2. Check Branch Safety
 
-Read `./CLAUDE.md` for project permissions. If on a protected branch without permission, suggest a feature branch. Cache decisions for future runs.
+Check `./CLAUDE.md` **and** `./.claude/CLAUDE.md` for a `direct-commits-allowed: true` marker. If on a protected branch without it, suggest a feature branch. Cache decisions for future runs.
 
 ### 3. Run Validation
 
@@ -85,10 +85,10 @@ git push -u origin HEAD
 If `.github/workflows/` exists and `ci=github-actions` in hook output:
 
 ```bash
-# Resolve SHA before launching background monitor (avoids watching stale runs)
-SHA=$(jj log -r '@-' --no-graph -T 'commit_id' 2>/dev/null || git rev-parse HEAD)
-uv run ~/.claude/skills/monitoring-ci/ci-monitor.py --branch <branch-name> --sha "$SHA"
+uv run ~/.claude/skills/monitoring-ci/ci-monitor.py --branch <branch-name>
 ```
+
+**Do NOT pre-resolve the SHA and pass `--sha`.** The script resolves it from the bookmark/branch, which is correct under every workflow. Deriving it from `@-` is wrong whenever `@` *is* the pushed commit (the `jj describe -m` + `jj bookmark set -r @` flow used in step 6 above), and the failure is silent: the monitor watches the previous commit's finished run and a green predecessor reports a false pass. See `monitoring-ci/SKILL.md`.
 
 Run in background. Tell user: "CI monitor running in background."
 

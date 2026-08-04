@@ -3,7 +3,7 @@ name: cleaning-commit-history
 description: Reorganize and clean up messy commit history on a feature branch into logical, reviewable commits. Use when cleaning up commits, preparing a branch for review, separating formatting from logic changes, fixing broken intermediate states, or squashing WIP commits.
 context: fork
 background: false
-model: claude-sonnet-4-6
+model: claude-sonnet-5
 ---
 
 # Cleaning Commit History
@@ -23,6 +23,14 @@ If jj is available, prefer jj commands -- they're non-interactive and the oplog 
 ## Operating Procedure
 
 ### Phase 0: Safety
+
+**PR-safety gate — do this first, before any inventory.** Rewriting commits detaches review comments from their line anchors. Per `rules/pr-safety.md`:
+
+```bash
+gh pr view <branch> --json reviews,comments 2>/dev/null
+```
+
+If a PR exists **and** `reviews` or `comments` is non-empty, **stop and ask Teej** before rewriting anything. Default to adding new commits on top instead. Proceed without asking only when there is no PR, or the PR has zero review activity.
 
 **Git**: Create backup branch before any surgery:
 

@@ -10,9 +10,9 @@
       "adoptedDate": "2026-06-26",
       "value": [
         "sonnet[1m]",
-        "claude-haiku-4-5-20251001"
+        "claude-sonnet-5"
       ],
-      "note": "first hop sonnet[1m] preserves 1M context + thinking (alwaysThinkingEnabled); haiku is availability-of-last-resort"
+      "note": "first hop sonnet[1m] preserves 1M context + thinking (alwaysThinkingEnabled). Second hop was claude-haiku-4-5-20251001 as availability-of-last-resort until 2026-08-04, when Teej removed Haiku everywhere; hop 2 is now plain claude-sonnet-5, which degrades by dropping the 1M-context requirement rather than by dropping model tier. A literal Haiku->Sonnet-5 swap would have duplicated hop 1, since sonnet[1m] already resolves to Sonnet 5"
     },
     {
       "feature": "attribution.sessionUrl",

@@ -67,7 +67,6 @@
       "Read(~/.rbt2/**)",
       "Read(~/Downloads/**)",
       "Read(~/Library/**)",
-      "Skill(glhf)",
       "Skill(searching-history)",
       "Skill(skill-creator)",
       "WebFetch(domain:code.claude.com)",
@@ -128,7 +127,7 @@
   "model": "opus[1m]",
   "fallbackModel": [
     "sonnet[1m]",
-    "claude-haiku-4-5-20251001"
+    "claude-sonnet-5"
   ],
   "hooks": {
     "Notification": [
