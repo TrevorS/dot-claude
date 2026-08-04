@@ -36,7 +36,7 @@ This repo is the user's Claude Code configuration -- skills, hooks, rules, and d
 - **`packages/`** -- System dependency lists (`brew.txt`, `apt.txt`, `cargo.txt`, `luarocks.txt`) installed via `make deps`
 - **`evals/`** -- Skill trigger and context-injection evaluation scripts
 - **`scripts/`** -- Tooling scripts (eval runners, description improvers)
-- **`teams/`** -- Agent team configurations
+- **`teams/`** -- Agent team configurations. Gitignored and machine-local; per-session dirs accumulate here and are safe to prune
 - **`settings.json`** -- Permissions, hooks config, enabled plugins, environment variables
 - **Python scripts** -- Some skills include Python (`skills/monitoring-ci/ci-monitor.py`, `teej-skills/skills/reading-books/book.py`, `teej-skills/skills/testing-whisper/transcribe.py`); deps managed via `uv` (`pyproject.toml`)
 

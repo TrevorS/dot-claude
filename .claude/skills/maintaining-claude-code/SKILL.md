@@ -66,13 +66,19 @@ Additional output fields: `updatedToolOutput` (replace tool output, all tools), 
 
 ## Skills — frontmatter reference
 
-`name`, `description`, `when_to_use`, `argument-hint`, `arguments`, `disable-model-invocation`, `user-invocable`, `allowed-tools`, `disallowed-tools`, `model`, `effort`, `context`, `agent`, `hooks`, `paths`, `shell`.
+`name`, `description`, `when_to_use`, `argument-hint`, `arguments`, `disable-model-invocation`, `user-invocable`, `allowed-tools`, `disallowed-tools`, `model`, `effort`, `context`, `agent`, `background`, `hooks`, `paths`, `shell`.
+
+`background` applies only with `context: fork` (default `true` since 2.1.218) — set `false` to wait for the result in the invoking turn. `effort` is unsupported on Haiku 4.5, so don't pair it with `model: claude-haiku-4-5`. For backgrounded fork skills, `disallowed-tools: AskUserQuestion` stops a question from parking as a needs-input request.
 
 Dynamic context injection: `` !`command` `` inlines command output before Claude sees skill content. Multi-line: `` ```! \n cmd \n ``` ``.
 
 Variable substitutions: `$ARGUMENTS`, `$ARGUMENTS[N]`, `$N`, `$name`, `${CLAUDE_SESSION_ID}`, `${CLAUDE_EFFORT}`, `${CLAUDE_SKILL_DIR}`.
 
-Visibility control in settings.json: `skillOverrides` — set per-skill to `off`, `user-invocable-only`, or `name-only`.
+Visibility control in settings.json: `skillOverrides` — set per-skill to `on`, `name-only`, `user-invocable-only`, or `off`. This is the settings-side near-equivalent of frontmatter `disable-model-invocation` / `user-invocable`.
+
+Default to frontmatter so the setting travels with the skill. **Exception — the two are not interchangeable:** `disable-model-invocation: true` *also* blocks the skill from being preloaded into subagents and (since 2.1.196) from running when a scheduled task fires with the skill as its prompt. `skillOverrides: "user-invocable-only"` suppresses auto-triggering without taking those away. So when a skill must stay reachable from a scheduled task or a subagent, use `skillOverrides`.
+
+That is why `syncing-claude-config`, `cleaning-commit-history`, and `executing-test-plans` are pinned in `settings.json` rather than in their own frontmatter.
 
 ## Rules
 
