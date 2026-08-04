@@ -1,6 +1,6 @@
 {
-  "claudeCodeVersion": "2.1.220",
-  "syncedDate": "2026-07-29",
+  "claudeCodeVersion": "2.1.226",
+  "syncedDate": "2026-08-10",
   "source": "https://api.github.com/repos/anthropics/claude-code/releases",
   "adopted": [
     {
@@ -201,6 +201,18 @@
     {
       "feature": "includeGitInstructions",
       "reason": "adopted false on 2026-07-29, then reverted to the default (true) the same day at Teej's request. Turning it off removes the built-in commit/PR guidance -- redundant with rules/version-control.md (jj-first) and pr-safety.md -- but it ALSO removes the git status snapshot, and with it the recent-commits list, which project-context.sh does not supply. Losing session-start commit history outweighed dropping redundant prose. Key left absent rather than set to true, since true is the default"
+    },
+    {
+      "feature": "CLAUDE_CODE_RESUME_INTERRUPTED_TURN=0",
+      "reason": "declined 2026-08-04; 2.1.221 only fixed the *disabling* value being ignored. Auto-resume of an interrupted turn is wanted here, not suppressed -- it is the same unattended-session posture as CLAUDE_CODE_RETRY_WATCHDOG=1 and askUserQuestionTimeout=5m. Key left unset (default is on)"
+    },
+    {
+      "feature": "sandbox.credentials[].mode = \"mask\"",
+      "reason": "not applicable 2026-08-04 (2.1.221). Linux/WSL only -- on macOS file masking falls back to `deny`. Doubly inert since sandbox.enabled is false; revisit with the other sandbox.* keys only if the sandbox is re-enabled"
+    },
+    {
+      "feature": "plugin manifest `skills: \".\"` path",
+      "reason": "not applicable 2026-08-04 (2.1.221). teej-skills/.claude-plugin/plugin.json declares no `skills` key at all -- it relies on the default skills/ directory, which already resolves the 16 skills correctly"
     }
   ],
   "deferred": [
