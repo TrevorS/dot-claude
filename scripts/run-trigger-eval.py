@@ -9,11 +9,13 @@ import argparse
 import json
 import os
 import select
+import signal
 import subprocess
 import sys
 import time
 import uuid
 from concurrent.futures import ProcessPoolExecutor, as_completed
+from contextlib import contextmanager
 from pathlib import Path
 
 
@@ -36,46 +38,17 @@ def run_single_query(
 ) -> bool:
     """Run a single query and return whether the skill was triggered.
 
-    Temporarily swaps the real skill's description in its SKILL.md, runs
-    `claude -p`, then restores the original. Detects triggering by looking
-    for Skill tool calls matching the skill name.
+    Detects triggering by looking for Skill tool calls matching the skill name.
+
+    This function must NOT touch SKILL.md. The description swap happens once in
+    the parent (see `swapped_description`) before any worker starts. It used to
+    happen here, per worker, and that was a data-loss bug: `write_text` truncates
+    before writing, so with N workers sharing one file a worker could read the
+    empty window mid-write, store it as its `original_content`, and "restore"
+    zero bytes at the end. It emptied skills/committing-changes/SKILL.md on
+    2026-08-10.
     """
-    skill_dir = Path(skill_path) if skill_path else None
-    skill_file = skill_dir / "SKILL.md" if skill_dir else None
-    original_content = None
-
     try:
-        # Swap description in real SKILL.md
-        if skill_file and skill_file.exists():
-            original_content = skill_file.read_text()
-            # Replace description line in frontmatter
-            lines = original_content.splitlines()
-            new_lines = []
-            in_frontmatter = False
-            replaced = False
-            for i, line in enumerate(lines):
-                if line.strip() == "---":
-                    if not in_frontmatter:
-                        in_frontmatter = True
-                        new_lines.append(line)
-                        continue
-                    else:
-                        in_frontmatter = False
-                        new_lines.append(line)
-                        continue
-                if in_frontmatter and line.startswith("description:") and not replaced:
-                    new_lines.append(f"description: {skill_description}")
-                    replaced = True
-                else:
-                    new_lines.append(line)
-            # splitlines() drops the trailing newline; restore it so the swapped
-            # file is byte-identical to the original apart from the description.
-            # Workers share one SKILL.md, so a racing worker can capture this
-            # rewrite as its own "original_content" and restore *that* — without
-            # this, every run left the file one byte short and dirtied the tree.
-            trailing = "\n" if original_content.endswith("\n") else ""
-            skill_file.write_text("\n".join(new_lines) + trailing)
-
         cmd = [
             "claude",
             "-p", query,
@@ -145,9 +118,51 @@ def run_single_query(
 
         return False
     finally:
-        # Restore original SKILL.md
-        if skill_file and original_content is not None:
-            skill_file.write_text(original_content)
+        pass
+
+
+@contextmanager
+def swapped_description(skill_file: Path, description: str):
+    """Swap the frontmatter description for the duration of the block, once.
+
+    Done in the parent process before any worker spawns, so the file is written
+    exactly twice per run (swap, restore) regardless of worker count. Restores on
+    any exit path, including KeyboardInterrupt and SIGTERM.
+    """
+    original = skill_file.read_text()
+
+    lines = original.splitlines()
+    new_lines = []
+    in_frontmatter = False
+    replaced = False
+    for line in lines:
+        if line.strip() == "---":
+            in_frontmatter = not in_frontmatter
+            new_lines.append(line)
+            continue
+        if in_frontmatter and line.startswith("description:") and not replaced:
+            new_lines.append(f"description: {description}")
+            replaced = True
+        else:
+            new_lines.append(line)
+    # splitlines() drops the trailing newline; put it back so the swapped file
+    # differs from the original in the description line and nothing else.
+    trailing = "\n" if original.endswith("\n") else ""
+    swapped = "\n".join(new_lines) + trailing
+
+    def restore(*_):
+        if skill_file.read_text() != original:
+            skill_file.write_text(original)
+
+    previous = {sig: signal.signal(sig, restore) for sig in (signal.SIGINT, signal.SIGTERM)}
+    try:
+        if swapped != original:
+            skill_file.write_text(swapped)
+        yield
+    finally:
+        restore()
+        for sig, handler in previous.items():
+            signal.signal(sig, handler)
 
 
 def parse_skill_md(skill_path: Path) -> tuple[str, str, str]:
@@ -252,35 +267,38 @@ def main():
         print(f"Evaluating: {description}", file=sys.stderr)
 
     results = []
-    with ProcessPoolExecutor(max_workers=args.num_workers) as executor:
-        future_to_info = {}
-        for item in eval_set:
-            for run_idx in range(args.runs_per_query):
-                future = executor.submit(
-                    run_single_query,
-                    item["query"],
-                    name,
-                    description,
-                    args.timeout,
-                    str(project_root),
-                    args.model,
-                    str(skill_path),
-                )
-                future_to_info[future] = (item, run_idx)
+    query_triggers: dict[str, list[bool]] = {}
+    query_items: dict[str, dict] = {}
 
-        query_triggers: dict[str, list[bool]] = {}
-        query_items: dict[str, dict] = {}
-        for future in as_completed(future_to_info):
-            item, _ = future_to_info[future]
-            q = item["query"]
-            query_items[q] = item
-            if q not in query_triggers:
-                query_triggers[q] = []
-            try:
-                query_triggers[q].append(future.result())
-            except Exception as e:
-                print(f"Warning: {e}", file=sys.stderr)
-                query_triggers[q].append(False)
+    # Swap once, in the parent, around the whole pool — never per worker.
+    with swapped_description(skill_path / "SKILL.md", description):
+        with ProcessPoolExecutor(max_workers=args.num_workers) as executor:
+            future_to_info = {}
+            for item in eval_set:
+                for run_idx in range(args.runs_per_query):
+                    future = executor.submit(
+                        run_single_query,
+                        item["query"],
+                        name,
+                        description,
+                        args.timeout,
+                        str(project_root),
+                        args.model,
+                        str(skill_path),
+                    )
+                    future_to_info[future] = (item, run_idx)
+
+            for future in as_completed(future_to_info):
+                item, _ = future_to_info[future]
+                q = item["query"]
+                query_items[q] = item
+                if q not in query_triggers:
+                    query_triggers[q] = []
+                try:
+                    query_triggers[q].append(future.result())
+                except Exception as e:
+                    print(f"Warning: {e}", file=sys.stderr)
+                    query_triggers[q].append(False)
 
     for q, triggers in query_triggers.items():
         item = query_items[q]
