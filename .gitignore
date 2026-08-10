@@ -85,8 +85,9 @@ channels/telegram/access.json
 *.db-wal
 *.jsonl
 .credentials.json
+
+# Channel + daemon runtime. `channels/` covers the specific entries above; those
+# are kept because they name secrets and should stay obvious if this ever narrows.
 channels/
-daemon/
-jobs/
 daemon.*
 daemon-*
