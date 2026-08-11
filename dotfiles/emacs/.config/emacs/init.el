@@ -1,6 +1,26 @@
 ;;; init.el --- Emacs config -*- lexical-binding: t -*-
 
 ;; ============================================================================
+;; NATIVE COMPILATION TOOLCHAIN (macOS)
+;; ============================================================================
+
+;; macOS 26+ (Darwin 25+): bundled libgccjit derives -mmacosx-version-min as
+;; "darwin major - 9" (e.g. 18.0 on Darwin 27), a version Apple clang rejects
+;; since the 15 -> 26 jump. Pin a real one -- the last -mmacosx-version-min on
+;; the clang line wins. "-Wl,-w" is upstream's darwin default; restate it since
+;; native-comp-driver-options is still void this early. comp.el forwards the
+;; value to async compilation workers, so subprocesses inherit it.
+;; Must precede elpaca: package loading is what triggers native compilation.
+;; Kept here rather than early-init.el because `emacs --batch -l init.el' (make
+;; emacs-plugins) skips early-init.el entirely and compiles just as much.
+;; (operating-system-release is marked obsolete but is exactly the Darwin
+;; kernel version we need, with no subprocess-free replacement.)
+(with-suppressed-warnings ((obsolete operating-system-release))
+  (when (and (eq system-type 'darwin)
+             (>= (string-to-number operating-system-release) 25))
+    (setq native-comp-driver-options '("-Wl,-w" "-mmacosx-version-min=26.0"))))
+
+;; ============================================================================
 ;; PLUGIN MANAGEMENT (elpaca)
 ;; ============================================================================
 
