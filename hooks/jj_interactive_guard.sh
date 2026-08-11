@@ -33,6 +33,60 @@ MSG
 # inside a -m message can't false-match). Pipe-separated alternatives.
 has() { [[ " $bare " =~ [[:space:]](${1})([[:space:]]|=|$) ]]; }
 
+# Split a command line into segments on unquoted && || ; and newline.
+#
+# Quote-aware for the same reason split_has_fileset is: a newline inside a -m
+# message is message text, not a command separator. The old sed split blindly
+# and broke both ways -- it severed trailing filesets from `jj split` (blocking
+# a legal command) and, worse, left a trailing -i in a segment that no longer
+# began with `jj`, so `jj commit -m "sub<newline>" -i` was never scanned and
+# hung the agent. Backslash-newline is honoured as a line continuation.
+# Never eval/word-split untrusted command text.
+segment_command() {
+  local s="$1" c nxt q="" cur="" i
+  segments=()
+  for (( i = 0; i < ${#s}; i++ )); do
+    c="${s:i:1}"
+    if [ -n "$q" ]; then
+      cur+="$c"
+      [ "$c" = "$q" ] && q=""
+      continue
+    fi
+    case "$c" in
+      '\')
+        nxt="${s:i+1:1}"
+        # Line continuation: backslash and newline both vanish. Any other
+        # escaped character is literal and cannot act as a separator.
+        if [ "$nxt" = $'\n' ]; then i=$((i+1)); else cur+="$c$nxt"; i=$((i+1)); fi
+        ;;
+      '"' | "'") q="$c"; cur+="$c" ;;
+      $'\n' | ';') segments+=("$cur"); cur="" ;;
+      '&') if [ "${s:i+1:1}" = '&' ]; then segments+=("$cur"); cur=""; i=$((i+1)); else cur+="$c"; fi ;;
+      '|') if [ "${s:i+1:1}" = '|' ]; then segments+=("$cur"); cur=""; i=$((i+1)); else cur+="$c"; fi ;;
+      *) cur+="$c" ;;
+    esac
+  done
+  segments+=("$cur")
+}
+
+# Drop "double"- and 'single'-quoted substrings so flag scanning can't match
+# text inside a -m message. Replaces a sed pass that only ever matched within a
+# single line, which left a multi-line message's contents in $bare -- where a
+# `-i` written in prose would have tripped the interactive check.
+strip_quoted() {
+  local s="$1" c q="" out="" i
+  for (( i = 0; i < ${#s}; i++ )); do
+    c="${s:i:1}"
+    if [ -n "$q" ]; then
+      [ "$c" = "$q" ] && q=""
+      continue
+    fi
+    if [ "$c" = '"' ] || [ "$c" = "'" ]; then q="$c"; continue; fi
+    out+="$c"
+  done
+  printf '%s' "$out"
+}
+
 # True when a `jj split` segment names at least one positional fileset.
 #
 # Parses the ORIGINAL segment rather than $bare: quote-stripping would turn
@@ -80,12 +134,14 @@ split_has_fileset() {
 }
 
 # Split chained commands (&& || ; newline) and inspect each jj segment.
-segments=$(printf '%s' "$command" | sed -E 's/\&\&|\|\||;/\n/g')
-while IFS= read -r seg; do
-  seg="$(echo "$seg" | sed -E 's/^[[:space:]]+//; s/[[:space:]]+$//')"
+segment_command "$command"
+for seg in "${segments[@]}"; do
+  # Trim with parameter expansion, not sed: a segment can now legitimately
+  # contain newlines, and sed would trim every line of the message instead.
+  seg="${seg#"${seg%%[![:space:]]*}"}"
+  seg="${seg%"${seg##*[![:space:]]}"}"
   [[ "$seg" =~ ^jj([[:space:]]|$) ]] || continue
-  # Strip "double" and 'single' quoted substrings before flag scanning.
-  bare="$(printf '%s' "$seg" | sed -E "s/\"[^\"]*\"//g; s/'[^']*'//g")"
+  bare="$(strip_quoted "$seg")"
 
   # --help / -h just prints usage; never opens an editor.
   [[ "$bare" =~ (^|[[:space:]])(-h|--help)([[:space:]]|$) ]] && continue
@@ -160,6 +216,6 @@ while IFS= read -r seg; do
   -> opens the interactive merge editor. Resolve by editing the conflict
      markers in the files directly, then \`jj squash -m\` / \`jj describe -m\`."
   fi
-done <<< "$segments"
+done
 
 exit 0

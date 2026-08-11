@@ -46,6 +46,16 @@ run BLOCK 'jj commit -m "msg" -i'
 run BLOCK 'jj squash -m "msg" --interactive'
 run BLOCK 'jj commit -m "msg" --tool meld'
 run BLOCK 'jj squash -u --tool meld'
+# multi-line -m: the newline must not sever the segment and hide what follows
+run BLOCK 'jj commit -m "subject
+
+body" -i'
+run BLOCK 'jj squash -m "subject
+
+body" --interactive'
+run BLOCK 'jj split -r @ -m "subject
+
+body"'
 
 # --- should PASS (non-interactive / unrelated) ---
 run PASS 'jj squash -m "fix"'
@@ -74,6 +84,16 @@ run PASS 'jj squash -h'
 run PASS 'jj describe --help | head'
 run PASS 'git commit -m "x"'
 run PASS 'echo "jj squash without -m is bad"'
+# multi-line -m: filesets after the message are still filesets, and separators
+# or flags written inside the message are prose, not syntax
+run PASS 'jj split -r @ -m "subject
+
+body" dotfiles/tmux'
+run PASS 'jj describe -m "subject
+
+mentions -i and ; and && in prose"'
+run PASS 'jj split -r @ \
+  -m "msg" foo.txt'
 
 echo
 if [ "$fails" -eq 0 ]; then
