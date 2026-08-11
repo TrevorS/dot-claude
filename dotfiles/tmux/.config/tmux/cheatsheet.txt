@@ -1,0 +1,45 @@
+  tmux — prefix is C-Space              (q to close · prefix : list-keys)
+
+  PANES
+    C-h / C-j / C-k / C-l    move between panes (no prefix, nvim-aware)
+    prefix |  /  prefix -    split right / down, keeping cwd
+    prefix H J K L           resize — hold the key to keep going
+    prefix z                 zoom this pane full-screen (toggle)
+    prefix q                 show pane numbers, then type one to jump
+    prefix o                 cycle to next pane
+    prefix x                 kill this pane
+    prefix !                 break this pane out into its own window
+    prefix @                 pull a pane in from another window
+    prefix Space             thumbs — hint-jump to copy paths / hashes
+
+  WINDOWS
+    M-1 .. M-9               jump straight to window N (no prefix)
+    M-h  /  M-l              previous / next window (no prefix)
+    prefix Tab               back to the last window
+    prefix c                 new window, keeping cwd
+    prefix ,                 rename window
+    prefix <  /  prefix >    move this window left / right in the list
+    prefix w                 window picker, full-screen
+    prefix &                 kill this window
+
+  SESSIONS
+    prefix s                 session picker, full-screen
+    prefix C-n               new named session from the current directory
+    prefix (  /  prefix )    previous / next session
+    prefix $                 rename session
+    prefix d                 detach  (reattach with: tmux a)
+
+  COPY / SCROLLBACK
+    prefix [                 enter copy mode (or just scroll with the mouse)
+    prefix /                 enter copy mode and search backwards
+      v                      start selection      C-v   rectangle selection
+      y                      copy and exit        Escape  cancel
+      n / N                  next / previous search match
+      g / G                  top / bottom of scrollback
+
+  MISC
+    prefix g                 floating shell in the current directory
+    prefix G                 jj log for this pane's repo
+    prefix F                 tmux-fzf menu (sessions, windows, panes, keys)
+    prefix r                 reload this config
+    prefix ?                 this cheatsheet
