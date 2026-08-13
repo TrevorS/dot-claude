@@ -14,14 +14,12 @@ if [[ "$command" =~ ^jj[[:space:]]+(describe|new|commit|squash) ]]; then
 elif [[ "$command" =~ ^git[[:space:]]+(commit|add) ]]; then
   : # fall through to protection check
 else
-  echo "$input"
   exit 0
 fi
 
 # Check for project-level override (root CLAUDE.md or .claude/CLAUDE.md)
 for f in ./CLAUDE.md ./.claude/CLAUDE.md; do
   if [ -f "$f" ] && grep -qi "direct-commits-allowed: true" "$f" 2>/dev/null; then
-    echo "$input"
     exit 0
   fi
 done
@@ -65,4 +63,4 @@ MSG
   exit 2
 fi
 
-echo "$input"
+exit 0
