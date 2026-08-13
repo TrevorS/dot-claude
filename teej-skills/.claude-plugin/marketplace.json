@@ -1,11 +1,18 @@
 {
   "name": "teej-skills",
   "description": "Teej's domain-specific skills bundled as a single plugin",
-  "owner": { "name": "Trevor Strieber", "email": "trevor@usestable.com" },
+  "owner": {
+    "name": "Trevor Strieber",
+    "email": "trevor@usestable.com"
+  },
   "plugins": [
     {
       "name": "teej-skills",
-      "source": "./",
+      "source": {
+        "source": "command",
+        "command": "echo \"$HOME/.claude/teej-skills\"",
+        "mode": "link"
+      },
       "description": "Domain-specific skills (TTS/ML, frontend, niche tooling) split out of ~/.claude/skills"
     }
   ]
