@@ -8,11 +8,10 @@ Uses claude agent SDK to call claude -p under the hood, leveraging native OAuth.
 import argparse
 import json
 import re
-import sys
 from pathlib import Path
 
 import anyio
-from claude_agent_sdk import query, ClaudeAgentOptions, ResultMessage
+from claude_agent_sdk import ClaudeAgentOptions, ResultMessage, query
 
 
 def build_prompt(

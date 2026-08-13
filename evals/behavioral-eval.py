@@ -60,7 +60,6 @@ def run_single_query(
 
 def check_patterns(response: str, case: dict) -> dict:
     """Check response against expected/forbidden patterns."""
-    response_lower = response.lower()
     matches = []
     violations = []
 

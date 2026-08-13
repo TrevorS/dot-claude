@@ -19,7 +19,6 @@ import tempfile
 import time
 from pathlib import Path
 
-
 SCENARIOS = [
     {
         "name": "simple-bug-fix",
@@ -319,7 +318,7 @@ def main():
                         print(f"  [{status}] {name}: {grade['description']}", file=sys.stderr)
             else:
                 if args.verbose:
-                    print(f"  SKIP — no commit was created", file=sys.stderr)
+                    print("  SKIP — no commit was created", file=sys.stderr)
 
             all_results.append({
                 "scenario": scenario["name"],

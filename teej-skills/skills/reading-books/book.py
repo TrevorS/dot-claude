@@ -27,8 +27,7 @@ from __future__ import annotations
 import hashlib
 import json
 import re
-from abc import ABC, abstractmethod
-from dataclasses import dataclass, field, asdict
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Protocol, runtime_checkable
 
@@ -226,8 +225,8 @@ class EPUBExtractor:
 
     def extract(self, path: Path) -> Book:
         import ebooklib
-        from ebooklib import epub
         from bs4 import BeautifulSoup
+        from ebooklib import epub
 
         book = epub.read_epub(str(path))
 
@@ -312,11 +311,12 @@ class MOBIExtractor:
 
     def extract(self, path: Path) -> Book:
         import tempfile
+
         import mobi
         from bs4 import BeautifulSoup
 
         # mobi extracts to a temp directory
-        with tempfile.TemporaryDirectory() as tmpdir:
+        with tempfile.TemporaryDirectory():
             tmppath, extracted = mobi.extract(str(path))
 
             # Find the HTML file

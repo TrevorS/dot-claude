@@ -12,14 +12,14 @@ repos:
         args: ["--maxkb=1000"]
 
   - repo: https://github.com/igorshubovych/markdownlint-cli
-    rev: v0.48.0
+    rev: v0.49.1
     hooks:
       - id: markdownlint
         args: ["--config", ".markdownlint.yaml"]
         exclude: ^cache/
 
   - repo: https://github.com/JohnnyMorganz/StyLua
-    rev: v2.4.0
+    rev: v2.5.2
     hooks:
       - id: stylua
         files: ^dotfiles/nvim/
@@ -37,6 +37,11 @@ repos:
         entry: scripts/elisp-check.sh
         language: script
         files: '\.el$'
+      - id: ruff
+        name: ruff (lint Python)
+        entry: uv run ruff check --force-exclude
+        language: system
+        types: [python]
       - id: skill-lint
         name: skill lint (frontmatter, links, known-bad snippets)
         entry: scripts/skill-lint.py

@@ -1,4 +1,4 @@
-.PHONY: help install upgrade validate clean pre-commit pre-commit-install pre-commit-update dotfiles tpm typecheck deps emacs-plugins
+.PHONY: help install upgrade validate clean pre-commit pre-commit-install pre-commit-update dotfiles tpm typecheck hook-tests deps emacs-plugins
 
 # Default target
 help:
@@ -12,6 +12,7 @@ help:
 	@echo "  dotfiles          - Stow all dotfile packages into ~"
 	@echo "  tpm               - Install tmux plugin manager"
 	@echo "  typecheck         - Type check Python scripts (ty)"
+	@echo "  hook-tests        - Run hooks/*.test.sh regression suites"
 	@echo ""
 	@echo "Pre-commit commands:"
 	@echo "  pre-commit-install - Install pre-commit hooks"
@@ -33,11 +34,20 @@ tpm:
 	@"$(TPM_DIR)/bin/install_plugins" | grep -v 'Already installed' || true
 
 typecheck:
-	@uv run ty check $$(find skills teej-skills/skills -name '*.py' -not -path '*/evals/*')
+# --ignore unresolved-import: skill scripts declare deps via PEP 723 inline
+# metadata, so they aren't in the project venv. pyproject.toml declares the same
+# suppression under [tool.ty.rules], but ty 0.0.71 parses that key without
+# applying it to unresolved-import (module resolution fails before rule mapping).
+# Kept in both places: the flag works today, the config works again once fixed.
+	@uv run ty check --ignore unresolved-import $$(find skills teej-skills/skills -name '*.py' -not -path '*/evals/*')
+
+hook-tests:
+	@for t in hooks/*.test.sh; do echo "-- $$t"; "$$t" || exit 1; done
 
 validate:
 	@uv run pre-commit run --all-files
 	@$(MAKE) typecheck
+	@$(MAKE) hook-tests
 
 pre-commit:
 	@$(MAKE) validate

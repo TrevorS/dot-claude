@@ -13,7 +13,6 @@ import signal
 import subprocess
 import sys
 import time
-import uuid
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from contextlib import contextmanager
 from pathlib import Path
