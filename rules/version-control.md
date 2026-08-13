@@ -36,7 +36,7 @@ form is a fast block rather than a hang.
 
 **Tell for "an editor tried to open":** if a mutating jj command *auto-backgrounds* or seems to vanish, it's blocking on an editor, not a mystery — re-run it with `-m`. Two guards enforce this so a hang becomes a fast error instead:
 
-- `jj_interactive_guard.sh` (PreToolUse hook) blocks editor-opening invocations *before* they run, with the exact fix.
+- `hooks/jj_interactive_guard.sh` (PreToolUse hook) blocks editor-opening invocations *before* they run, with the exact fix.
 - `$JJ_EDITOR` → `hooks/jj-reject-editor.sh` fail-fasts any editor jj still tries to open (exit 1, instant), so it never hangs. This is scoped to Claude Code's env only; your interactive `nvim` editor is unaffected.
 
 ## Core concepts

@@ -1,6 +1,6 @@
 {
-  "claudeCodeVersion": "2.1.226",
-  "syncedDate": "2026-08-10",
+  "claudeCodeVersion": "2.1.231",
+  "syncedDate": "2026-08-13",
   "source": "https://api.github.com/repos/anthropics/claude-code/releases",
   "adopted": [
     {
@@ -110,7 +110,17 @@
       "surface": "statusLine script",
       "introducedVersion": "2.1.145 (pr) / undated (fast_mode, context_window_size, cost.*)",
       "adoptedDate": "2026-07-29",
-      "note": "PASS 4 (2026-07-29) removed exceeds_200k_tokens entirely: it rendered as a bare \"+\" on the window size (\"of 1M+\"), unreadable without knowing the rule, and it signals long-context premium PRICING -- the same reason cost.total_cost_usd is omitted (DISABLE_COST_WARNINGS=1). Also stripped the \"(1M context)\" suffix from model.display_name so the window is stated once, not twice; renamed the pacing marker from \"fast\" (which collided with the fast_mode segment) to an explicit multiple, \"2.2x pace\"; switched burn_rate to tenths-of-a-percent precision because whole percent reported 4.5x for a true 5.4x; and made the context bar 5 cells of thin rules (━/─) instead of 8 of block shading, with rounded rather than floored cell counts so 18% is not a visually empty bar. PASS 3 (2026-07-29) added rate_limits.*.resets_at, a burn-rate pacing signal, an 8-cell context bar, ANSI threshold colours, and statusLine.refreshInterval=60. Pace = used% vs elapsed% of the window; green <=125, yellow <=175, red above, suppressed under 15% used, with absolute overrides at 75/90. A 'fast' word appears only past the warn band. Renders in ~50ms. PASS 2 note follows -- second pass after auditing all ~40 documented payload fields against the 12 in use. fast_mode matters because Opus 5 fast mode is $10/$50 per Mtok and the state drifts (2.1.219 fixed stale fast-mode on Remote Control). context_window_size disambiguates ctx% -- a fallbackModel hop to Haiku silently drops 1M to 200k, previously invisible. exceeds_200k_tokens folded into the size as a trailing '+' (long-context premium marker) instead of its own segment. Line churn uses the up/down arrow notation from rules/status-marks.md. PR label wrapped in OSC 8 with plain text inside per the linked-labels rule. Dropped the standalone 'think' segment: alwaysThinkingEnabled makes it near-constant"
+      "note": "PASS 4 (2026-07-29) removed exceeds_200k_tokens entirely: it rendered as a bare \"+\" on the window size (\"of 1M+\"), unreadable without knowing the rule, and it signals long-context premium PRICING -- the same reason cost.total_cost_usd is omitted (DISABLE_COST_WARNINGS=1). Also stripped the \"(1M context)\" suffix from model.display_name so the window is stated once, not twice; renamed the pacing marker from \"fast\" (which collided with the fast_mode segment) to an explicit multiple, \"2.2x pace\"; switched burn_rate to tenths-of-a-percent precision because whole percent reported 4.5x for a true 5.4x; and made the context bar 5 cells of thin rules (\u2501/\u2500) instead of 8 of block shading, with rounded rather than floored cell counts so 18% is not a visually empty bar. PASS 3 (2026-07-29) added rate_limits.*.resets_at, a burn-rate pacing signal, an 8-cell context bar, ANSI threshold colours, and statusLine.refreshInterval=60. Pace = used% vs elapsed% of the window; green <=125, yellow <=175, red above, suppressed under 15% used, with absolute overrides at 75/90. A 'fast' word appears only past the warn band. Renders in ~50ms. PASS 2 note follows -- second pass after auditing all ~40 documented payload fields against the 12 in use. fast_mode matters because Opus 5 fast mode is $10/$50 per Mtok and the state drifts (2.1.219 fixed stale fast-mode on Remote Control). context_window_size disambiguates ctx% -- a fallbackModel hop to Haiku silently drops 1M to 200k, previously invisible. exceeds_200k_tokens folded into the size as a trailing '+' (long-context premium marker) instead of its own segment. Line churn uses the up/down arrow notation from rules/status-marks.md. PR label wrapped in OSC 8 with plain text inside per the linked-labels rule. Dropped the standalone 'think' segment: alwaysThinkingEnabled makes it near-constant"
+    },
+    {
+      "feature": "plugin marketplace `command` source + `mode: \"link\"`",
+      "version": "2.1.229",
+      "note": "teej-skills marketplace.json plugin entry switched from directory source \"./\" to {source:command, command:'echo \"$HOME/.claude/teej-skills\"', mode:link}. Cache entry now links to the working tree instead of copying it, so skill edits apply next session with no version bump / plugin update / restart. Verified with `claude plugin validate`: mode is command-source-only (directory+mode fails validation), and mode:bogus / a missing command key both fail. macOS-only (link unsupported on Windows). De-risked by the 2.1.228 fix for cache cleanup deleting symlinked dev checkouts. Changing the command string itself still needs an explicit plugin update. .claude/CLAUDE.md updated to drop the old reinstall dance."
+    },
+    {
+      "feature": "git/gh dangerous-flag guard (hooks/git_dangerous_flags.sh)",
+      "version": "2.1.229",
+      "note": "2.1.229 stopped auto-approving --force/--amend/--no-verify in /commit-push-pr, but the user-level `Bash(git:*)` allow is broader than what upstream tightened, so that default could not reach this config; branch_protection.sh only covers git commit|add on protected branches. Added a PreToolUse hook instead of permissions.deny entries because deny patterns are prefix globs and miss `git push origin foo --force` and `git -C /path push --force`. Token-walking, quote-aware (reuses the jj guard's segmentation). Blocks push --force/-f/--force-with-lease/--force-if-includes, push --no-verify, commit --amend, commit -n/--no-verify, reset --hard, gh pr merge --admin. Deliberately does NOT block `git clean -f`, `git branch -f`, `git tag -f`, `git checkout -f`, or `git push -n` (--dry-run). reset --hard is beyond the changelog line, added per rules/version-control.md. 42-case regression test in hooks/git_dangerous_flags.test.sh. pr-safety.md notes the enforcement. permissions.ask left untouched per the 2026-07-29 decline."
     }
   ],
   "declined": [
@@ -168,7 +178,7 @@
     },
     {
       "feature": "autoMode.allow / autoMode.hard_deny / permissions.ask",
-      "reason": "deferred by Teej 2026-07-29 — 'dont worry about auto mode or permissions ask for now'"
+      "reason": "deferred by Teej 2026-07-29 \u2014 'dont worry about auto mode or permissions ask for now'"
     },
     {
       "feature": "cost.total_cost_usd in statusLine",
@@ -192,7 +202,7 @@
     },
     {
       "feature": "sandbox.network.strictAllowlist / filesystem.disabled / deniedDomains / failIfUnavailable",
-      "reason": "all gated on sandbox.enabled, which is false — the June 2026 trial was rolled back. Revisit together if the sandbox is re-enabled"
+      "reason": "all gated on sandbox.enabled, which is false \u2014 the June 2026 trial was rolled back. Revisit together if the sandbox is re-enabled"
     },
     {
       "feature": "subagentStatusLine",

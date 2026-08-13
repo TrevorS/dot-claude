@@ -18,7 +18,7 @@ all managed from one repo and symlinked into `$HOME` with GNU Stow.
 ```bash
 make install      # uv sync, stow dotfiles, install TPM
 make deps         # system packages from packages/*.txt
-make validate     # formatting, linting, type checking, stylua, luacheck
+make validate     # formatting, ruff, type checking, stylua, luacheck, hook tests
 ```
 
 `make help` lists every target. CI mirrors `make validate` on push and PR to `master`.

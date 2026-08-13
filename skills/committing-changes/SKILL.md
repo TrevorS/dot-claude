@@ -96,7 +96,7 @@ If `.github/workflows/` exists and `ci=github-actions` in hook output:
 uv run ~/.claude/skills/monitoring-ci/ci-monitor.py --branch <branch-name>
 ```
 
-**Do NOT pre-resolve the SHA and pass `--sha`.** The script resolves it from the bookmark/branch, which is correct under every workflow. Deriving it from `@-` is wrong whenever `@` *is* the pushed commit (the `jj describe -m` + `jj bookmark set -r @` flow used in step 6 above), and the failure is silent: the monitor watches the previous commit's finished run and a green predecessor reports a false pass. See `monitoring-ci/SKILL.md`.
+**Do NOT pre-resolve the SHA and pass `--sha`.** The script resolves it from the bookmark/branch, which is correct under every workflow. Deriving it from `@-` is wrong whenever `@` *is* the pushed commit (the `jj describe -m` + `jj bookmark set -r @` flow used in step 6 above), and the failure is silent: the monitor watches the previous commit's finished run and a green predecessor reports a false pass. See `skills/monitoring-ci/SKILL.md`.
 
 Run in background. Tell user: "CI monitor running in background."
 

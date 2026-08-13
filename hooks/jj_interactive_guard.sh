@@ -1,7 +1,7 @@
 #!/bin/bash
 # Hook: PreToolUse (Bash) — Block jj invocations that would open an interactive
 # editor (text, diff, or merge) and hang the agent, or use a renamed subcommand.
-# Command set verified against jj 0.43 CLI reference (docs.jj-vcs.dev).
+# Command set verified against jj 0.44 CLI reference (docs.jj-vcs.dev).
 #
 # `jj split` is allowed in exactly one shape — filesets + -m, with no
 # -i/--interactive/--tool/--editor. Three separate editors can open otherwise:

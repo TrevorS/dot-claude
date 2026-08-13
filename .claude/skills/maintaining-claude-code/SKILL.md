@@ -64,7 +64,15 @@ Additional output fields: `updatedToolOutput` (replace tool output, all tools), 
 - Cache busting: minute-precision timestamps in `UserPromptSubmit` invalidate prompt cache. Round to the hour.
 - Hook script not executable: `chmod +x` and verify shebang.
 - Reading stdin twice: drain once, parse from a variable.
-- Forgetting `set -euo pipefail` in bash — silent failures otherwise.
+- Forgetting `set -euo pipefail` in bash — but only for **gate** hooks. A gate
+  (PreToolUse/TeammateIdle deciding exit 0 vs 2) must fail loudly, or it silently
+  stops gating. An **output** hook (statusLine, UserPromptSubmit context injection,
+  notifications) should stay fail-soft: under `set -e` one failing segment aborts
+  the script before it prints anything, so a partial status line becomes no status
+  line. In this repo the three guards under `hooks/` set it; `hooks/status.sh`,
+  `hooks/user-prompt-submit/project-context.sh`, `hooks/session-title.sh`, and
+  `hooks/claude-notify.sh` deliberately do not.
+  Don't "fix" those — the asymmetry is the design.
 
 ## Skills — frontmatter reference
 
@@ -72,7 +80,16 @@ Additional output fields: `updatedToolOutput` (replace tool output, all tools), 
 
 `background` applies only with `context: fork` (default `true` since 2.1.218) — set `false` to wait for the result in the invoking turn. `effort` is unsupported on Haiku 4.5, so don't pair it with `model: claude-haiku-4-5`. For backgrounded fork skills, `disallowed-tools: AskUserQuestion` stops a question from parking as a needs-input request.
 
-Dynamic context injection: `` !`command` `` inlines command output before Claude sees skill content. Multi-line: `` ```! \n cmd \n ``` ``.
+Dynamic context injection: an exclamation mark immediately followed by a
+backtick-quoted command inlines that command's output before Claude sees skill
+content. The multi-line form is a fenced code block whose info string is a bare
+exclamation mark (three backticks, then `!`), one command per line.
+
+Do **not** write either form literally in a skill body you don't want executed --
+including inside an inline code span or a quoted example. The loader scans the raw
+text for the trigger and runs it regardless of Markdown context, so a documented
+example executes itself when the skill loads. Describe the delimiters in prose
+instead, as above.
 
 Variable substitutions: `$ARGUMENTS`, `$ARGUMENTS[N]`, `$N`, `$name`, `${CLAUDE_SESSION_ID}`, `${CLAUDE_EFFORT}`, `${CLAUDE_SKILL_DIR}`.
 
