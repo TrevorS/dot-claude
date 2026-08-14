@@ -76,6 +76,12 @@ emacs-plugins:
 	elif [ ! -e "$(EMACS_INIT)" ]; then \
 		echo "$(EMACS_INIT) not found — skipping plugin updates"; \
 	else \
+		if [ "$$(uname)" = "Darwin" ]; then \
+			bundle=$$(cd "$$(dirname "$$(readlink -f "$$(command -v emacs)")")/../.." 2>/dev/null && pwd); \
+			case "$$bundle" in \
+				*.app) xattr -dr com.apple.quarantine "$$bundle" 2>/dev/null || true ;; \
+			esac; \
+		fi; \
 		emacs --batch -l "$(EMACS_INIT)" -l scripts/update-emacs-plugins.el; \
 	fi
 
