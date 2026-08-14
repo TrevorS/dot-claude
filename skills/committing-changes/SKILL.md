@@ -1,6 +1,7 @@
 ---
 name: committing-changes
 description: Stage, validate, and commit changes with a clear message, optionally pushing to remote and monitoring CI. Use when committing code, creating a commit, pushing changes, or doing a commit-and-push workflow.
+when_to_use: "Typed as 'commit this', 'commit and push', 'ship it', or after finishing a unit of work with a dirty tree. Not for rewriting existing commits — that is cleaning-commit-history."
 argument-hint: "[--push] [message hint]"
 ---
 
@@ -29,6 +30,18 @@ Check `./CLAUDE.md` **and** `./.claude/CLAUDE.md` for a `direct-commits-allowed:
 ### 3. Run Validation
 
 Auto-detect project type and run: format -> lint -> typecheck. Stop on failure.
+Prefer the repo's own gate when it has one (`make validate` in `~/.claude`),
+otherwise load `validating-project`.
+
+**This step is mandatory on the jj path, not best-effort.** jj has no hook system
+and does not run git's hooks even in a colocated repo, so `.git/hooks/pre-commit`
+never fires on `jj describe` / `jj commit`. Whatever that hook would have caught
+is caught here or not at all. On the git path the hook still runs — re-stage once
+and retry if it rewrites files (see step 6).
+
+`jj fix` is not a substitute: it only pipes file content through a tool and keeps
+what comes back, so it can carry formatters (`ruff format`, `stylua`) but never
+report-only checks (`ruff check`, `ty`, `luacheck`, hook tests).
 
 ### 4. Craft Commit Message
 
