@@ -34,6 +34,7 @@ debug/
 downloads/
 file-history/
 ide/
+.cc-writes/
 image-cache/
 mcp-needs-auth-cache.json
 gh-pr-status-cache.json

@@ -1,6 +1,6 @@
 {
-  "claudeCodeVersion": "2.1.231",
-  "syncedDate": "2026-08-13",
+  "claudeCodeVersion": "2.1.234",
+  "syncedDate": "2026-08-17",
   "source": "https://api.github.com/repos/anthropics/claude-code/releases",
   "adopted": [
     {
@@ -45,14 +45,6 @@
       "adoptedDate": "2026-07-06",
       "value": "5m",
       "note": "2.1.200 flipped AskUserQuestion to never auto-continue by default; 5m restores auto-continue so unattended sessions don't hang, while leaving time to answer when present. Enum: 60s|5m|10m|never"
-    },
-    {
-      "feature": "CLAUDE_CODE_SUBPROCESS_ENV_SCRUB",
-      "surface": "env var",
-      "introducedVersion": "2.1.83",
-      "adoptedDate": "2026-07-29",
-      "value": "1",
-      "note": "strips Anthropic/cloud creds from Bash, hooks, and MCP stdio subprocesses. Adopted because sandbox.enabled is false, which makes the whole sandbox.credentials block inert -- this delivers the same hardening without the sandbox. gh authenticates via keychain, not GITHUB_TOKEN, so it is unaffected"
     },
     {
       "feature": "emojiCompletionEnabled",
@@ -110,7 +102,7 @@
       "surface": "statusLine script",
       "introducedVersion": "2.1.145 (pr) / undated (fast_mode, context_window_size, cost.*)",
       "adoptedDate": "2026-07-29",
-      "note": "PASS 4 (2026-07-29) removed exceeds_200k_tokens entirely: it rendered as a bare \"+\" on the window size (\"of 1M+\"), unreadable without knowing the rule, and it signals long-context premium PRICING -- the same reason cost.total_cost_usd is omitted (DISABLE_COST_WARNINGS=1). Also stripped the \"(1M context)\" suffix from model.display_name so the window is stated once, not twice; renamed the pacing marker from \"fast\" (which collided with the fast_mode segment) to an explicit multiple, \"2.2x pace\"; switched burn_rate to tenths-of-a-percent precision because whole percent reported 4.5x for a true 5.4x; and made the context bar 5 cells of thin rules (\u2501/\u2500) instead of 8 of block shading, with rounded rather than floored cell counts so 18% is not a visually empty bar. PASS 3 (2026-07-29) added rate_limits.*.resets_at, a burn-rate pacing signal, an 8-cell context bar, ANSI threshold colours, and statusLine.refreshInterval=60. Pace = used% vs elapsed% of the window; green <=125, yellow <=175, red above, suppressed under 15% used, with absolute overrides at 75/90. A 'fast' word appears only past the warn band. Renders in ~50ms. PASS 2 note follows -- second pass after auditing all ~40 documented payload fields against the 12 in use. fast_mode matters because Opus 5 fast mode is $10/$50 per Mtok and the state drifts (2.1.219 fixed stale fast-mode on Remote Control). context_window_size disambiguates ctx% -- a fallbackModel hop to Haiku silently drops 1M to 200k, previously invisible. exceeds_200k_tokens folded into the size as a trailing '+' (long-context premium marker) instead of its own segment. Line churn uses the up/down arrow notation from rules/status-marks.md. PR label wrapped in OSC 8 with plain text inside per the linked-labels rule. Dropped the standalone 'think' segment: alwaysThinkingEnabled makes it near-constant"
+      "note": "PASS 4 (2026-07-29) removed exceeds_200k_tokens entirely: it rendered as a bare \"+\" on the window size (\"of 1M+\"), unreadable without knowing the rule, and it signals long-context premium PRICING -- the same reason cost.total_cost_usd is omitted (DISABLE_COST_WARNINGS=1). Also stripped the \"(1M context)\" suffix from model.display_name so the window is stated once, not twice; renamed the pacing marker from \"fast\" (which collided with the fast_mode segment) to an explicit multiple, \"2.2x pace\"; switched burn_rate to tenths-of-a-percent precision because whole percent reported 4.5x for a true 5.4x; and made the context bar 5 cells of thin rules (━/─) instead of 8 of block shading, with rounded rather than floored cell counts so 18% is not a visually empty bar. PASS 3 (2026-07-29) added rate_limits.*.resets_at, a burn-rate pacing signal, an 8-cell context bar, ANSI threshold colours, and statusLine.refreshInterval=60. Pace = used% vs elapsed% of the window; green <=125, yellow <=175, red above, suppressed under 15% used, with absolute overrides at 75/90. A 'fast' word appears only past the warn band. Renders in ~50ms. PASS 2 note follows -- second pass after auditing all ~40 documented payload fields against the 12 in use. fast_mode matters because Opus 5 fast mode is $10/$50 per Mtok and the state drifts (2.1.219 fixed stale fast-mode on Remote Control). context_window_size disambiguates ctx% -- a fallbackModel hop to Haiku silently drops 1M to 200k, previously invisible. exceeds_200k_tokens folded into the size as a trailing '+' (long-context premium marker) instead of its own segment. Line churn uses the up/down arrow notation from rules/status-marks.md. PR label wrapped in OSC 8 with plain text inside per the linked-labels rule. Dropped the standalone 'think' segment: alwaysThinkingEnabled makes it near-constant"
     },
     {
       "feature": "plugin marketplace `command` source + `mode: \"link\"`",
@@ -121,6 +113,74 @@
       "feature": "git/gh dangerous-flag guard (hooks/git_dangerous_flags.sh)",
       "version": "2.1.229",
       "note": "2.1.229 stopped auto-approving --force/--amend/--no-verify in /commit-push-pr, but the user-level `Bash(git:*)` allow is broader than what upstream tightened, so that default could not reach this config; branch_protection.sh only covers git commit|add on protected branches. Added a PreToolUse hook instead of permissions.deny entries because deny patterns are prefix globs and miss `git push origin foo --force` and `git -C /path push --force`. Token-walking, quote-aware (reuses the jj guard's segmentation). Blocks push --force/-f/--force-with-lease/--force-if-includes, push --no-verify, commit --amend, commit -n/--no-verify, reset --hard, gh pr merge --admin. Deliberately does NOT block `git clean -f`, `git branch -f`, `git tag -f`, `git checkout -f`, or `git push -n` (--dry-run). reset --hard is beyond the changelog line, added per rules/version-control.md. 42-case regression test in hooks/git_dangerous_flags.test.sh. pr-safety.md notes the enforcement. permissions.ask left untouched per the 2026-07-29 decline."
+    },
+    {
+      "feature": "CLAUDE_CODE_ENABLE_TODO_TOOLS",
+      "surface": "env var",
+      "introducedVersion": "2.1.233",
+      "adoptedDate": "2026-08-17",
+      "value": "1",
+      "note": "2.1.233 removed TodoWrite/TaskCreate/TaskGet/TaskUpdate/TaskList on Opus 4.8, Sonnet 5, Fable 5, Mythos 5 and newer. Traced the gate in the binary: model list [[opus,[4,8]],[sonnet,[5]],[fable,[5]],[mythos,[5]]] with a component-wise >= compare on claude-<family>-<version>, so opus[1m] (claude-opus-5) matches and the tools were off. Adopted because teammateMode=tmux means split-pane teammates are separate processes whose own model decides, and without the Task tools an agent coordinates via messages instead of the SHARED TASK LIST (claiming, dependency unblocking, file-locked handoff) -- a real capability loss for agent teams. Env parser is qe.bool() so \"1\" coerces. VERIFIED: tools appeared mid-session from settings.json env with no restart. Background sessions and Claude Code on the web keep the tools on every model regardless"
+    },
+    {
+      "feature": "fastModePerSessionOptIn",
+      "surface": "settings.json key",
+      "introducedVersion": "docs-surfaced (not in a changelog bullet)",
+      "adoptedDate": "2026-08-17",
+      "value": true,
+      "note": "fast mode no longer persists across sessions; must be re-enabled with /fast each session. Adopted to close the half of the fast-mode problem the statusLine work only made visible -- the 2026-07-29 statusLine note already flagged that Opus 5 fast mode is $10/$50 per Mtok and 'the state drifts'. Found by diffing the published settings schema, not the release notes"
+    },
+    {
+      "feature": "tui",
+      "surface": "settings.json key",
+      "introducedVersion": "docs-surfaced",
+      "adoptedDate": "2026-08-17",
+      "value": "fullscreen",
+      "note": "explicit renderer selection (enum fullscreen|default), corresponds to /tui. Makes intent portable. NOTE env CLAUDE_CODE_NO_FLICKER=1 is now redundant: the binary's own strings show it is only an override to force fullscreen back on where it is auto-disabled ('fullscreen disabled: tmux -CC (iTerm2 integration mode) detected', 'Windows over SSH (ConPTY re-rendering)') -- neither applies to ghostty + plain tmux. Left in place as harmless; safe to drop"
+    },
+    {
+      "feature": "StopFailure hook",
+      "surface": "hook event",
+      "introducedVersion": "docs-surfaced",
+      "adoptedDate": "2026-08-17",
+      "value": "hooks/stop-failure-notify.sh",
+      "note": "fires when a turn ends on an API error; matchers are error types (rate_limit, overloaded, authentication_failed, oauth_org_not_allowed, billing_error, invalid_request, model_not_found, server_error, max_output_tokens, unknown). Wired with matcher \"\" to catch all. Closes a gap for the unattended posture (CLAUDE_CODE_RETRY_WATCHDOG=1, headless mac mini): the docs do not state that Stop also fires on the error path, so a session dying on rate_limit would otherwise be silent. StopFailure discards output and exit code EXCEPT terminalSequence, so the hook emits an OSC 777 escape (ESC ]777;notify;<title>;<body> BEL) which ghostty renders as a desktop notification (desktop-notifications defaults to true). The payload field carrying the error type is undocumented, so the script scans the payload for any string matching the known enum rather than guessing a key. 9-case regression test in hooks/stop-failure-notify.test.sh"
+    },
+    {
+      "feature": "retire claude-notify.sh; native notifications via preferredNotifChannel",
+      "surface": "hook event + env var",
+      "adoptedDate": "2026-08-17",
+      "note": "REMOVED the Notification and Stop hooks and deleted hooks/claude-notify.sh, plus the CLAUDE_NOTIFY_SOUND env var that only that script read. preferredNotifChannel is already \"ghostty\" and the native channel raises a desktop notification for permission prompts and task completion -- exactly what the custom hook duplicated. The script shelled out to ~/Applications/claude-notify.app, an untracked machine-local binary from March that is NOT in dotfiles/, so on any other machine `test -x` failed and the hook exited 0 silently, i.e. notifications vanished with no error. Only StopFailure is not covered by the native channel, and it now has a purpose-built emitter. Channel enum: auto|terminal_bell|iterm2|iterm2_with_bell|kitty|ghostty|notifications_disabled; \"auto\" already desktop-notifies in iTerm2/Ghostty/Kitty"
+    },
+    {
+      "feature": "move `make validate` from per-edit hook to commit time",
+      "surface": "hook event + skill",
+      "adoptedDate": "2026-08-17",
+      "note": "DELETED ~/.claude/.claude/settings.json, whose project-scope PostToolUse hook (matcher Write|Edit|MultiEdit) ran `make -C ~/.claude pre-commit` on EVERY file edit. That target is `@$(MAKE) validate`, i.e. the whole suite -- formatting, ruff, ty, stylua, luacheck, hook tests -- over the whole repo, per edit. The matcher also named MultiEdit, a tool that no longer exists. Root cause of the hook: jj has no hook system and does not run git's hooks even in a colocated repo, so .git/hooks/pre-commit never fires on `jj describe`/`jj commit`, and the per-edit hook was compensating. Fixed at the right layer instead: skills/committing-changes step 3 now states validation is mandatory on the jj path and names `make validate` as this repo's gate. Also recorded there that `jj fix` is NOT a substitute -- it pipes file content through a tool and keeps what comes back, so it carries formatters (ruff format, stylua) but never report-only checks (ruff check, ty, luacheck, hook tests)"
+    },
+    {
+      "feature": "when_to_use frontmatter on the 9 model-visible skills",
+      "surface": "skill frontmatter",
+      "adoptedDate": "2026-08-17",
+      "note": "added trigger-phrase text to committing-changes, monitoring-ci, searching-history, specifying-and-planning, using-jj, using-linear, validating-project, maintaining-claude-code, managing-dotfiles. Deliberately NOT added to the three skillOverrides pins (syncing-claude-config, cleaning-commit-history, executing-test-plans): the docs table shows user-invocable-only renders the skill HIDDEN from Claude, so when_to_use there would be dead weight. Content is example utterances rather than restated categories, since every description already carries 'Use when...' clauses. Combined description+when_to_use is capped at 1536 chars in the listing; the longest here is ~800"
+    },
+    {
+      "feature": "local permission dedup",
+      "surface": "settings.local.json",
+      "adoptedDate": "2026-08-17",
+      "note": "~/.claude/.claude/settings.local.json allow list cut 191 -> 113. Removed 41 exact duplicates of the user-scope allow list and 37 entries subsumed by a broader user-scope glob (Bash(git add:*) under Bash(git:*), Bash(gh api:*) under Bash(gh:*), Bash(make lint:*) under Bash(make:*), etc). Also dropped an empty deny:[] and outputStyle:'default', a no-op that additionally contradicted the standing output-styles decline. Audited the user-scope list at the same time: 69 allow / 28 deny, zero duplicates, zero self-subsumption, and all seven Read() path targets exist"
+    },
+    {
+      "feature": "CLAUDE_CODE_NO_FLICKER removed",
+      "surface": "env var",
+      "adoptedDate": "2026-08-17",
+      "note": "superseded by tui:'fullscreen' adopted the same day. The binary's own strings show the var only ever acted as an override to force fullscreen back on where it is auto-disabled -- 'tmux -CC (iTerm2 integration mode) detected' and 'Windows over SSH (ConPTY re-rendering) detected' -- neither of which applies to ghostty + plain tmux. The settings key states the intent directly and travels with the config"
+    },
+    {
+      "feature": "doc corrections in maintaining-claude-code and syncing-claude-config",
+      "surface": "skill body",
+      "adoptedDate": "2026-08-17",
+      "note": "8 fixes from a full audit against the 2.1.234 docs. maintaining-claude-code: exec-form example put the executable in args instead of command; the matcher line claimed 'regex against tool names' when the matched FIELD varies per event (start reason, notification type, error type, config source, agent type) -- actively misleading now that a StopFailure hook with matcher \"\" is wired here; frontmatter list was missing metadata/license/compatibility; substitutions were missing ${CLAUDE_PROJECT_DIR}/${CLAUDE_PLUGIN_ROOT}/${CLAUDE_PLUGIN_DATA} plus the fact that substitution also applies inside allowed-tools Bash rules; the prompt-cache pitfall was WRONG (UserPromptSubmit context is appended per user message, so per-turn variation never invalidates a built prefix) and is replaced with the real prefix model and the MCP_CONNECTION_NONBLOCKING/deferred-tools pairing that does matter; added the background-subagent tool set and the /rewind-vs-checkpoints consequence for backgrounded forks. syncing-claude-config: the '// breadcrumb in settings.json' instruction would fail this repo's own check-json pre-commit hook AND the jq calls in the skill's own step 5, so rationale now goes in this ledger; refreshed the stale 2.1.193 example"
     }
   ],
   "declined": [
@@ -178,7 +238,7 @@
     },
     {
       "feature": "autoMode.allow / autoMode.hard_deny / permissions.ask",
-      "reason": "deferred by Teej 2026-07-29 \u2014 'dont worry about auto mode or permissions ask for now'"
+      "reason": "deferred by Teej 2026-07-29 — 'dont worry about auto mode or permissions ask for now'"
     },
     {
       "feature": "cost.total_cost_usd in statusLine",
@@ -202,7 +262,7 @@
     },
     {
       "feature": "sandbox.network.strictAllowlist / filesystem.disabled / deniedDomains / failIfUnavailable",
-      "reason": "all gated on sandbox.enabled, which is false \u2014 the June 2026 trial was rolled back. Revisit together if the sandbox is re-enabled"
+      "reason": "all gated on sandbox.enabled, which is false — the June 2026 trial was rolled back. Revisit together if the sandbox is re-enabled"
     },
     {
       "feature": "subagentStatusLine",
@@ -223,6 +283,62 @@
     {
       "feature": "plugin manifest `skills: \".\"` path",
       "reason": "not applicable 2026-08-04 (2.1.221). teej-skills/.claude-plugin/plugin.json declares no `skills` key at all -- it relies on the default skills/ directory, which already resolves the 16 skills correctly"
+    },
+    {
+      "feature": "crossSessionInbound",
+      "reason": "declined 2026-08-14 (2.1.232). New enum accept|hold|refuse for inbound SendMessage from your other sessions. Left absent: traced the gate in the 2.1.232 binary and the no-key default is accept. The bypass-default hold path requires permissions.defaultMode=bypassPermissions (yours is auto), so it never fires; only mode-mismatch/no-mode-asserted can hold, and that surfaces a warning naming the peer plus a review dialog and auto-releases on mode change. Setting \"accept\" would suppress that mismatch check outright -- revisit only if teammate messages are observed parking under CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS + teammateMode=tmux"
+    },
+    {
+      "feature": "dialogExpiry",
+      "reason": "declined 2026-08-14 (2.1.232). New enum 60s|5m|10m|never bounding how long a permission dialog forwarded to a remote client, or a HELD cross-session message, waits before resolving to its safe no-action default. Binary resolves it as CLAUDE_CODE_USER_DIALOG_TIMEOUT_MS ?? {60s,5m,10m}[setting] ?? 300000, so the default is already 5m -- identical to the askUserQuestionTimeout: \"5m\" already set. Writing it explicitly would be a no-op. Doubly low-impact since remoteControlAtStartup is false"
+    },
+    {
+      "feature": "additionalMarketplaces / allowedMarketplaces",
+      "reason": "declined 2026-08-14 (2.1.232). Pure aliases for extraKnownMarketplaces / strictKnownMarketplaces; the canonical names are NOT deprecated, and the binary rejects both spellings at once ('\"<alias>\" and \"<canonical>\" are the same setting; keep only \"<canonical>\"'). extraKnownMarketplaces already registers teej-skills correctly, so renaming is pure churn. allowedMarketplaces is additionally managed-settings-only"
+    },
+    {
+      "feature": "CLAUDE_CODE_SUBPROCESS_ENV_SCRUB",
+      "reason": "declined 2026-08-17 by Teej: 'it breaks sub agent perms'. Corrects the ledger -- it was recorded adopted on 2026-07-29 but Teej removed it from settings.json the next day in commit 1cca2d3 ('update settings', 2026-07-30) and the adopted entry was never updated. Scrubbing Anthropic/cloud creds from Bash, hook, and MCP stdio subprocesses also strips what subagent permission flows depend on. Do not re-propose"
+    },
+    {
+      "feature": "teammateDefaultModel",
+      "reason": "REMOVED FROM THE PRODUCT in 2.1.234 -- 'Removed the Default teammate model setting from /config; agent-team teammates now use the leader's model unless the spawn names one.' Verified: the identifier goes from present in the 2.1.233 binary to ZERO occurrences in 2.1.234. Supersedes the 2026-08-17 note that said to set it via /config; there is no longer any lever. Teammates inherit the lead's model (opus[1m] here), and the only way to get a cheaper fleet is to name the model in the spawn prompt ('use Sonnet for each teammate'). The inert teammateDefaultModel:null still sitting in ~/.claude.json is harmless. Historical: anthropics/claude-code#82723 (open since 2026-07-30) reported the key was silently ignored in settings.json because it was only ever read from ~/.claude.json while the published schema wrongly declared it valid -- schemastore STILL lists it at 142 keys, so it is now wrong in both directions."
+    },
+    {
+      "feature": "CLAUDE_CODE_WEBFETCH_CACHE_TTL_MS",
+      "reason": "declined 2026-08-17 (2.1.233). New env var, default unchanged at 15m; binary resolves it once per session (Wwd ??= V.CLAUDE_CODE_WEBFETCH_CACHE_TTL_MS ?? QX_) and it also feeds the WebFetch tool description text. CI monitoring goes through gh, not WebFetch, so there is no repeat-fetch pressure to tune"
+    },
+    {
+      "feature": "CLAUDE_CODE_TOOL_MEMORY_LIMIT",
+      "reason": "not applicable 2026-08-17 (2.1.233). Linux memory-cgroup support for Bash tool commands; this machine is darwin"
+    },
+    {
+      "feature": "modelOverrides",
+      "reason": "declined 2026-08-17 (2.1.233). Only referenced as the way to silence the new [claude-code:unrecognized_model] stderr diagnostic in print mode. All three configured model IDs (opus[1m], sonnet[1m], claude-sonnet-5) are first-party and recognized"
+    },
+    {
+      "feature": "forward_user_identity",
+      "reason": "not applicable 2026-08-17 (2.1.233). Apps-gateway upstream setting for per-user spend attribution behind a proxy; enterprise surface, not a single-user config"
+    },
+    {
+      "feature": "useAutoModeDuringPlan",
+      "reason": "deferred 2026-08-17 under the standing auto-mode defer ('dont worry about auto mode or permissions ask for now', 2026-07-29). Would apply the auto-mode classifier during plan mode to auto-approve read-only tool calls; has no effect unless permissions.defaultMode allows auto, which it does here"
+    },
+    {
+      "feature": "autoContinueAtUsageLimit",
+      "reason": "declined 2026-08-17 (2.1.234). New: 'Claude Code now continues your session automatically when a claude.ai usage limit resets.' Default is ON, which is exactly right for the unattended posture here (CLAUDE_CODE_RETRY_WATCHDOG=1, headless mac mini), so no edit is wanted. Do NOT write it to settings.json: it already exists as a key in ~/.claude.json, is absent from the published schema, and is therefore in the same global-config family as teammateDefaultModel, where a settings.json value is silently ignored. Change it via /config if ever needed"
+    },
+    {
+      "feature": "todoFeatureEnabled",
+      "reason": "not applicable 2026-08-17 (2.1.234). Global-config sibling of autoContinueAtUsageLimit, also already present as a key in ~/.claude.json and also absent from the schema. Nothing to migrate: CLAUDE_CODE_ENABLE_TODO_TOOLS=1 is still honored in the 2.1.234 binary and the Task tools were confirmed live in-session"
+    },
+    {
+      "feature": "CLAUDE_CODE_PROJECT_DIR_NAME",
+      "reason": "declined 2026-08-17 (2.1.234). Lets a host pick a short name for the per-project transcript directory. Tempting given ours is '-Users-trevorstrieber--claude', but renaming would orphan the existing transcripts, the memory/ tree that MEMORY.md lives in, and glhf's index"
+    },
+    {
+      "feature": "CLAUDE_CODE_GOAL_CHECKIN_MINUTES",
+      "reason": "declined 2026-08-17 (2.1.234). Set to 0 to stop /goal checking in when background tasks keep a goal waiting 30+ minutes. /goal is not used here, and the default check-in is the desirable behavior for background work anyway"
     }
   ],
   "deferred": [
