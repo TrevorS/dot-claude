@@ -2,13 +2,12 @@
   "$schema": "https://json.schemastore.org/claude-code-settings.json",
   "env": {
     "CLAUDE_CODE_DISABLE_FEEDBACK_SURVEY": "1",
+    "CLAUDE_CODE_ENABLE_TODO_TOOLS": "1",
     "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1",
     "CLAUDE_CODE_NEW_INIT": "1",
-    "CLAUDE_CODE_NO_FLICKER": "1",
     "CLAUDE_CODE_RETRY_WATCHDOG": "1",
     "CLAUDE_CODE_TMUX_TRUECOLOR": "1",
     "CLAUDE_CODE_WORKFLOWS": "1",
-    "CLAUDE_NOTIFY_SOUND": "",
     "DISABLE_BUG_COMMAND": "1",
     "DISABLE_COST_WARNINGS": "1",
     "DISABLE_ERROR_REPORTING": "1",
@@ -134,17 +133,6 @@
     "executing-test-plans": "user-invocable-only"
   },
   "hooks": {
-    "Notification": [
-      {
-        "matcher": "",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "$HOME/.claude/hooks/claude-notify.sh"
-          }
-        ]
-      }
-    ],
     "PostToolUse": [
       {
         "matcher": "Write|Edit|Bash",
@@ -185,13 +173,13 @@
         ]
       }
     ],
-    "Stop": [
+    "StopFailure": [
       {
         "matcher": "",
         "hooks": [
           {
             "type": "command",
-            "command": "$HOME/.claude/hooks/claude-notify.sh"
+            "command": "$HOME/.claude/hooks/stop-failure-notify.sh"
           }
         ]
       }
@@ -320,5 +308,7 @@
   "inputNeededNotifEnabled": true,
   "agentPushNotifEnabled": true,
   "skipAutoPermissionPrompt": true,
+  "fastModePerSessionOptIn": true,
+  "tui": "fullscreen",
   "voiceEnabled": true
 }
