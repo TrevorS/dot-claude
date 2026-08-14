@@ -13,7 +13,7 @@ Diff this config against Claude Code release notes published since the pinned ba
 State lives in `~/.claude/skills/syncing-claude-config/baseline.json`:
 
 ```json
-{ "claudeCodeVersion": "2.1.193", "syncedDate": "2026-06-25", "adopted": [...], "declined": [...] }
+{ "claudeCodeVersion": "2.1.234", "syncedDate": "2026-08-17", "adopted": [...], "declined": [...] }
 ```
 
 ## Boundary
@@ -90,7 +90,7 @@ Under each row, cite the **exact changelog line** that justifies it, with the ve
 
 ### 7. Apply (only on approval)
 
-For each accepted change, edit the real config (`~/.claude/settings.json`, hooks, skill frontmatter). Leave a self-documenting breadcrumb on non-obvious edits (e.g. `// added <key> — <version>: <one-line reason>`). One logical change per edit so git is the undo layer. After applying, hand the result to `maintaining-claude-code` for a well-formedness pass if any edit was non-trivial.
+For each accepted change, edit the real config (`~/.claude/settings.json`, hooks, skill frontmatter). Record the rationale for every non-obvious edit in `baseline.json`, **not** as a comment in the config. `settings.json` is parsed by `jq` in step 5 and by `check-json` in this repo's pre-commit, and both reject `//` comments — a breadcrumb in the file would fail `make validate`. One logical change per edit so git is the undo layer. After applying, hand the result to `maintaining-claude-code` for a well-formedness pass if any edit was non-trivial.
 
 ### 8. Bump the baseline
 

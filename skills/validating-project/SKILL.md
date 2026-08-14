@@ -1,6 +1,7 @@
 ---
 name: validating-project
 description: Auto-detect and run formatters, linters, type checkers, and tests for the current project. Use when validating a project, running all checks, checking code quality before committing, or verifying the build passes.
+when_to_use: "Typed as 'run the checks', 'lint it', 'does this build', 'make sure it is clean', or before opening a PR. Prefer the repo's own gate (make validate) when it has one."
 context: fork
 model: claude-sonnet-5
 effort: low

@@ -1,6 +1,7 @@
 ---
 name: managing-dotfiles
 description: Manage dotfiles tracked in ~/.claude/dotfiles/ using GNU Stow. Use when adding config files to dotfiles, stowing/unstowing packages, or troubleshooting symlink conflicts.
+when_to_use: "Typed as 'add this to dotfiles', 'stow this', 'track my <tool> config', or on any symlink conflict from stow."
 ---
 
 # Dotfiles Management with GNU Stow

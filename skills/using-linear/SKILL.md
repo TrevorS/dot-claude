@@ -1,6 +1,7 @@
 ---
 name: using-linear
 description: Query, create, and manage Linear issues from the command line. Use when checking assigned work, viewing issue details, creating new issues, or updating issue status.
+when_to_use: "Typed as 'what is assigned to me', 'create a ticket', 'move ENG-123 to done', 'what is in the sprint', or whenever a message contains a Linear issue key like ENG-456."
 ---
 
 # Linear CLI

@@ -1,6 +1,7 @@
 ---
 name: specifying-and-planning
 description: Plan project implementation -- extract requirements from specs, break into tasks, create GitHub issues, set up project boards, or generate agent team configurations. Use when planning a project, extracting requirements, breaking down tasks, creating issues from a spec, setting up GitHub projects, or generating team plans.
+when_to_use: "Typed as 'break this down', 'turn this spec into issues', 'plan the work', 'what are the tasks', 'set up a board', or when handed a spec or design doc to decompose."
 argument-hint: "<mode> [file-or-args]"
 ---
 

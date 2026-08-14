@@ -1,6 +1,7 @@
 ---
 name: searching-history
 description: Search past Claude Code sessions to recall prior solutions, commands, fixes, and decisions. Use when the user references earlier work ("how did I fix", "last time we", "pick up where we left off", "a few months ago", "what was that … I set up", "didn't I once").
+when_to_use: "Typed as 'what was that command', 'we solved this before', 'find the session where', 'dig up how I', or any reference to work from a previous session rather than this one."
 argument-hint: "<search-query>"
 ---
 

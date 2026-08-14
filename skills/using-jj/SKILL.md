@@ -1,6 +1,7 @@
 ---
 name: using-jj
 description: Jujutsu (jj) version control reference. MUST load this skill whenever a query mentions jj, jujutsu, revsets, bookmarks, absorb, evolog, oplog, immutable_heads, divergent changes, or jj-specific concepts — jj differs from git in non-obvious ways and the skill contains critical constraints (e.g., always pass -m, the exact non-interactive form of split, which revision a bookmark must target before pushing) that prevent broken workflows. Skip only for trivial jj commands you're certain about (describe, new, commit, push).
+when_to_use: "Typed as 'how do I X in jj', or any question about squash, rebase, split, absorb, evolog, oplog, bookmarks, or conflicts — especially where a git habit would produce a wrong or editor-blocking jj command."
 ---
 
 # jj Workflow
