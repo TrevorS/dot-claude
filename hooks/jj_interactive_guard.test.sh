@@ -37,6 +37,15 @@ run BLOCK 'jj split -m "msg" --editor foo.txt'         # --editor forces desc ed
 run BLOCK 'jj split --tool meld -m "msg" foo.txt'      # --tool implies -i
 run BLOCK 'jj split -m "add foo.txt to repo"'          # path only inside the message
 run BLOCK 'jj diffedit -r @-'
+# Escaped quotes inside a -m message must not terminate the string early.
+# Before the fix all three tokenizers closed the quote at \" and re-scanned the
+# rest of the message as command text: legal splits were blocked, and worse, a
+# newline in the tail became a real separator, so a trailing -i landed in a
+# segment not starting with `jj` and was never scanned at all.
+run BLOCK 'jj commit -m "note: matcher \"\" is empty" -i'
+run BLOCK 'jj squash -m "quote \" then newline
+second line" --interactive'
+run BLOCK 'jj split -m "msg with \" quote"'
 run BLOCK 'jj forget foo.txt'
 run BLOCK 'jj resolve'
 run BLOCK 'cd /tmp && jj squash --into @-'
@@ -58,6 +67,8 @@ run BLOCK 'jj split -r @ -m "subject
 body"'
 
 # --- should PASS (non-interactive / unrelated) ---
+run PASS 'jj split -r @ -m "matcher \"\" is wired here" foo.txt'
+run PASS 'jj describe -m "he said \"ship it\" today"'
 run PASS 'jj squash -m "fix"'
 run PASS 'jj squash --into @- -u'
 run PASS 'jj describe -m "msg"'

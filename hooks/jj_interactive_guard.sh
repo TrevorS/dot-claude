@@ -48,6 +48,7 @@ segment_command() {
   for (( i = 0; i < ${#s}; i++ )); do
     c="${s:i:1}"
     if [ -n "$q" ]; then
+      if [ "$c" = '\' ] && [ "$q" = '"' ]; then cur+="$c${s:i+1:1}"; i=$((i+1)); continue; fi
       cur+="$c"
       [ "$c" = "$q" ] && q=""
       continue
@@ -78,6 +79,9 @@ strip_quoted() {
   for (( i = 0; i < ${#s}; i++ )); do
     c="${s:i:1}"
     if [ -n "$q" ]; then
+      # Inside "..." a backslash escapes the next char, so \" is literal and
+      # must NOT close the string. Single quotes take no escapes.
+      if [ "$c" = '\' ] && [ "$q" = '"' ]; then i=$((i+1)); continue; fi
       [ "$c" = "$q" ] && q=""
       continue
     fi
@@ -100,6 +104,7 @@ split_has_fileset() {
   for (( i = 0; i < ${#s}; i++ )); do
     c="${s:i:1}"
     if [ -n "$q" ]; then
+      if [ "$c" = '\' ] && [ "$q" = '"' ]; then tok+="${s:i+1:1}"; i=$((i+1)); had_tok=1; continue; fi
       if [ "$c" = "$q" ]; then q=""; else tok+="$c"; fi
       had_tok=1
     elif [ "$c" = '"' ] || [ "$c" = "'" ]; then
