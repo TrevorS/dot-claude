@@ -1,0 +1,214 @@
+#!/usr/bin/env python3
+# Diagnose macOS Local Network privacy blocks from a headless/SSH session.
+#
+# macOS 15+ gates access to your own LAN behind a per-app consent prompt. On a
+# headless box nobody can answer that prompt, so it resolves to *deny* and the
+# decision persists -- every 192.168.x.y address except the router starts
+# failing while the internet keeps working. Everything launched over SSH is
+# attributed to the bundle com.apple.sshd-session, so one unanswered prompt
+# takes out every tool you run remotely.
+#
+# There is no CLI and no MDM payload to grant Local Network access -- the only
+# write path is System Settings > Privacy & Security > Local Network, which you
+# cannot see over SSH. This script is the read side: it decodes the preference
+# store so you can confirm from a terminal whether a grant actually took, and
+# probes the LAN so you can tell a permission block apart from a dead service.
+#
+# The two failure modes look identical in curl unless you watch the clock:
+#   ~0ms   EHOSTUNREACH ("No route to host")  -> permission block
+#   ~1s    ECONNREFUSED ("Could not connect") -> nothing listening on that port
+#
+# Usage:
+#   lan-doctor                        # stored prefs + probe the gateway
+#   lan-doctor host:port [host:port]  # also probe these targets
+#   lan-doctor -p                     # prefs only, no network probes
+#
+# Exit status is 1 if a permission block is detected, else 0.
+
+import errno
+import plistlib
+import socket
+import subprocess
+import sys
+import time
+
+NE_PLIST = "/Library/Preferences/com.apple.networkextension.plist"
+SSH_BUNDLE = "com.apple.sshd-session"
+
+# A blocked connect() is refused by the local stack before a packet is sent, so
+# it comes back far faster than any real network error. Anything under this is
+# a local policy decision, not the network.
+INSTANT_MS = 5.0
+
+
+def color(code, text):
+    if not sys.stdout.isatty():
+        return text
+    return f"\033[{code}m{text}\033[0m"
+
+
+def read_rules():
+    """Return [(bundle, denied, pref_set)] from the NetworkExtension store.
+
+    The file is an NSKeyedArchiver graph; app rules are the dicts carrying both
+    SigningIdentifier and DenyMulticast. DenyMulticast is the Local Network
+    toggle: False means allowed. MulticastPreferenceSet distinguishes an
+    explicit decision from an app that has simply never been asked.
+    """
+    with open(NE_PLIST, "rb") as fh:
+        objs = plistlib.load(fh)["$objects"]
+
+    def resolve(val):
+        if isinstance(val, plistlib.UID):
+            out = objs[val.data]
+            return out if isinstance(out, str) else None
+        return val
+
+    rules = []
+    for obj in objs:
+        if not isinstance(obj, dict):
+            continue
+        if "SigningIdentifier" not in obj or "DenyMulticast" not in obj:
+            continue
+        bundle = resolve(obj.get("SigningIdentifier"))
+        if not bundle:
+            continue
+        rules.append((bundle, bool(obj.get("DenyMulticast")),
+                      bool(obj.get("MulticastPreferenceSet"))))
+    return sorted(rules)
+
+
+def show_prefs():
+    """Print explicit decisions and the SSH verdict. Returns True if SSH denied."""
+    try:
+        rules = read_rules()
+    except (OSError, KeyError, ValueError) as exc:
+        print(f"  could not read {NE_PLIST}: {exc}")
+        return False
+
+    decided = [r for r in rules if r[2]]
+    print(color("1", "Stored Local Network decisions"))
+    if not decided:
+        print("  (none recorded yet -- every app is on the default)")
+    for bundle, denied, _ in decided:
+        mark = color("31", "DENIED ") if denied else color("32", "allowed")
+        print(f"  {mark}  {bundle}")
+    print(f"  {len(rules) - len(decided)} more app(s) have never been asked "
+          f"(they inherit deny until prompted).")
+
+    ssh = [r for r in rules if r[0] == SSH_BUNDLE]
+    print()
+    if not ssh:
+        print(f"  {SSH_BUNDLE}: no rule on record yet.")
+        print("  A prompt will fire on first LAN use -- and nobody is there to answer it.")
+        return False
+    _, denied, pref_set = ssh[0]
+    state = "DENIED" if denied else "allowed"
+    how = "explicitly set" if pref_set else "never decided, inheriting the default"
+    print(f"  {SSH_BUNDLE}: {color('31' if denied else '32', state)} ({how})")
+    if denied:
+        print("  Everything you run over SSH inherits this. Toggle it on in")
+        print("  System Settings > Privacy & Security > Local Network.")
+    return denied
+
+
+def default_gateway():
+    try:
+        out = subprocess.run(["route", "-n", "get", "default"],
+                             capture_output=True, text=True, timeout=5).stdout
+    except (OSError, subprocess.SubprocessError):
+        return None
+    for line in out.splitlines():
+        if "gateway:" in line:
+            return line.split(":", 1)[1].strip()
+    return None
+
+
+def probe(host, port, timeout=3.0):
+    """Connect once and classify the outcome by errno and elapsed time."""
+    sock = socket.socket()
+    sock.settimeout(timeout)
+    start = time.time()
+    try:
+        sock.connect((host, port))
+        return "open", (time.time() - start) * 1000, ""
+    except socket.timeout:
+        return "timeout", (time.time() - start) * 1000, "no response"
+    except OSError as exc:
+        elapsed = (time.time() - start) * 1000
+        name = errno.errorcode.get(exc.errno, str(exc.errno))
+        if exc.errno == errno.EHOSTUNREACH and elapsed < INSTANT_MS:
+            return "blocked", elapsed, name
+        if exc.errno == errno.ECONNREFUSED:
+            return "refused", elapsed, name
+        return "error", elapsed, name
+    finally:
+        sock.close()
+
+
+LABELS = {
+    "open": ("32", "open   "),
+    "blocked": ("31", "BLOCKED"),
+    "refused": ("33", "refused"),
+    "timeout": ("33", "timeout"),
+    "error": ("33", "error  "),
+}
+
+
+def main():
+    args = [a for a in sys.argv[1:] if a not in ("-p", "--prefs-only")]
+    prefs_only = len(args) != len(sys.argv[1:])
+    if args and args[0] in ("-h", "--help"):
+        with open(__file__) as fh:
+            body = fh.read().splitlines()
+        print("\n".join(line.lstrip("#").lstrip() for line in body[1:26]))
+        return 0
+
+    ssh_denied = show_prefs()
+    if prefs_only:
+        return 1 if ssh_denied else 0
+
+    targets = []
+    gateway = default_gateway()
+    if gateway:
+        # The router is exempt from Local Network privacy, so it is the control:
+        # gateway up while the rest of the subnet is blocked is the signature.
+        targets.append((gateway, 80, "gateway (control)"))
+    for arg in args:
+        host, _, port = arg.rpartition(":")
+        if not host or not port.isdigit():
+            print(f"skipping {arg!r}: expected host:port", file=sys.stderr)
+            continue
+        targets.append((host, int(port), ""))
+
+    print()
+    print(color("1", "Probes"))
+    states = []
+    for host, port, note in targets:
+        state, ms, detail = probe(host, port)
+        code, label = LABELS[state]
+        suffix = f"  {detail}" if detail else ""
+        tail = f"  {note}" if note else ""
+        print(f"  {color(code, label)}  {host}:{port:<6} {ms:7.1f} ms{suffix}{tail}")
+        states.append(state)
+    blocked = "blocked" in states
+
+    print()
+    if blocked:
+        print(color("31", "Verdict: Local Network permission block."))
+        print("  Try `sudo killall nehelper` first -- it rebuilds the cached")
+        print("  authorization state. If that fails, reboot. The durable fix is")
+        print("  the System Settings toggle above; there is no CLI for it.")
+        print("  Do NOT run `tccutil reset LocalNetwork` on a headless box: it")
+        print("  clears grants and re-prompts with nobody there to answer.")
+        return 1
+    if "refused" in states[1:]:
+        print("Verdict: LAN reachable. Refused ports mean the service is down,")
+        print("         not a permission problem.")
+    else:
+        print(color("32", "Verdict: no permission block detected."))
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
