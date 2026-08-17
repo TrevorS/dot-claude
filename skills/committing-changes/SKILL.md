@@ -111,7 +111,11 @@ uv run ~/.claude/skills/monitoring-ci/ci-monitor.py --branch <branch-name>
 
 **Do NOT pre-resolve the SHA and pass `--sha`.** The script resolves it from the bookmark/branch, which is correct under every workflow. Deriving it from `@-` is wrong whenever `@` *is* the pushed commit (the `jj describe -m` + `jj bookmark set -r @` flow used in step 6 above), and the failure is silent: the monitor watches the previous commit's finished run and a green predecessor reports a false pass. See `skills/monitoring-ci/SKILL.md`.
 
-Run in background. Tell user: "CI monitor running in background."
+Run it with `run_in_background: true` and tell the user "CI monitor running in
+background." That is correct **here** because this runs in the main conversation,
+which stays alive to receive the completion notification. It is *not* correct
+inside the `monitoring-ci` skill itself, which is a backgrounded fork whose
+session ends as soon as the command is launched — see that skill for why.
 
 ## Error Handling
 

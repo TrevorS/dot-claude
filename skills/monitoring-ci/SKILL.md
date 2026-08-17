@@ -24,7 +24,7 @@ This skill is strictly read-only: run `ci-monitor.py` and report its result. Do 
 
 ## Usage
 
-Run the script in the background after pushing:
+Run the script after pushing:
 
 ```bash
 uv run ~/.claude/skills/monitoring-ci/ci-monitor.py
@@ -44,7 +44,28 @@ After a push, pass the branch and let the script resolve the SHA:
 uv run ~/.claude/skills/monitoring-ci/ci-monitor.py --branch <branch-name>
 ```
 
-Use `run_in_background: true` so it doesn't block the conversation. Tell the user: "CI monitor running in background — you'll be notified when it completes."
+**Run it in the FOREGROUND — do not pass `run_in_background`.**
+
+This skill is `context: fork` at the default `background: true`, so it is already
+detached from the user's conversation. The script blocking *here* costs them
+nothing, and the fork's own completion notification is what carries the verdict
+back.
+
+Backgrounding the script inside the fork breaks exactly that. The fork's turn
+ends the instant the command is launched, so its notification fires seconds later
+carrying only "monitor running", while the real monitor keeps running inside a
+session that no longer exists — its output file is never read and the pass/fail
+reaches nobody. Observed 2026-08-17: a push was reported as monitored when
+nothing was watching it, and the status had to be recovered by hand with
+`gh run list`.
+
+Report the script's actual verdict when it exits: `0` pass, `1` fail (include the
+failing logs it printed), `2` indeterminate — **not** a pass, so pass along the
+manual-check command from its output.
+
+`run_in_background: true` is correct only when the monitor is launched from the
+main conversation instead of from this skill — `committing-changes` step 7 does
+this — because that session stays alive to receive the notification.
 
 **Do NOT pre-resolve the SHA yourself.** The script already resolves it from the bookmark/branch (`sha = args.sha or head_sha(branch)`), which is correct under every workflow. Passing a hand-computed `--sha` only overrides that with something more likely to be wrong.
 
