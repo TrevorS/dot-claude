@@ -18,6 +18,24 @@ repos:
         args: ["--config", ".markdownlint.yaml"]
         exclude: ^cache/
 
+  # codespell, not aspell: aspell asks "is this in a dictionary", which on a repo
+  # full of identifiers is all false positives. codespell flags only KNOWN
+  # misspellings, so it is quiet enough to gate a commit. dotfiles/aspell handles
+  # the other half — live underlining in the prompt.
+  - repo: https://github.com/codespell-project/codespell
+    rev: v2.4.3
+    hooks:
+      - id: codespell
+        # `[Cc]ontext` in a jq regex (hooks/status.sh) tokenizes to "ontext".
+        args: ["--ignore-regex", '\[Cc\]ontext']
+        # lscolors.sh: "*.caf"/"*.sav" are file extensions. baseline.json holds
+        # deliberate typo fixtures for the spellcheck regression command.
+        exclude: |
+          (?x)^(
+            dotfiles/lscolors/\.local/share/lscolors\.sh|
+            skills/syncing-claude-config/baseline\.json
+          )$
+
   - repo: https://github.com/JohnnyMorganz/StyLua
     rev: v2.5.2
     hooks:

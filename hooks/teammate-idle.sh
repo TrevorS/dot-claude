@@ -1,16 +1,10 @@
 #!/bin/bash
 # Hook: TeammateIdle — refuse to let an agent-team teammate go idle on a red tree.
 #
-# Added 2026-07-29 (event landed in v2.1.33). Exit 2 feeds stderr back to the
-# teammate as feedback and it keeps working; exit 0 lets it idle. TeammateIdle
-# fires once per teammate turn-end, which is the right granularity for a gate --
-# TaskCompleted fires on every TaskUpdate completion and would run constantly.
-#
-# TeammateIdle supports no matchers and fires on every occurrence, so scoping
-# has to happen here: no Makefile `validate` target means no opinion.
-#
-# Input:  JSON on stdin (teammate_name, cwd)
-# Output: nothing on pass; stderr + exit 2 to send the teammate back to work
+# Exit 2 feeds stderr back and the teammate keeps working; exit 0 lets it idle.
+# Fires once per teammate turn-end, the right granularity for a gate --
+# TaskCompleted fires on every TaskUpdate and would run constantly. The event
+# supports no matchers, so scoping happens below: no validate target, no opinion.
 
 input=$(cat)
 

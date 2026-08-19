@@ -1,6 +1,6 @@
 {
-  "claudeCodeVersion": "2.1.234",
-  "syncedDate": "2026-08-17",
+  "claudeCodeVersion": "2.1.238",
+  "syncedDate": "2026-08-20",
   "source": "https://api.github.com/repos/anthropics/claude-code/releases",
   "adopted": [
     {
@@ -181,6 +181,53 @@
       "surface": "skill body",
       "adoptedDate": "2026-08-17",
       "note": "8 fixes from a full audit against the 2.1.234 docs. maintaining-claude-code: exec-form example put the executable in args instead of command; the matcher line claimed 'regex against tool names' when the matched FIELD varies per event (start reason, notification type, error type, config source, agent type) -- actively misleading now that a StopFailure hook with matcher \"\" is wired here; frontmatter list was missing metadata/license/compatibility; substitutions were missing ${CLAUDE_PROJECT_DIR}/${CLAUDE_PLUGIN_ROOT}/${CLAUDE_PLUGIN_DATA} plus the fact that substitution also applies inside allowed-tools Bash rules; the prompt-cache pitfall was WRONG (UserPromptSubmit context is appended per user message, so per-turn variation never invalidates a built prefix) and is replaced with the real prefix model and the MCP_CONNECTION_NONBLOCKING/deferred-tools pairing that does matter; added the background-subagent tool set and the /rewind-vs-checkpoints consequence for backgrounded forks. syncing-claude-config: the '// breadcrumb in settings.json' instruction would fail this repo's own check-json pre-commit hook AND the jq calls in the skill's own step 5, so rationale now goes in this ledger; refreshed the stale 2.1.193 example"
+    },
+    {
+      "feature": "keybindingFlavor",
+      "surface": "settings.json key",
+      "introducedVersion": "2.1.238",
+      "adoptedDate": "2026-08-20",
+      "value": "readline",
+      "note": "Ctrl+W in the prompt now deletes back to the previous whitespace (bash/zsh convention) instead of the previous word. editorMode is \"normal\", so this is the live prompt-editing path -- no vim-mode interaction. Verified in the 2.1.238 binary: keybindingFlavor carries a settings zod shape with .describe() and sits in the same read group as forceLoginMethod/switchModelsOnFlag/effortLevel, all of which are already honored from settings.json here. Self-verifying in one keystroke, unlike the teammateDefaultModel class of global-config-only keys. Enum is classic|readline; classic is the default"
+    },
+    {
+      "feature": "ANTHROPIC_DEFAULT_MODEL",
+      "surface": "env var",
+      "introducedVersion": "2.1.236",
+      "adoptedDate": "2026-08-20",
+      "value": "opus[1m]",
+      "note": "Sets the model NEW sessions start on; a /model pick still overrides it and persists across restarts (unlike ANTHROPIC_MODEL, which forces every session). Adopted the same day the uncommitted working copy removed the hard \"model\": \"opus[1m]\" pin from settings.json -- this is the softer replacement for that pin, and the two should not both be set. Practical scope is narrow but real: because a /model pick persists, this only governs contexts with no stored pick -- cloud sessions, -p runs, self-hosted runners, a fresh machine -- which is exactly the unattended surface CLAUDE_CODE_RETRY_WATCHDOG=1 already targets. Composes with fallbackModel (start model vs degradation chain are separate levers). Binary surfaces a \"Set by ANTHROPIC_DEFAULT_MODEL\" label in the /model picker"
+    },
+    {
+      "feature": "spellcheck",
+      "surface": "settings.json key + packages/{brew,apt}.txt + dotfiles/aspell + .pre-commit-config.yaml",
+      "introducedVersion": "2.1.235",
+      "adoptedDate": "2026-08-20",
+      "value": {
+        "enabled": true,
+        "color": "#eba0ac"
+      },
+      "note": "Underlines misspelled words in the prompt input as you type. Two-part change: aspell was added to packages/brew.txt and installed (0.60.8.2), because no checker was on PATH and the binary logs \"[spellcheck] no checker found on PATH (looked for aspell, hunspell, ispell); spell checking stays off\" and silently does nothing. USER SETTINGS ONLY -- the binary explicitly rejects project/local blocks: \"a spellcheck block in project or local settings is ignored, whatever else is configured; set it in your user settings (~/.claude/settings.json) instead\". Full schema is {enabled, checker, language, color}, all optional, enabled defaults false; left at bare enabled:true so the checker auto-resolves to aspell and the color falls back to the theme error color || 2026-08-20 follow-up, checker choice and tuning. CHECKER: kept aspell, and the reason is NOT the usual one. Traced the 2.1.238 pipe protocol: it classifies misspelled/correct/unrecognized and DISCARDS the ispell suggestion list, so aspells historically better suggestions are worth nothing here -- the choice turns on dictionary availability, and that is decisive. Homebrews aspell bundles 739 dictionary files including en_US (326MB in Cellar); Homebrews hunspell 1.7.3 depends only on readline+gettext and ships NO dictionaries, so it needs .aff/.dic files placed in ~/Library/Spelling by hand and otherwise starts, finds nothing, and the binary logs \"a missing dictionary usually means spellcheck.language needs setting\". aspell is also first in the binarys auto-detect order [aspell, hunspell, ispell], so checker:auto resolves to it with no setting. ispell is not a real candidate. Revisit only for non-English or heavy compound-word text, where hunspells morphology genuinely wins. || APT: needs BOTH aspell and aspell-en. The Debian aspell package ships no dictionary, so aspell alone installs a checker that can never start. Homebrew does not have this split. || CONFIG: nothing more to set in settings.json -- the full schema is only {enabled, checker, language, color}, and checker/language/color all resolve correctly by default (auto -> aspell, en_US, theme error color). The config that actually matters is aspells own, added as a new stow package dotfiles/aspell: .aspell.conf plus a 119-word .aspell.en_US.pws. MEASURED NEED: piping CLAUDE.md + rules/ + skills/ through aspell flagged jj 133 times, plus revset, oplog, evolog, fileset, frontmatter, dotfiles, typecheck, glhf, uv, jq, gh -- on two lines of ordinary text it produced 6 false positives against 3 real typos, which is worse than useless for a live underline. With the word list the same sample flags only genuine typos. || THREE GOTCHAS, all silent-failure: (1) the .pws header lang must be `en`, NOT `en_US` -- personal_ws-1.1 en_US parses without complaint and loads zero words. (2) `personal` must be set EXPLICITLY in .aspell.conf even though the value is byte-identical to what `aspell config personal` reports as the default; left unset the dictionary never loads. (3) aspell expands neither ~ nor $HOME in that path -- both forms parse and then silently fail -- so it must stay relative, which is also what keeps it portable to Linux. Regression check, from any cwd: echo \"jj mmap teh\" | aspell -a | grep ^& should flag teh only. || run-together is deliberately OFF. It masked gotcha 2 during setup (revset passes as rev+set whether or not the dictionary loaded) and it swallows dropped-space typos, the most common kind: thebug parses as the+bug. Verified thebug/seperate/isue are all caught with it off. || 2026-08-20 pass 3, color + commit gate + typo sweep. COLOR: set to #eba0ac, Catppuccin Mocha Maroon. Picking Red would have been a NO-OP -- the theme override error is #f38ba8, which is exactly what spellcheck already falls back to. Maroon is the only Mocha accent not bound to a semantic role in themes/catppuccin-mocha.json, so it cannot collide: warning is #f9e2af, merged/autoAccept #cba6f7, claude/fastMode #fab387. TENSION (SINCE RESOLVED -- Teej reversed the hex decline the same day and hooks/status.sh is now truecolor too) with the then-standing truecolor-hex decline (statusLine, 2026-07-29, which preferred ANSI names so colors survive a theme switch): that tradeoff is real here too -- a hex maroon will NOT follow a theme change, whereas omitting color would. It is accepted deliberately, because ANSI has no maroon and ansi:red resolves to the terminals red, i.e. back to the no-op. Revert to no color key to restore theme-following behavior. || COMMIT GATE: added codespell v2.4.3 to .pre-commit-config.yaml, so it also runs in make validate and CI. Chose codespell over an aspell hook on purpose -- aspell answers is-this-in-a-dictionary, which on 157 tracked files full of identifiers means permanent false positives and an unusable gate, while codespell only flags KNOWN misspellings. The two are complementary, not redundant: aspell underlines the prompt live and tolerates noise; codespell gates what lands and must stay silent. Verified non-vacuous -- a planted \"sentance\"/\"recieving\" file fails the hook. || Three codespell false positives are suppressed, all confirmed by hand: --ignore-regex on the literal [Cc]ontext, because the jq regex in hooks/status.sh tokenizes to \"ontext\"; and an exclude for dotfiles/lscolors/.local/share/lscolors.sh (generated LS_COLORS globs where *.caf and *.sav are file extensions) and for this baseline.json (its regression command deliberately contains teh/seperate/isue). || TYPO SWEEP: codespell over all 157 tracked files found ZERO real misspellings -- every hit was one of the three false positives above. history.jsonl and the runtime dirs are gitignored so pre-commit never sees them, and they must never be auto-corrected regardless: history.jsonl is a verbatim record of what Teej typed. A second aspell pass over prose added this session surfaced only vocabulary gaps, no errors, and grew the personal dictionary from 119 to 173 words (tooling names, jj/git vocabulary, OpenSSL/LibreSSL/LuaRocks-style mixed-case terms, which need exact-case entries because a lowercase .pws entry does not match internal capitals)."
+    },
+    {
+      "feature": "outputStyle = Concise",
+      "surface": "settings.json key",
+      "introducedVersion": "2.1.237",
+      "adoptedDate": "2026-08-20",
+      "value": "Concise",
+      "note": "Built-in style: \"Claude responds tersely, leading with results and skipping preamble and narration\", with keepCodingInstructions:true so coding guidance is NOT stripped. Direct match for CLAUDE.md \"deliver work, dont narrate every step\". Written to settings.json rather than set via /config -- verified outputStyle carries a real settings zod shape, .describe(\"Controls the output style for assistant responses\"), and ~/.claude.json has outputStyle:null so there is no global-config shadow. Supersedes the earlier \"output-styles for status-marks\" decline, which was a category error about markdown enforcement; this is a genuine tone change. WATCH: possible tension with rules/status-marks.md, which asks for structured multi-block reports -- if status reports start collapsing to prose, that is the cause. 2.1.238 separately fixed styles drifting back to the default voice mid-session, so it now actually sticks"
+    },
+    {
+      "feature": "truecolor hex in statusLine",
+      "surface": "statusLine script",
+      "introducedVersion": "n/a (local decision, not a release feature)",
+      "adoptedDate": "2026-08-20",
+      "value": {
+        "GREEN": "#a6e3a1",
+        "YELLOW": "#f9e2af",
+        "RED": "#f38ba8"
+      },
+      "note": "Reverses the 2026-07-29 named-colour decline; see the matching declined entry for the original argument. Three constants in hooks/status.sh, no call-site changes -- paint() and quota_colour() already pass the value straight through as SGR params, so 38;2;r;g;b slots in exactly where 31 did. Shades taken from themes/catppuccin-mocha.json success/warning/error so the script and the Claude Code theme cannot drift apart. Pairs with spellcheck.color #eba0ac (Mocha Maroon), the change that prompted the reversal."
     }
   ],
   "declined": [
@@ -250,7 +297,8 @@
     },
     {
       "feature": "truecolor hex colours in statusLine",
-      "reason": "declined in favour of ANSI named colours, which follow ghostty's Catppuccin Mocha mapping and survive a theme switch; starship row 1 also uses named colours, so the two rows stay coherent"
+      "reason": "REVERSED 2026-08-20 by Teej (\"ok true color hex lets do it\"); kept here so the original reasoning stays legible. Originally declined 2026-07-29 in favour of ANSI named colours, which follow ghosttys Catppuccin Mocha mapping and survive a theme switch, and which matched starship row 1. hooks/status.sh GREEN/YELLOW/RED are now pinned truecolor SGR (38;2;r;g;b) at Mocha #a6e3a1 / #f9e2af / #f38ba8 -- byte-identical shades to what ghostty was already resolving 32/33/31 to, so nothing looks different today. Verified by rendering the row: emits ESC[38;2;166;227;161m and ESC[38;2;249;226;175m, and CLAUDE_CODE_TMUX_TRUECOLOR=1 keeps 24-bit intact through tmux. KNOWN DIVERGENCE, accepted: starship row 1 is still palette-resolved (bold cyan, purple, yellow, dimmed white), so a ghostty theme switch now moves row 1 and leaves row 2 pinned. Convert starship/.config/starship.toml to hex to re-couple them, or revert status.sh to 32/33/31.",
+      "status": "reversed"
     },
     {
       "feature": "polling /api/oauth/usage for quota",
@@ -339,6 +387,36 @@
     {
       "feature": "CLAUDE_CODE_GOAL_CHECKIN_MINUTES",
       "reason": "declined 2026-08-17 (2.1.234). Set to 0 to stop /goal checking in when background tasks keep a goal waiting 30+ minutes. /goal is not used here, and the default check-in is the desirable behavior for background work anyway"
+    },
+    {
+      "feature": "notify_when_idle",
+      "introducedVersion": "2.1.236",
+      "reason": "not applicable 2026-08-20. A parameter on the cross-session SendMessage TOOL, not a config surface -- nothing to write to settings.json. Useful alongside CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1 + teammateMode:tmux when a session should ping once on next idle instead of being polled"
+    },
+    {
+      "feature": "auto mode: Monitor allow rules set aside",
+      "introducedVersion": "2.1.236",
+      "reason": "no-op 2026-08-20. permissions.defaultMode is \"auto\", so the change is live, but there are ZERO Monitor rules across the 69-entry allow list -- nothing to set aside. Revisit only if a Monitor(...) allow rule is ever added, since it would then be routed through the classifier like Bash"
+    },
+    {
+      "feature": "sandbox macOS wildcard read-deny precedence",
+      "introducedVersion": "2.1.236",
+      "reason": "inert 2026-08-20. Doubly so: sandbox.enabled is false, AND sandbox.credentials.files uses exact paths (~/.ssh, ~/.aws, ~/.env) rather than the wildcard form (**/.env) the fix is about. Revisit with the other sandbox.* keys if the sandbox is re-enabled -- at which point wildcards become the better spelling, since they now beat allowed read regions, cover matched directories contents, and survive a rename"
+    },
+    {
+      "feature": "headersHelper (marketplace, catalog entry, project .mcp.json)",
+      "introducedVersion": "2.1.238",
+      "reason": "not applicable 2026-08-20. Mints HTTP headers for url marketplaces and same-origin archive fetches; teej-skills is a command-source directory marketplace with mode:link, which fetches nothing over HTTP. The .mcp.json variant is also n/a -- no project .mcp.json here"
+    },
+    {
+      "feature": "CLAUDE_CODE_ENABLE_PROMPT_SUGGESTION",
+      "introducedVersion": "2.1.238",
+      "reason": "declined 2026-08-20. Pre-existing env var; the bullet is a fix (suggestions were being dropped when the account was near but not over its usage limit), not a new setting. Prompt suggestions are not enabled here -- promptSuggestionEnabled is unset and the var is absent -- so there is nothing to fix"
+    },
+    {
+      "feature": "claude self-hosted-runner --defer-shutdown-max-min / --proxy-authorization-command / --proxy-authorization-file",
+      "introducedVersion": "2.1.238",
+      "reason": "CLI-only 2026-08-20. Flags on the self-hosted-runner subcommand; no settings.json surface and no self-hosted runner in use here"
     }
   ],
   "deferred": [

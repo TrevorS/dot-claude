@@ -1,5 +1,11 @@
 "$schema" = "https://starship.rs/config-schema.json"
 
+# Truecolor hex, Catppuccin Mocha, pinned to stay coupled with row 2
+# (hooks/status.sh). Values copied from ghostty's own theme file, so they are
+# what the colour names already resolved to. Watch out: purple is ANSI 5, which
+# Mocha maps to Pink #f5c2e7, NOT Mauve. Pinning costs theme-switch following;
+# revert both rows to colour names to get it back.
+
 format = """
 $hostname\
 $directory\
@@ -15,48 +21,53 @@ $line_break\
 $character"""
 
 [character]
-success_symbol = "[❯](green)"
-error_symbol = "[❯](red)"
+success_symbol = "[❯](#a6e3a1)"
+error_symbol = "[❯](#f38ba8)"
 
 [hostname]
 ssh_only = true
 format = "[$hostname]($style):"
-style = "bold cyan"
+style = "bold #94e2d5"
 
 [directory]
 truncation_length = 3
 truncate_to_repo = true
+style = "bold #94e2d5"
 
 [git_branch]
 format = "[$branch]($style) "
-style = "purple"
+style = "#f5c2e7"
 
 [git_status]
 format = '([$all_status$ahead_behind]($style) )'
-style = "yellow"
+style = "#f9e2af"
 
 [cmd_duration]
 min_time = 2_000
 format = "[$duration]($style) "
-style = "dimmed white"
+style = "dimmed #a6adc8"
 
 [python]
 format = '[${symbol}${pyenv_prefix}(${version} )(\($virtualenv\) )]($style)'
 symbol = ""
+style = "bold #f9e2af"
 
 [rust]
 format = "[$symbol($version )]($style)"
 symbol = ""
+style = "bold #f38ba8"
 
 [nodejs]
 format = "[$symbol($version )]($style)"
 symbol = ""
+style = "bold #a6e3a1"
 
 [golang]
 format = "[$symbol($version )]($style)"
 symbol = ""
+style = "bold #94e2d5"
 
 [jj_status]
 disabled = false
 truncation_length = 12
-style = "bold purple"
+style = "bold #f5c2e7"

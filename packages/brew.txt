@@ -10,6 +10,7 @@
 curl
 openssh
 
+aspell  # spell checker for Claude Code's `spellcheck` prompt-input setting
 coreutils
 emacs-app@nightly  # Emacs nightly master builds (cask)
 fd

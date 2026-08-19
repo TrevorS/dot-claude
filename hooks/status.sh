@@ -2,55 +2,30 @@
 # Hook: statusLine — two rows: starship prompt, then Claude session metrics.
 # Falls back to directory + git branch if starship is unavailable.
 #
-# 2026-07-29: fixed rate_limits, which is an object keyed by window
-# (.rate_limits.five_hour / .seven_day), not an array -- the old `.rate_limits[0]`
-# always evaluated to null, so the rl segment never rendered. Added model, effort,
-# thinking, exceeds_200k_tokens, PR, and worktree; collapsed 3 jq calls into 1.
-# ctx now reports *used* rather than remaining, so ctx and rl both mean "consumed".
-# Cost (.cost.total_cost_usd) is deliberately omitted to match DISABLE_COST_WARNINGS.
+# Non-obvious things, all of which have bitten:
+#   - rate_limits is an object keyed by window (.five_hour / .seven_day), NOT an
+#     array. `.rate_limits[0]` yields null silently and the segment just vanishes.
+#   - ctx and rl both report *consumed*, never remaining, so they read alike.
+#   - A bare quota % is not actionable: 18% an hour into a 5h window is healthy,
+#     18% ten minutes in is not. resets_at makes pace computable with no network
+#     call — see burn_rate below.
+#   - Glyphs are limited to what Berkeley Mono ships. No powerline separators or
+#     Nerd Font icons; they would also clash with the glyph-free starship row.
+#   - Cost is omitted deliberately, matching DISABLE_COST_WARNINGS=1.
+#   - Unused on purpose: durations, vim.mode, agent.name, output_style.name,
+#     session_name, version, workspace.repo.* (row 1 already shows it).
 #
-# 2026-07-29 (2): added fast_mode, context_window_size, line churn, and an OSC 8
-# link on the PR label. Dropped the standalone `think` segment -- alwaysThinkingEnabled
-# makes it near-constant -- and folded exceeds_200k_tokens into the window size.
-# Deliberately unused: the duration fields, vim.mode (built-in indicator),
-# agent.name, output_style.name, session_name, version, workspace.repo.*
-# (starship row already shows it).
-#
-# 2026-07-29 (3): pacing + colour, after surveying prior art (ccstatusline, cship,
-# jtbr's guide, ohugonnot, benabraham). Two findings drove the design:
-#
-#   1. A bare quota percentage is not actionable. 18% one hour into a 5h window is
-#      healthy; 18% ten minutes in is not. resets_at gives elapsed time, so pace is
-#      computable with zero network calls -- unlike jtbr's script, which polls the
-#      undocumented /api/oauth/usage (rate-limits under a 180s TTL and fails
-#      silently when /login mints a token without user:profile scope).
-#   2. Colours use ANSI names, not truecolor hex, so they follow Ghostty's
-#      Catppuccin mapping and survive a theme switch -- and match row 1, where
-#      starship also uses named colours.
-#
-# Powerline separators and Nerd Font glyphs were rejected: ghostty is configured
-# with plain "Berkeley Mono", and starship.toml is deliberately glyph-free (every
-# language symbol is set to ""), so they would clash with row 1. The block glyphs
-# used here exist in Berkeley Mono.
-#
-# Pacing compares used% against elapsed% of the window; see burn_rate below.
-#
-# 2026-07-29 (4): dropped exceeds_200k_tokens entirely. It rendered as a bare "+"
-# on the window size ("of 1M+"), which was unreadable without knowing the rule --
-# and it signals long-context premium *pricing*, which is the same reason
-# cost.total_cost_usd is omitted here (DISABLE_COST_WARNINGS=1). On a 1M window it
-# is also roughly derivable from ctx% anyway. The model display name has its
-# "(1M context)" suffix stripped so the window is stated once, not twice.
-
+# History belongs to git and skills/syncing-claude-config/baseline.json, not here.
 input=$(cat)
 now=$(date +%s)
 
-# ANSI via named colours so the terminal theme picks the actual shade. Under
-# ghostty's Catppuccin Mocha these resolve to Green #a6e3a1, Yellow #f9e2af and
-# Red #f38ba8 -- the same pair Catppuccin uses for diff additions and deletions.
-GREEN=32
-YELLOW=33
-RED=31
+# Truecolor SGR pinned to Catppuccin Mocha (themes/catppuccin-mocha.json
+# success/warning/error) -- the shades ghostty already resolved 32/33/31 to.
+# Cost of pinning: no longer follows a theme switch. starship row 1 is pinned
+# to match, so retune the two together, or revert both to colour names.
+GREEN='38;2;166;227;161'  # Mocha Green  #a6e3a1
+YELLOW='38;2;249;226;175' # Mocha Yellow #f9e2af
+RED='38;2;243;139;168'    # Mocha Red    #f38ba8
 
 paint() { printf '\033[%sm%s\033[0m' "$1" "$2"; }
 

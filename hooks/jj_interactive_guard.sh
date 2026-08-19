@@ -70,10 +70,9 @@ segment_command() {
   segments+=("$cur")
 }
 
-# Drop "double"- and 'single'-quoted substrings so flag scanning can't match
-# text inside a -m message. Replaces a sed pass that only ever matched within a
-# single line, which left a multi-line message's contents in $bare -- where a
-# `-i` written in prose would have tripped the interactive check.
+# Drop "double"- and 'single'-quoted substrings so flag scanning can't match text
+# inside a -m message. Must span lines: a line-wise sed leaves a multi-line
+# message's body in $bare, where `-i` written in prose trips the interactive check.
 strip_quoted() {
   local s="$1" c q="" out="" i
   for (( i = 0; i < ${#s}; i++ )); do

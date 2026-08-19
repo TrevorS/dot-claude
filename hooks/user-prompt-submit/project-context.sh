@@ -1,7 +1,5 @@
 #!/bin/bash
 # Outputs project context for Claude on each prompt
-# Input: JSON on stdin (ignored)
-# Output: JSON with additionalContext
 
 # Drain stdin to prevent blocking
 cat > /dev/null

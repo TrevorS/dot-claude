@@ -1,14 +1,10 @@
 #!/bin/bash
 # Hook: SessionStart — name the session from worktree/bookmark/branch/folder.
 #
-# Added 2026-07-29 (feature landed in v2.1.152). SessionStart is used rather than
-# UserPromptSubmit because only SessionStart receives `session_title` as input,
-# so only here can the hook detect an existing title and decline to clobber it.
-# `sessionTitle` applies on source startup|resume|fork and is ignored on
-# clear|compact, so no work is wasted on those.
-#
-# Input:  JSON on stdin (session_title, cwd)
-# Output: JSON with hookSpecificOutput.sessionTitle, or nothing when a title exists
+# SessionStart rather than UserPromptSubmit because only SessionStart receives
+# `session_title`, so only here can the hook see an existing title and decline to
+# clobber it. sessionTitle applies on startup|resume|fork, ignored on
+# clear|compact.
 
 input=$(cat)
 

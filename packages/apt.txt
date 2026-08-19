@@ -1,5 +1,7 @@
 # System packages (Ubuntu/Debian)
 # One package per line. Comments and blank lines are ignored.
+aspell      # spell checker for Claude Code's `spellcheck` prompt-input setting
+aspell-en   # the Debian `aspell` package ships NO dictionary; without this, spellcheck stays off
 clang
 curl
 fd-find
