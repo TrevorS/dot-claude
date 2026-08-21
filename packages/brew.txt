@@ -18,14 +18,15 @@ fzf
 gh
 git
 glow
-imagemagick
-mosh
 gnu-sed
+imagemagick
 jq
 lua-language-server
 luarocks
+mosh
 neovim
 ripgrep
+shellcheck
 stow
 tmux
 uv

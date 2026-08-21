@@ -17,10 +17,12 @@ import re
 import sys
 from pathlib import Path
 
-FENCED_CODE_BLOCK = re.compile(
-    r"^(?P<fence>`{3,}|~{3,}).*?\n.*?^(?P=fence)\s*$",
-    re.MULTILINE | re.DOTALL,
-)
+# Opening fence of a code block: 3+ backticks or tildes at the start of a line.
+# Closing is matched by a line scan in strip_fenced_code_blocks() rather than a
+# backreference -- a regex with `.*?\n.*?^(?P=fence)` backtracks quadratically
+# when a fence is never closed (an Edit fragment routinely contains one half of
+# a block), which cost seconds on large payloads.
+OPEN_FENCE = re.compile(r"^(`{3,}|~{3,})")
 
 # Words that flag vapid AI-speak when they show up in generated prose.
 # Not categorically forbidden — flagged for a sanity check that the word is
@@ -84,7 +86,45 @@ def build_pattern(words: list[str]) -> re.Pattern | None:
 
 
 def strip_fenced_code_blocks(text: str) -> str:
-    return FENCED_CODE_BLOCK.sub("", text)
+    """Remove fenced code blocks so code identifiers don't trip prose checks.
+
+    Linear line scan. A closing fence must use the same character as its opener
+    and be at least as long (CommonMark). A fence that is never closed is left
+    in place as prose rather than swallowing the rest of the input.
+    """
+    lines = text.split("\n")
+    out: list[str] = []
+    i = 0
+    n = len(lines)
+    while i < n:
+        match = OPEN_FENCE.match(lines[i])
+        if match is None:
+            out.append(lines[i])
+            i += 1
+            continue
+
+        fence = match.group(1)
+        char = fence[0]
+        needed = len(fence)
+
+        close = None
+        j = i + 1
+        while j < n:
+            candidate = lines[j].rstrip()
+            if candidate and set(candidate) == {char} and len(candidate) >= needed:
+                close = j
+                break
+            j += 1
+
+        if close is None:
+            out.append(lines[i])
+            i += 1
+            continue
+
+        out.append("")
+        i = close + 1
+
+    return "\n".join(out)
 
 
 def find_flagged(text: str, pattern: re.Pattern) -> list[str]:

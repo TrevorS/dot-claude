@@ -5,14 +5,14 @@
 #
 # Run: ./hooks/git_dangerous_flags.test.sh   (exit 0 = all pass)
 set -uo pipefail
-cd "$(dirname "$0")/.."
+cd "$(dirname "$0")/.." || exit 1
 GUARD=./hooks/git_dangerous_flags.sh
 
 fails=0
 run() { # <want BLOCK|PASS> <command>
-  local want="$1" cmd="$2" json out rc got
+  local want="$1" cmd="$2" json rc got
   json=$(python3 -c 'import json,sys; print(json.dumps({"tool_input":{"command":sys.argv[1]}}))' "$cmd")
-  out=$(printf '%s' "$json" | "$GUARD" 2>/dev/null); rc=$?
+  printf '%s' "$json" | "$GUARD" >/dev/null 2>&1; rc=$?
   [ "$rc" -eq 2 ] && got=BLOCK || got=PASS
   if [ "$got" = "$want" ]; then
     printf '  ok   %-6s %s\n' "$got" "$cmd"
@@ -74,6 +74,23 @@ run PASS  'git commit -m "explain why --amend is risky"'
 run PASS  'git commit -m "do not use --no-verify here"'
 run PASS  'git commit -m "revert the --force push"'
 run PASS  $'git commit -m "line one\n--amend in prose"'  # multi-line message
+
+# --- wrapper prefixes must not smuggle a dangerous command past the anchor ---
+# The segment gate is anchored on ^git/^gh, so `timeout 5 git push --force` used
+# to slip through entirely. strip_wrappers() peels these before the gate.
+run BLOCK 'timeout 5 git push --force'
+run BLOCK 'timeout --preserve-status 10s git push -f'
+run BLOCK 'command git push --force'
+run BLOCK 'env git push --force'
+run BLOCK 'env FOO=1 git push --force'
+run BLOCK 'FOO=1 BAR=2 git push --force'
+run BLOCK 'nice -n 10 git push --force'
+run BLOCK 'sudo -u someone git push --force'
+run BLOCK 'nohup git push --force'
+run BLOCK 'stdbuf -oL git push --force'
+run BLOCK 'git status && timeout 5 git push --force'   # wrapper in the second segment
+run PASS  'timeout 5 git status'                       # wrapper on a safe command
+run PASS  'git commit -m "timeout 5 git push --force"' # wrapper name inside a message
 
 echo
 if [ "$fails" -eq 0 ]; then echo "all pass"; else echo "$fails failing"; fi

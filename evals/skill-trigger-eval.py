@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Evaluate skill triggering for already-installed skills.
 
-Unlike run_eval.py (which creates temp commands), this tests whether Claude
+Unlike scripts/run-trigger-eval.py (which creates temp skills), this tests whether Claude
 invokes real installed skills via the Skill tool when given a query.
 
 Usage:

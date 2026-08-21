@@ -5,14 +5,14 @@
 #
 # Run: ./hooks/jj_interactive_guard.test.sh   (exit 0 = all pass)
 set -uo pipefail
-cd "$(dirname "$0")/.."
+cd "$(dirname "$0")/.." || exit 1
 GUARD=./hooks/jj_interactive_guard.sh
 
 fails=0
 run() { # <want BLOCK|PASS> <command>
-  local want="$1" cmd="$2" json out rc got
+  local want="$1" cmd="$2" json rc got
   json=$(python3 -c 'import json,sys; print(json.dumps({"tool_input":{"command":sys.argv[1]}}))' "$cmd")
-  out=$(printf '%s' "$json" | "$GUARD" 2>/dev/null); rc=$?
+  printf '%s' "$json" | "$GUARD" >/dev/null 2>&1; rc=$?
   [ "$rc" -eq 2 ] && got=BLOCK || got=PASS
   if [ "$got" = "$want" ]; then
     printf '  ok   %-6s %s\n' "$got" "$cmd"
@@ -105,6 +105,16 @@ run PASS 'jj describe -m "subject
 mentions -i and ; and && in prose"'
 run PASS 'jj split -r @ \
   -m "msg" foo.txt'
+
+# --- wrapper prefixes must not smuggle an editor-opening command past the anchor ---
+# The segment gate is anchored on ^jj, so a wrapper prefix used to skip the
+# segment outright and let the command through to hang on an editor.
+run BLOCK 'timeout 5 jj describe'
+run BLOCK 'command jj squash'
+run BLOCK 'env jj commit'
+run BLOCK 'FOO=1 jj split'
+run PASS  'timeout 5 jj describe -m "msg"'
+run PASS  'timeout 5 jj status'
 
 echo
 if [ "$fails" -eq 0 ]; then

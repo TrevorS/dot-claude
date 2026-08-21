@@ -44,6 +44,15 @@ repos:
 
   - repo: local
     hooks:
+      - id: shellcheck
+        name: shellcheck (lint shell)
+        entry: shellcheck --severity=warning
+        language: system
+        types: [shell]
+        # shellcheck has no zsh dialect, and lscolors.sh is a generated
+        # LS_COLORS dump that is sourced rather than run, so it carries no
+        # shebang for shellcheck to infer one from.
+        exclude: '^dotfiles/(lscolors|zsh)/'
       - id: luacheck
         name: luacheck
         entry: luacheck --config dotfiles/nvim/.config/nvim/.luacheckrc

@@ -138,12 +138,59 @@ split_has_fileset() {
 }
 
 # Split chained commands (&& || ; newline) and inspect each jj segment.
+# Peel leading environment assignments and wrapper commands, so that
+# `timeout 5 git push --force` is inspected as `git push --force`. Without this
+# the anchored `^git`/`^jj` test below skips the segment entirely and the guard
+# silently passes -- verified evadable via `timeout`, `command`, and `env`.
+#
+# Assigns the global `stripped` rather than echoing, for the same reason
+# git_subcommand does: a $(...) call would fork a subshell per segment on a hook
+# that runs for every Bash tool call.
+#
+# Peeling only ever exposes MORE of the command line to the checks below, so an
+# over-eager strip risks a false block, never a missed one.
+strip_wrappers() {
+  local s="$1" prev="" rest
+  while [ "$s" != "$prev" ]; do
+    prev="$s"
+    # VAR=value prefix (also covers `env FOO=1 ...` on the next pass).
+    if [[ "$s" =~ ^[A-Za-z_][A-Za-z0-9_]*=[^[:space:]]*[[:space:]]+(.*)$ ]]; then
+      s="${BASH_REMATCH[1]}"; continue
+    fi
+    # Wrappers that take no options of their own.
+    if [[ "$s" =~ ^(command|builtin|exec|nohup|setsid|time)[[:space:]]+(.*)$ ]]; then
+      s="${BASH_REMATCH[2]}"; continue
+    fi
+    # timeout [-opts] DURATION cmd
+    if [[ "$s" =~ ^timeout[[:space:]]+(-[^[:space:]]+[[:space:]]+)*[0-9]+(\.[0-9]+)?[smhd]?[[:space:]]+(.*)$ ]]; then
+      s="${BASH_REMATCH[3]}"; continue
+    fi
+    # Wrappers that may carry their own flags, some taking a separate value.
+    if [[ "$s" =~ ^(env|stdbuf|nice|ionice|sudo)[[:space:]]+(.*)$ ]]; then
+      rest="${BASH_REMATCH[2]}"
+      while true; do
+        if [[ "$rest" =~ ^-[nucgpioeC][[:space:]]+[^[:space:]]+[[:space:]]+(.*)$ ]]; then
+          rest="${BASH_REMATCH[1]}"; continue
+        fi
+        if [[ "$rest" =~ ^-[^[:space:]]+[[:space:]]+(.*)$ ]]; then
+          rest="${BASH_REMATCH[1]}"; continue
+        fi
+        break
+      done
+      s="$rest"; continue
+    fi
+  done
+  stripped="$s"
+}
+
 segment_command "$command"
 for seg in "${segments[@]}"; do
   # Trim with parameter expansion, not sed: a segment can now legitimately
   # contain newlines, and sed would trim every line of the message instead.
   seg="${seg#"${seg%%[![:space:]]*}"}"
   seg="${seg%"${seg##*[![:space:]]}"}"
+  strip_wrappers "$seg"
+  seg="$stripped"
   [[ "$seg" =~ ^jj([[:space:]]|$) ]] || continue
   bare="$(strip_quoted "$seg")"
 
