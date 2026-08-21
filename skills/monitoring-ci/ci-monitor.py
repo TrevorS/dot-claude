@@ -206,6 +206,17 @@ def main() -> int:
         default=180,
         help="Max seconds to poll for a CI run to appear (default: 180)",
     )
+    parser.add_argument(
+        "--watch-timeout",
+        type=int,
+        default=1800,
+        help=(
+            "Max seconds to watch a found run (default: 1800). Callers that run "
+            "this in a tool-call foreground must set this BELOW their own tool "
+            "timeout, so the script exits with a real verdict instead of being "
+            "backgrounded mid-watch and losing it."
+        ),
+    )
     args = parser.parse_args()
 
     name = repo_name()
@@ -216,7 +227,7 @@ def main() -> int:
         return 1
 
     sha = args.sha or head_sha(branch)
-    watch_timeout = 1800
+    watch_timeout = args.watch_timeout
     sentinel = sentinel_path(name, sha)
 
     # Stale = older than the longest a healthy monitor can possibly live.
@@ -238,6 +249,12 @@ def main() -> int:
 
         print(f"Found run {run_id} — watching ...")
         exit_code = watch_run(run_id, timeout=watch_timeout)
+
+        if exit_code == 2:
+            print(
+                f"INDETERMINATE: run {run_id} still going after {watch_timeout}s — "
+                f"check manually: gh run view {run_id}"
+            )
 
         if exit_code == 1:
             print(f"\nCI FAILED (run {run_id})\n")

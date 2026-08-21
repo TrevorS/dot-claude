@@ -41,10 +41,29 @@ uv run ~/.claude/skills/monitoring-ci/ci-monitor.py --branch my-feature
 After a push, pass the branch and let the script resolve the SHA:
 
 ```bash
-uv run ~/.claude/skills/monitoring-ci/ci-monitor.py --branch <branch-name>
+uv run ~/.claude/skills/monitoring-ci/ci-monitor.py --branch <branch-name> --watch-timeout 480
 ```
 
-**Run it in the FOREGROUND — do not pass `run_in_background`.**
+**Run it in the FOREGROUND — do not pass `run_in_background` — and pass
+`timeout: 600000` on the Bash call.**
+
+`--watch-timeout 480` and `timeout: 600000` are a matched pair, and both are
+required. The script's own default watch budget is 1800s, which is longer than
+the Bash tool can ever wait: when the tool timeout expires first, Bash moves the
+command to the background, this fork's turn ends immediately, and its completion
+notification carries "monitor running" instead of a verdict — the same
+verdict-reaches-nobody failure as backgrounding it deliberately, arrived at by a
+different route. Observed 2026-08-21: a green run was reported as merely
+"running" and had to be recovered by hand with `gh run list`.
+
+Bounding the script at 480s keeps it inside the 600s tool ceiling, so it always
+exits with a real code of its own — `2` if CI genuinely outran the budget, which
+is honest and actionable, rather than silence.
+
+**If Bash reports the command was moved to the background anyway, do NOT end
+your turn.** That message names an output file. Read it, and keep reading until
+the script's final verdict line appears, then report that. Ending the turn on
+"moved to the background" is the bug this section exists to prevent.
 
 This skill is `context: fork` at the default `background: true`, so it is already
 detached from the user's conversation. The script blocking *here* costs them
