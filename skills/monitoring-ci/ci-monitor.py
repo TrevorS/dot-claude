@@ -250,12 +250,6 @@ def main() -> int:
         print(f"Found run {run_id} — watching ...")
         exit_code = watch_run(run_id, timeout=watch_timeout)
 
-        if exit_code == 2:
-            print(
-                f"INDETERMINATE: run {run_id} still going after {watch_timeout}s — "
-                f"check manually: gh run view {run_id}"
-            )
-
         if exit_code == 1:
             print(f"\nCI FAILED (run {run_id})\n")
             logs = fetch_failed_logs(run_id)
