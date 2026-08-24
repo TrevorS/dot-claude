@@ -316,5 +316,7 @@
   "agentPushNotifEnabled": true,
   "skipAutoPermissionPrompt": true,
   "outputStyle": "Concise",
-  "voiceEnabled": true
+  "voice": {
+    "enabled": true
+  }
 }

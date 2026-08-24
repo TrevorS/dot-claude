@@ -1,6 +1,6 @@
 {
-  "claudeCodeVersion": "2.1.238",
-  "syncedDate": "2026-08-20",
+  "claudeCodeVersion": "2.1.241",
+  "syncedDate": "2026-08-24",
   "source": "https://api.github.com/repos/anthropics/claude-code/releases",
   "adopted": [
     {
@@ -102,7 +102,7 @@
       "surface": "statusLine script",
       "introducedVersion": "2.1.145 (pr) / undated (fast_mode, context_window_size, cost.*)",
       "adoptedDate": "2026-07-29",
-      "note": "PASS 4 (2026-07-29) removed exceeds_200k_tokens entirely: it rendered as a bare \"+\" on the window size (\"of 1M+\"), unreadable without knowing the rule, and it signals long-context premium PRICING -- the same reason cost.total_cost_usd is omitted (DISABLE_COST_WARNINGS=1). Also stripped the \"(1M context)\" suffix from model.display_name so the window is stated once, not twice; renamed the pacing marker from \"fast\" (which collided with the fast_mode segment) to an explicit multiple, \"2.2x pace\"; switched burn_rate to tenths-of-a-percent precision because whole percent reported 4.5x for a true 5.4x; and made the context bar 5 cells of thin rules (━/─) instead of 8 of block shading, with rounded rather than floored cell counts so 18% is not a visually empty bar. PASS 3 (2026-07-29) added rate_limits.*.resets_at, a burn-rate pacing signal, an 8-cell context bar, ANSI threshold colours, and statusLine.refreshInterval=60. Pace = used% vs elapsed% of the window; green <=125, yellow <=175, red above, suppressed under 15% used, with absolute overrides at 75/90. A 'fast' word appears only past the warn band. Renders in ~50ms. PASS 2 note follows -- second pass after auditing all ~40 documented payload fields against the 12 in use. fast_mode matters because Opus 5 fast mode is $10/$50 per Mtok and the state drifts (2.1.219 fixed stale fast-mode on Remote Control). context_window_size disambiguates ctx% -- a fallbackModel hop to Haiku silently drops 1M to 200k, previously invisible. exceeds_200k_tokens folded into the size as a trailing '+' (long-context premium marker) instead of its own segment. Line churn uses the up/down arrow notation from rules/status-marks.md. PR label wrapped in OSC 8 with plain text inside per the linked-labels rule. Dropped the standalone 'think' segment: alwaysThinkingEnabled makes it near-constant"
+      "note": "PASS 4 (2026-07-29) removed exceeds_200k_tokens entirely: it rendered as a bare \"+\" on the window size (\"of 1M+\"), unreadable without knowing the rule, and it signals long-context premium PRICING -- the same reason cost.total_cost_usd is omitted (DISABLE_COST_WARNINGS=1). Also stripped the \"(1M context)\" suffix from model.display_name so the window is stated once, not twice; renamed the pacing marker from \"fast\" (which collided with the fast_mode segment) to an explicit multiple, \"2.2x pace\"; switched burn_rate to tenths-of-a-percent precision because whole percent reported 4.5x for a true 5.4x; and made the context bar 5 cells of thin rules (\u2501/\u2500) instead of 8 of block shading, with rounded rather than floored cell counts so 18% is not a visually empty bar. PASS 3 (2026-07-29) added rate_limits.*.resets_at, a burn-rate pacing signal, an 8-cell context bar, ANSI threshold colours, and statusLine.refreshInterval=60. Pace = used% vs elapsed% of the window; green <=125, yellow <=175, red above, suppressed under 15% used, with absolute overrides at 75/90. A 'fast' word appears only past the warn band. Renders in ~50ms. PASS 2 note follows -- second pass after auditing all ~40 documented payload fields against the 12 in use. fast_mode matters because Opus 5 fast mode is $10/$50 per Mtok and the state drifts (2.1.219 fixed stale fast-mode on Remote Control). context_window_size disambiguates ctx% -- a fallbackModel hop to Haiku silently drops 1M to 200k, previously invisible. exceeds_200k_tokens folded into the size as a trailing '+' (long-context premium marker) instead of its own segment. Line churn uses the up/down arrow notation from rules/status-marks.md. PR label wrapped in OSC 8 with plain text inside per the linked-labels rule. Dropped the standalone 'think' segment: alwaysThinkingEnabled makes it near-constant"
     },
     {
       "feature": "plugin marketplace `command` source + `mode: \"link\"`",
@@ -228,6 +228,16 @@
         "RED": "#f38ba8"
       },
       "note": "Reverses the 2026-07-29 named-colour decline; see the matching declined entry for the original argument. Three constants in hooks/status.sh, no call-site changes -- paint() and quota_colour() already pass the value straight through as SGR params, so 38;2;r;g;b slots in exactly where 31 did. Shades taken from themes/catppuccin-mocha.json success/warning/error so the script and the Claude Code theme cannot drift apart. Pairs with spellcheck.color #eba0ac (Mocha Maroon), the change that prompted the reversal."
+    },
+    {
+      "feature": "voice.enabled (migrated off the voiceEnabled legacy alias)",
+      "surface": "settings.json key",
+      "introducedVersion": "pre-2.1.238 (surfaced by a 2.1.239 bullet, not introduced by it)",
+      "adoptedDate": "2026-08-24",
+      "value": {
+        "enabled": true
+      },
+      "note": "Replaces \"voiceEnabled\": true with the nested object. NOT a new-in-window feature -- voice?.enabled is already present in the 2.1.238 binary, so this is pre-baseline drift that the 2.1.239 bullet (\"voice dictation was enabled via the voice.enabled setting\") merely exposed. Verified in the 2.1.241 binary: resolution is qdo(e) => (e.voice?.enabled ?? e.voiceEnabled) === true, so nested wins and the flat key was a working fallback, not broken. Schemastore calls voiceEnabled a \"Legacy alias for voice.enabled; prefer the voice object\", and the docs say the voice object is what /voice writes automatically -- so migrating aligns the file with what the product itself would write. Unlike additionalMarketplaces/extraKnownMarketplaces there is NO both-at-once rejection here, but only one spelling is kept. GAIN: unlocks the two sibling keys the flat alias cannot express -- mode (\"hold\" default | \"tap\" = tap to start, tap to stop+submit) and autoSubmit (submit on key release in hold mode, transcript >= 3 words). Both deliberately left unset at their defaults, per the standing rule in this ledger against writing keys whose value equals the default (see includeGitInstructions, dialogExpiry). ODDITY worth remembering: the feature-gate shape in the binary (Q9o.voice.shape()) still registers ONLY voiceEnabled, while the main settings schema carries the nested voice object -- which is why both spellings remain accepted. Also note the schemastore description links to settings#available-settings, an anchor that no longer exists: the key reference moved to its own page, docs/en/settings-reference."
     }
   ],
   "declined": [
@@ -285,7 +295,7 @@
     },
     {
       "feature": "autoMode.allow / autoMode.hard_deny / permissions.ask",
-      "reason": "deferred by Teej 2026-07-29 — 'dont worry about auto mode or permissions ask for now'"
+      "reason": "deferred by Teej 2026-07-29 \u2014 'dont worry about auto mode or permissions ask for now'"
     },
     {
       "feature": "cost.total_cost_usd in statusLine",
@@ -310,7 +320,7 @@
     },
     {
       "feature": "sandbox.network.strictAllowlist / filesystem.disabled / deniedDomains / failIfUnavailable",
-      "reason": "all gated on sandbox.enabled, which is false — the June 2026 trial was rolled back. Revisit together if the sandbox is re-enabled"
+      "reason": "all gated on sandbox.enabled, which is false \u2014 the June 2026 trial was rolled back. Revisit together if the sandbox is re-enabled"
     },
     {
       "feature": "subagentStatusLine",
@@ -417,6 +427,16 @@
       "feature": "claude self-hosted-runner --defer-shutdown-max-min / --proxy-authorization-command / --proxy-authorization-file",
       "introducedVersion": "2.1.238",
       "reason": "CLI-only 2026-08-20. Flags on the self-hosted-runner subcommand; no settings.json surface and no self-hosted runner in use here"
+    },
+    {
+      "feature": "skillListingBudgetFraction / skillListingMaxDescChars",
+      "introducedVersion": "documented in settings-reference (not new in the 2.1.239-241 window)",
+      "reason": "MEASURED no-op 2026-08-24. Both tune the per-turn skill listing, whose descriptions get cut when the listing overflows. Measured the actual corpus rather than guessing: 26 local SKILL.md files (skills/ + teej-skills/skills/) total 8055 chars of description+when_to_use after capping, ~2k tokens, and ZERO of them exceed the 1536-char skillListingMaxDescChars default -- so nothing is being truncated today. skillListingBudgetFraction defaults to 0.01, which on the 1M-context opus-5[1m] session is ~10k tokens of headroom against a full listing (local + bundled + plugin) that is well under that. Raising either would buy nothing and cost context every turn. REVISIT if the skill count grows sharply or a single description is written past 1536 chars; /doctor reports the listing's real size and the top contributors."
+    },
+    {
+      "feature": "GitLab MR badge (glab)",
+      "introducedVersion": "2.1.238 (whats-new w34)",
+      "reason": "not applicable 2026-08-24. Footer MR !N badge requires an open GitLab merge request and an authenticated glab CLI. This repo is GitHub (gh, github-actions CI); no GitLab remote and glab is not installed."
     }
   ],
   "deferred": [
