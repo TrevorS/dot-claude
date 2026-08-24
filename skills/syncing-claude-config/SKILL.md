@@ -20,6 +20,17 @@ State lives in `~/.claude/skills/syncing-claude-config/baseline.json`:
 
 This skill answers *"what did new releases add that I'd want?"* — forward drift against release notes. It does **not** judge whether existing config is well-formed; hand any "is this edit correct / well-shaped" question to the `maintaining-claude-code` skill after applying.
 
+## Sources of truth
+
+Four sources describe the same settings surface and they **routinely disagree**. In descending authority:
+
+1. **The installed binary** — the only source that decides what actually runs. `strings "$(readlink -f "$(which claude)")"` then grep for the identifier. Zod shapes carry `.describe()` prose, so grepping `<key>:` usually yields the type, default, and a sentence.
+2. **The docs key index** — `https://code.claude.com/docs/en/settings-reference.md` (~210 keys, with type / default / scope / example each). The best *breadth* source; use it to enumerate, then confirm anything surprising against the binary.
+3. **schemastore** — `https://www.schemastore.org/claude-code-settings.json`. Useful for spotting `"Legacy alias for …"` wording, but drifts both ahead of and behind the binary.
+4. **Release notes** — accurate about the *change*, often loose about the *identifier*.
+
+When they conflict, the binary wins. Two conflicts seen on 2026-08-24 alone: schemastore documented `voice.{enabled,mode,autoSubmit}` while the binary's feature-gate shape registered only `voiceEnabled` (both spellings are accepted — the main settings schema carries the nested object); and schemastore's `voiceEnabled` description linked to `settings#available-settings`, an anchor that no longer exists because the key reference moved to its own page.
+
 ## Workflow
 
 ### 1. Establish the version window
@@ -74,6 +85,19 @@ rg -l '^---' ~/.claude/skills/*/SKILL.md                # skill frontmatter surf
 
 Demote, never delete: changes that don't intersect go into a collapsed **"other release changes"** bucket so nothing silently vanishes. Drop anything already in `baseline.json`'s `declined` list (don't re-nag).
 
+**Stale-key audit** (the reverse direction — keys in the config that the product dropped). The docs key index makes this two commands instead of a binary grep per key:
+
+```bash
+S="$SCRATCHPAD"   # session scratchpad directory, from the environment context
+curl -sL https://code.claude.com/docs/en/settings-reference.md -o "$S/settings-ref.md"
+grep -oE '^#{3,4} `[^`]+`' "$S/settings-ref.md" | sed 's/^#* `//; s/`$//' | grep -v '\.' | sort -u > "$S/doc-keys.txt"
+jq -r 'keys[]' ~/.claude/settings.json | grep -v '^\$' | sort | comm -23 - "$S/doc-keys.txt"
+```
+
+The `grep -v '\.'` drops the nested `parent.child` entries, leaving the ~151 top-level keys to compare against.
+
+Anything `comm` prints is **undocumented, not necessarily dead** — see the `@internal` note below. Confirm each against the binary before proposing removal.
+
 ### 6. Present the proposal (two-zone)
 
 Lead with a scannable table, risk-tiered, safest first:
@@ -101,3 +125,7 @@ Update `~/.claude/skills/syncing-claude-config/baseline.json`: set `claudeCodeVe
 - Patch-only releases legitimately yield zero config changes — reporting "nothing to adopt" is a correct, expected outcome, not a failure.
 - If the releases API is unreachable, fall back to `https://raw.githubusercontent.com/anthropics/claude-code/main/CHANGELOG.md` (same bullets, no dates).
 - Never propose `enforceAvailableModels`, `requiredMinimumVersion`, or other managed/enterprise keys for this single-user config unless Teej asks — they target shared/managed deployments.
+- **Undocumented ≠ stale.** Keys tagged `@internal` in their zod `.describe()` are deliberately excluded from the docs but fully live. `skipWorkflowUsageWarning` is one (*"@internal Whether the user has accepted the multi-agent workflow usage warning"*); `autoDreamEnabled` is undocumented without the tag. Never propose deleting a key on doc-absence alone.
+- **Pre-baseline drift.** A bullet can *expose* an older surface without introducing it — the 2.1.239 `voice.enabled` mention is the case in point, since the nested object was already in the 2.1.238 binary. Before recording an `adopted` entry, check whether the anchor predates the baseline, and say so in the note; the ledger is only useful if provenance is honest.
+- **Measure before proposing context-budget keys.** Anything that trades context for fidelity (`skillListingBudgetFraction`, `skillListingMaxDescChars`, `autoCompactWindow`) needs the actual corpus measured first, not estimated — the 2026-08-24 decline held up only because the numbers were counted. `/doctor` reports the live skill-listing size and its top contributors.
+- **Cross-check completeness against the weekly digests.** `https://code.claude.com/docs/en/whats-new/2026-w<NN>.md` groups releases into themed summaries with an "Other wins" list. It is a *verification* source, not a primary one — it surfaced nothing the releases API had missed on 2026-08-24 — but it is a cheap way to confirm the ledger caught everything in a window. `https://code.claude.com/docs/llms.txt` indexes every docs page.
