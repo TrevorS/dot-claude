@@ -8,8 +8,10 @@ into vacuous filler. This hook surfaces them informationally so the model can
 re-read and ask "is this word earning its keep, or am I padding with
 buzzwords?" — not to block or fail the tool call.
 
-Output: emits `hookSpecificOutput.additionalContext` so the suggestion lands
-as context for the next turn, not as a tool failure.
+Runs with `asyncRewake: true`, so it never blocks the tool call -- it is
+spawned in the background and only wakes Claude if it finds something, by
+writing the suggestion to stderr and exiting 2. The feedback therefore lands
+a beat after the write rather than gating it, and a clean run exits 0 silently.
 """
 
 import json
@@ -223,15 +225,13 @@ def main() -> None:
         "buzzwords; plain, direct language usually reads better. "
         "(Full list: hooks/flagged-words.py.)"
     )
-    json.dump(
-        {
-            "hookSpecificOutput": {
-                "hookEventName": "PostToolUse",
-                "additionalContext": suggestion,
-            },
-        },
-        sys.stdout,
-    )
+    # The hook is configured with `asyncRewake: true`, so it runs in the
+    # background and never blocks the tool call. Claude is only re-woken on
+    # exit code 2, and it is stderr (not stdout) that gets surfaced as a
+    # system reminder -- so the plain-text suggestion goes to stderr and we
+    # exit 2. A silent run must still exit 0, or every write would wake Claude.
+    print(suggestion, file=sys.stderr)
+    sys.exit(2)
 
 
 if __name__ == "__main__":

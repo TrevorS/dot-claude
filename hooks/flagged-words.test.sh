@@ -5,10 +5,12 @@
 # The cases that matter are about the code-fence stripper. It used to be a
 # single regex whose closing fence was a backreference; because the opening
 # `{3,} could backtrack, an *unclosed* fence made the match quadratic, and an
-# Edit fragment carrying half a code block is routine. That cost seconds of
-# blocked tool-call latency on large payloads, so the last test pins wall-clock
-# time, not just output. The rest pin the stripping semantics so the rewrite
-# can't silently start missing (or inventing) flagged words.
+# Edit fragment carrying half a code block is routine. The hook now runs with
+# `asyncRewake: true` so that no longer blocks the tool call, but a background
+# process spinning for seconds is still waste and still delays the rewake, so
+# the last test pins wall-clock time, not just output. The rest pin the
+# stripping semantics so the rewrite can't silently start missing (or
+# inventing) flagged words.
 #
 # Run: ./hooks/flagged-words.test.sh   (exit 0 = all pass)
 set -uo pipefail
@@ -24,22 +26,22 @@ run() {
   key=$([ "$tool" = "Write" ] && echo content || echo new_string)
   payload=$(jq -cn --arg t "$tool" --arg p "$path" --arg k "$key" --arg v "$text" \
     '{tool_name:$t, tool_input:({file_path:$p} + {($k):$v})}')
-  out=$(printf '%s' "$payload" | python3 "$HOOK" 2>/dev/null); rc=$?
-
-  if [ "$rc" -ne 0 ]; then bad "$label (exit $rc, must always be 0)"; return; fi
+  # asyncRewake contract: stay silent and exit 0 when there is nothing to say;
+  # write the suggestion to stderr and exit 2 to wake Claude when there is.
+  out=$(printf '%s' "$payload" | python3 "$HOOK" 2>&1 >/dev/null); rc=$?
 
   if [ "$want" = "SILENT" ]; then
-    if [ -n "$out" ]; then bad "$label (expected no output, got: ${out:0:60})"
+    if [ "$rc" -ne 0 ]; then bad "$label (exit $rc, a silent run must exit 0)"
+    elif [ -n "$out" ]; then bad "$label (expected no output, got: ${out:0:60})"
     else ok "$label"; fi
     return
   fi
 
-  if [ -n "$out" ] && ! printf '%s' "$out" | jq -e . >/dev/null 2>&1; then
-    bad "$label (output is not valid JSON)"; return
+  if [ "$rc" -ne 2 ]; then
+    bad "$label (exit $rc, a flagged run must exit 2 to rewake Claude)"; return
   fi
-  local ctx; ctx=$(printf '%s' "$out" | jq -r '.hookSpecificOutput.additionalContext // ""' 2>/dev/null)
-  if printf '%s' "$ctx" | grep -q "\"${want#WORD:}\""; then ok "$label"
-  else bad "$label (expected ${want#WORD:} in context, got: ${ctx:0:80})"; fi
+  if printf '%s' "$out" | grep -q "\"${want#WORD:}\""; then ok "$label"
+  else bad "$label (expected ${want#WORD:} on stderr, got: ${out:0:80})"; fi
 }
 
 echo "flagged-words.py"

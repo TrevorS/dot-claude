@@ -139,7 +139,9 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 $HOME/.claude/hooks/flagged-words.py"
+            "command": "python3 $HOME/.claude/hooks/flagged-words.py",
+            "asyncRewake": true,
+            "rewakeSummary": "Flagged prose"
           }
         ]
       }
