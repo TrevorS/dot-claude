@@ -24,6 +24,7 @@ Glyphs need a space before the number (`` `↑` `` 213, not `` `↑` ``213). Dif
 
 - *italic* — descriptive prose ("*9/9 passed*", "*active until 00:35*")
 - `code` — terse data, paths, identifiers, SHAs
+- *`italic-code`* — italic wrapping a code span; both render together
 
 Don't rely on bold — renders identical to plain in this terminal.
 
@@ -93,7 +94,8 @@ mark with sub-results — not for any multi-item list.
 
 `**bold**`, `~~strikethrough~~`, task lists `- [x]`, HTML tags, ANSI escapes,
 mid-content headers below H3, wrapping link text in code (`` [`text`](url) ``),
-italic inside a code span, and list-item continuation indent (bullets collapse
-continuation lines flush-left regardless of source indent).
+italic inside a code span, italic on the `⏱` stopwatch glyph specifically (it
+doesn't slant — use the code wrap alone), and list-item continuation indent
+(bullets collapse continuation lines flush-left regardless of source indent).
 
 See `~/.claude/rules/status-marks.md` for the full rule with rationale and examples.
