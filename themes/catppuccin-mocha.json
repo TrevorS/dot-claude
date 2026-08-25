@@ -7,7 +7,7 @@
     "inactive": "#7f849c",
     "inactiveShimmer": "#9399b2",
     "subtle": "#45475a",
-    "background": "#313244",
+    "background": "#89dceb",
 
     "success": "#a6e3a1",
     "error": "#f38ba8",
@@ -21,6 +21,10 @@
     "claudeBlueShimmer_FOR_SYSTEM_SPINNER": "#89dceb",
 
     "autoAccept": "#cba6f7",
+
+    "autoAcceptShimmer": "#dcc4fa",
+
+    "skill": "#cba6f7",
     "permission": "#b4befe",
     "permissionShimmer": "#89dceb",
     "planMode": "#94e2d5",
@@ -55,7 +59,7 @@
 
     "userMessageBackground": "#313244",
     "userMessageBackgroundHover": "#45475a",
-    "messageActionsBackground": "#45475a",
+    "composerSidebarBackground": "#1e1e2e",
     "selectionBg": "#585b70",
     "bashMessageBackgroundColor": "#313244",
     "memoryBackgroundColor": "#313244",
@@ -65,6 +69,7 @@
 
     "fastMode": "#fab387",
     "fastModeShimmer": "#f2cdcd",
+    "effortUltra": "#cba6f7",
 
     "briefLabelYou": "#74c7ec",
     "briefLabelClaude": "#fab387",
