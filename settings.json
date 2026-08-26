@@ -238,6 +238,7 @@
     }
   },
   "forceLoginMethod": "claudeai",
+  "outputStyle": "Concise",
   "sandbox": {
     "enabled": false,
     "allowUnsandboxedCommands": true,
@@ -296,10 +297,6 @@
   "effortLevel": "xhigh",
   "fastModePerSessionOptIn": true,
   "emojiCompletionEnabled": false,
-  "spellcheck": {
-    "enabled": true,
-    "color": "#eba0ac"
-  },
   "askUserQuestionTimeout": "5m",
   "tui": "fullscreen",
   "autoDreamEnabled": true,
@@ -308,7 +305,6 @@
   "skipWorkflowUsageWarning": true,
   "theme": "custom:catppuccin-mocha",
   "editorMode": "normal",
-  "keybindingFlavor": "readline",
   "preferredNotifChannel": "ghostty",
   "switchModelsOnFlag": false,
   "fileCheckpointingEnabled": false,
@@ -317,8 +313,13 @@
   "inputNeededNotifEnabled": true,
   "agentPushNotifEnabled": true,
   "skipAutoPermissionPrompt": true,
-  "outputStyle": "Concise",
   "voice": {
     "enabled": true
-  }
+  },
+  "spellcheck": {
+    "enabled": true,
+    "color": "#eba0ac"
+  },
+  "keybindingFlavor": "readline",
+  "model": "opus[1m]"
 }
