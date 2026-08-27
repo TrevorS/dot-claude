@@ -39,5 +39,5 @@ else
   title="$base"
 fi
 
-esc=$(printf '%s' "$title" | sed 's/\\/\\\\/g; s/"/\\"/g')
-printf '{"hookSpecificOutput":{"hookEventName":"SessionStart","sessionTitle":"%s"}}\n' "$esc"
+jq -cn --arg title "$title" \
+  '{hookSpecificOutput:{hookEventName:"SessionStart",sessionTitle:$title}}'

@@ -75,5 +75,5 @@ else
   ctx+=" ci=none"
 fi
 
-json_ctx=$(printf '%s' "$ctx" | sed 's/\\/\\\\/g; s/"/\\"/g')
-printf '{"hookSpecificOutput":{"hookEventName":"UserPromptSubmit","additionalContext":"%s"}}\n' "$json_ctx"
+jq -cn --arg ctx "$ctx" \
+  '{hookSpecificOutput:{hookEventName:"UserPromptSubmit",additionalContext:$ctx}}'
