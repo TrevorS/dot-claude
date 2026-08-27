@@ -40,7 +40,7 @@ repos:
     rev: v2.5.2
     hooks:
       - id: stylua
-        files: ^dotfiles/nvim/
+        files: '\.lua$'
 
   - repo: local
     hooks:
@@ -58,7 +58,6 @@ repos:
         entry: luacheck --config dotfiles/nvim/.config/nvim/.luacheckrc
         language: system
         types: [lua]
-        files: ^dotfiles/nvim/
       - id: elisp-check
         name: elisp check (parens + byte-compile)
         entry: scripts/elisp-check.sh

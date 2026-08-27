@@ -1,12 +1,13 @@
-.PHONY: help install upgrade validate clean pre-commit pre-commit-install pre-commit-update dotfiles tpm typecheck hook-tests deps emacs-plugins
+.PHONY: help install upgrade validate clean pre-commit pre-commit-install pre-commit-update dotfiles tpm typecheck hook-tests deps emacs-plugins nvim-plugins
 
 # Default target
 help:
 	@echo "Available targets:"
 	@echo "  install           - Install all dependencies and stow dotfiles"
 	@echo "  deps              - Install system packages from packages/*.txt"
-	@echo "  upgrade           - Bump managed brew/cargo/luarocks packages + Emacs plugins to latest"
+	@echo "  upgrade           - Bump managed brew/cargo/luarocks packages + Emacs/Neovim plugins to latest"
 	@echo "  emacs-plugins     - Update Emacs packages (elpaca) headlessly"
+	@echo "  nvim-plugins      - Update Neovim plugins (vim.pack) headlessly"
 	@echo "  validate          - Format and lint all files (all-in-one)"
 	@echo "  clean             - Clean up generated files"
 	@echo "  dotfiles          - Stow all dotfile packages into ~"
@@ -67,8 +68,19 @@ deps:
 upgrade:
 	@python3 scripts/install-deps.py --upgrade
 	@$(MAKE) emacs-plugins
+	@$(MAKE) nvim-plugins
 
 EMACS_INIT := $(HOME)/.config/emacs/init.el
+NVIM_INIT := $(HOME)/.config/nvim/init.lua
+
+nvim-plugins:
+	@if ! command -v nvim >/dev/null 2>&1; then \
+		echo "nvim not found — skipping plugin updates"; \
+	elif [ ! -e "$(NVIM_INIT)" ]; then \
+		echo "$(NVIM_INIT) not found — skipping plugin updates"; \
+	else \
+		nvim --headless -c 'luafile $(CURDIR)/scripts/update-nvim-plugins.lua' -c 'qa!'; \
+	fi
 
 emacs-plugins:
 	@if ! command -v emacs >/dev/null 2>&1; then \
