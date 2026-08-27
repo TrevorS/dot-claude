@@ -1,6 +1,6 @@
 {
-  "claudeCodeVersion": "2.1.246",
-  "syncedDate": "2026-08-26",
+  "claudeCodeVersion": "2.1.251",
+  "syncedDate": "2026-08-28",
   "source": "https://api.github.com/repos/anthropics/claude-code/releases",
   "adopted": [
     {
@@ -102,7 +102,7 @@
       "surface": "statusLine script",
       "introducedVersion": "2.1.145 (pr) / undated (fast_mode, context_window_size, cost.*)",
       "adoptedDate": "2026-07-29",
-      "note": "PASS 4 (2026-07-29) removed exceeds_200k_tokens entirely: it rendered as a bare \"+\" on the window size (\"of 1M+\"), unreadable without knowing the rule, and it signals long-context premium PRICING -- the same reason cost.total_cost_usd is omitted (DISABLE_COST_WARNINGS=1). Also stripped the \"(1M context)\" suffix from model.display_name so the window is stated once, not twice; renamed the pacing marker from \"fast\" (which collided with the fast_mode segment) to an explicit multiple, \"2.2x pace\"; switched burn_rate to tenths-of-a-percent precision because whole percent reported 4.5x for a true 5.4x; and made the context bar 5 cells of thin rules (━/─) instead of 8 of block shading, with rounded rather than floored cell counts so 18% is not a visually empty bar. PASS 3 (2026-07-29) added rate_limits.*.resets_at, a burn-rate pacing signal, an 8-cell context bar, ANSI threshold colours, and statusLine.refreshInterval=60. Pace = used% vs elapsed% of the window; green <=125, yellow <=175, red above, suppressed under 15% used, with absolute overrides at 75/90. A 'fast' word appears only past the warn band. Renders in ~50ms. PASS 2 note follows -- second pass after auditing all ~40 documented payload fields against the 12 in use. fast_mode matters because Opus 5 fast mode is $10/$50 per Mtok and the state drifts (2.1.219 fixed stale fast-mode on Remote Control). context_window_size disambiguates ctx% -- a fallbackModel hop to Haiku silently drops 1M to 200k, previously invisible. exceeds_200k_tokens folded into the size as a trailing '+' (long-context premium marker) instead of its own segment. Line churn uses the up/down arrow notation from rules/status-marks.md. PR label wrapped in OSC 8 with plain text inside per the linked-labels rule. Dropped the standalone 'think' segment: alwaysThinkingEnabled makes it near-constant"
+      "note": "PASS 4 (2026-07-29) removed exceeds_200k_tokens entirely: it rendered as a bare \"+\" on the window size (\"of 1M+\"), unreadable without knowing the rule, and it signals long-context premium PRICING -- the same reason cost.total_cost_usd is omitted (DISABLE_COST_WARNINGS=1). Also stripped the \"(1M context)\" suffix from model.display_name so the window is stated once, not twice; renamed the pacing marker from \"fast\" (which collided with the fast_mode segment) to an explicit multiple, \"2.2x pace\"; switched burn_rate to tenths-of-a-percent precision because whole percent reported 4.5x for a true 5.4x; and made the context bar 5 cells of thin rules (\u2501/\u2500) instead of 8 of block shading, with rounded rather than floored cell counts so 18% is not a visually empty bar. PASS 3 (2026-07-29) added rate_limits.*.resets_at, a burn-rate pacing signal, an 8-cell context bar, ANSI threshold colours, and statusLine.refreshInterval=60. Pace = used% vs elapsed% of the window; green <=125, yellow <=175, red above, suppressed under 15% used, with absolute overrides at 75/90. A 'fast' word appears only past the warn band. Renders in ~50ms. PASS 2 note follows -- second pass after auditing all ~40 documented payload fields against the 12 in use. fast_mode matters because Opus 5 fast mode is $10/$50 per Mtok and the state drifts (2.1.219 fixed stale fast-mode on Remote Control). context_window_size disambiguates ctx% -- a fallbackModel hop to Haiku silently drops 1M to 200k, previously invisible. exceeds_200k_tokens folded into the size as a trailing '+' (long-context premium marker) instead of its own segment. Line churn uses the up/down arrow notation from rules/status-marks.md. PR label wrapped in OSC 8 with plain text inside per the linked-labels rule. Dropped the standalone 'think' segment: alwaysThinkingEnabled makes it near-constant"
     },
     {
       "feature": "plugin marketplace `command` source + `mode: \"link\"`",
@@ -255,6 +255,11 @@
         ]
       },
       "note": "Found by the new step 6 (schema-completeness), NOT by the release-notes pass -- the file had been rotting since 2026-04-23 and no changelog bullet in any window would have surfaced it. Theme loader validates SILENTLY: `if (Object.hasOwn(basePalette,k) && isValidColor(v)) merged[k]=v` -- unknown keys are dropped with no warning, no error, no --debug line, and absent keys fall back to the built-in base. messageActionsBackground had 0 occurrences in the 2.1.246 binary and had been inert for four months; replaced by composerSidebarBackground, which is live for this config specifically because tui is \"fullscreen\". THE REAL DEFECT was `background`: it reads like a surface fill but is an ACCENT FOREGROUND (cyan in every built-in). Set to #313244 (Surface0) it rendered at 1.3:1 against Base #1e1e2e -- effectively invisible text -- vs 8.2:1 for the built-in it replaced; now #89dceb (Sky) at 10.5:1, kept distinct from planMode #94e2d5 (Teal). Accent-vs-surface is decidable without assuming a terminal background: surfaces INVERT between the light and dark built-ins (userMessageBackground 240->55), accents keep hue and BRIGHTEN (background 153->204). composerSidebarBackground calibrated from the built-in ratio 38/55 = 0.69 x #313244 -> #222230, nearest real catppuccin swatch is Base #1e1e2e. skill/effortUltra/autoAccept are the same value in all six built-ins, hence all mauve. Two 2.1.246 fixes also make this file more accurate for free: custom diffAdded/diffRemoved and dimmed variants were being IGNORED until now, and promptBorder no longer gets clobbered to cyan by /rename."
+    },
+    {
+      "feature": "hook stdout JSON emitted via jq instead of hand-rolled sed escaping",
+      "introducedVersion": "2.1.248",
+      "reason": "2.1.248: 'Fixed hooks silently treating a stdout {\u2026} object that isn't valid JSON as plain text; it's now reported as a hook error with the parse message.' session-title.sh and user-prompt-submit/project-context.sh both escaped with sed 's/\\\\/\\\\\\\\/g; s/\"/\\\\\"/g' -- backslash and quote only, NOT control characters. A cwd containing a tab or newline (legal on APFS) emitted a raw U+0009 inside a JSON string, which RFC 8259 forbids; reproduced and confirmed rejected by jq's parser. Before 2.1.248 that silently dropped the per-prompt context or the session title; after it, the same input surfaces a hook error on every prompt. Replaced both emit sites with jq -cn --arg, which escapes control chars correctly. jq was already a hard dependency of session-title.sh (lines 13/16) and stop-failure-notify.sh, so no new dependency. Verified: valid JSON for a tab-containing cwd and for the normal repo cwd, and the existing-title early-exit path still emits nothing."
     }
   ],
   "declined": [
@@ -312,7 +317,7 @@
     },
     {
       "feature": "autoMode.allow / autoMode.hard_deny / permissions.ask",
-      "reason": "deferred by Teej 2026-07-29 — 'dont worry about auto mode or permissions ask for now'"
+      "reason": "deferred by Teej 2026-07-29 \u2014 'dont worry about auto mode or permissions ask for now'"
     },
     {
       "feature": "cost.total_cost_usd in statusLine",
@@ -337,7 +342,7 @@
     },
     {
       "feature": "sandbox.network.strictAllowlist / filesystem.disabled / deniedDomains / failIfUnavailable",
-      "reason": "all gated on sandbox.enabled, which is false — the June 2026 trial was rolled back. Revisit together if the sandbox is re-enabled"
+      "reason": "all gated on sandbox.enabled, which is false \u2014 the June 2026 trial was rolled back. Revisit together if the sandbox is re-enabled"
     },
     {
       "feature": "subagentStatusLine",
@@ -454,6 +459,106 @@
       "feature": "GitLab MR badge (glab)",
       "introducedVersion": "2.1.238 (whats-new w34)",
       "reason": "not applicable 2026-08-24. Footer MR !N badge requires an open GitLab merge request and an authenticated glab CLI. This repo is GitHub (gh, github-actions CI); no GitLab remote and glab is not installed."
+    },
+    {
+      "feature": "feedbackDrafts",
+      "introducedVersion": "2.1.247",
+      "reason": "no-op 2026-08-28. New enum notify|quiet|off (default notify) gating the SendFeedback tool; it IS a real settings.json key (zod, next to feedbackSurveyRate) and is documented, so not a global-config-only case like autoContinueAtUsageLimit. But the tool's availability gate returns false on DISABLE_FEEDBACK_COMMAND || DISABLE_BUG_COMMAND, and DISABLE_BUG_COMMAND=1 is already set in env -- so SendFeedback never registers and the /config row is hidden. Confirmed empirically: SendFeedback is absent from the session tool list. Writing \"off\" would change nothing. Revisit only if DISABLE_BUG_COMMAND is ever removed."
+    },
+    {
+      "feature": "CLAUDE_CODE_RESTRICTED / --restricted",
+      "introducedVersion": "2.1.248",
+      "reason": "declined 2026-08-28. Removes the built-in tools that run commands or code plus WebFetch, confines file tools to the working directory, refuses bypassPermissions, and IGNORES user, project and local settings files. Antithetical to this config: it would discard settings.json entirely (hooks, permissions, env, statusLine) and remove Bash, which every hook and skill here depends on. A sandboxing posture for untrusted work, not a setting to adopt."
+    },
+    {
+      "feature": "experimental.cacheTtl (agent frontmatter)",
+      "introducedVersion": "2.1.248",
+      "reason": "not applicable 2026-08-28. Per-agent prompt cache TTL (\"5m\"|\"1h\") used when no subagentPromptCacheTtl setting or env var is set. ~/.claude/agents/ is empty -- the only agent .md files on disk belong to bundled plugins under plugins/marketplaces/, which are not ours to edit. Nothing to annotate."
+    },
+    {
+      "feature": "desktopSessionCleanupPeriodDays",
+      "introducedVersion": "2.1.248",
+      "reason": "not applicable 2026-08-28. Retention ceiling in days for transcripts created or last written by a desktop-host surface (Claude Desktop, Cowork), which are otherwise EXEMPT from the cleanupPeriodDays sweep. Usage here is terminal-only, so no desktop-written transcripts exist to cap. Sibling of the already-declined cleanupPeriodDays; revisit both together only if Claude Desktop enters the workflow."
+    },
+    {
+      "feature": "DISABLE_EXTRA_USAGE_COMMAND",
+      "introducedVersion": "2.1.248",
+      "reason": "nothing to set 2026-08-28. The bullet IS the fix -- rate-limit, usage, and fast-mode messages no longer tell you to run /usage-credits when that command is unavailable for your organization. The env var is the pre-existing lever for hiding the command; /usage-credits targets Enterprise orgs billed through AWS Marketplace, self-serve Enterprise, and Enterprise trials, none of which applies. No edit needed either way."
+    },
+    {
+      "feature": "spinnerTipsOverride {id,text,cooldownSessions,priority} / tipsFile / label",
+      "introducedVersion": "2.1.247",
+      "reason": "declined 2026-08-28. Lets ORGANIZATIONS rotate their own spinner tips alongside the built-in ones. Managed-settings surface -- the binary explicitly rejects spinnerTipsOverride.tipsFile supplied from remote managed settings and requires an absolute or ~/ local path otherwise. Single-user config; the unrelated user-scope spinnerTipsEnabled already covers the only relevant lever."
+    },
+    {
+      "feature": "crossSessionInbound invalid-value warning",
+      "introducedVersion": "2.1.248",
+      "reason": "nothing to fix 2026-08-28. 'Fixed an invalid crossSessionInbound value being silently ignored: it now warns and holds cross-session messages (user settings) or refuses them (managed settings) until fixed.' The key is ABSENT here (declined 2026-08-14 after tracing the no-key default to accept), so there is no value to validate. The change only bites configs that wrote a typo'd enum."
+    },
+    {
+      "feature": "Bash sandbox deleting a stow/nix-managed ~/.claude/settings.json symlink",
+      "introducedVersion": "2.1.247",
+      "reason": "doubly inert 2026-08-28. Fix targets the sandbox's after-command cleanup deleting a dotfile-managed settings.json symlink repointed outside the writable area. Inert on two independent counts: sandbox.enabled is false, AND ~/.claude/settings.json is a regular file (8561 bytes), not a stow symlink -- it is not in dotfiles/. Relevant only if the sandbox is re-enabled AND settings.json is later stow-managed."
+    },
+    {
+      "feature": "SELF_HOSTED_RUNNER_CLIENT_LABEL / CLAUDE_CODE_ENABLE_GATEWAY_MODEL_DISCOVERY",
+      "introducedVersion": "2.1.248",
+      "reason": "not applicable 2026-08-28. First overrides the label a self-hosted runner registers with (no runner in use); second is a gateway model-discovery fix scoped to apiKeyHelper-only credential setups (no gateway, no apiKeyHelper). Neither has a surface in this config."
+    },
+    {
+      "feature": "subagentPromptCacheTtl",
+      "introducedVersion": "pre-baseline (surfaced by the 2.1.248 experimental.cacheTtl bullet)",
+      "reason": "NOT PROPOSED 2026-08-28, pending measurement. Named in the 2.1.248 bullet as the fallback gate for per-agent experimental.cacheTtl; binary describe: 'unset = automatic (5 minutes unless ENABLE_PROMPT_CACHING_1H=1). The CLAUDE_CODE_SUBAGENT_PROMPT_CACHE_TTL environment variable takes precedence.' Unset here, so subagents get 5m. Plausibly worth \"1h\" given CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1 + teammateMode:tmux, where idle teammates can exceed a 5m gap between turns. Withheld under the standing rule that cache/context-budget keys get measured, not estimated: needs real inter-turn idle gaps for tmux teammates before proposing, and note '1h' is ignored while a Claude subscription is in overage. The anchor PREDATES this baseline -- the bullet exposed it, did not introduce it."
+    },
+    {
+      "feature": "prompt_cache statusLine object",
+      "introducedVersion": "2.1.251",
+      "reason": "DECLINED 2026-08-28 after measuring, and the measurement reversed the recommendation. 2.1.251: 'Added a per-session prompt-cache line to /cost ... and a matching prompt_cache object for status line scripts.' Confirmed shape at the assembly site (function sqe): {warm, caching_observed, ttl, expires_at, requests, misses, expected_rebuilds, hit_ratio, cache_write_tokens, miss_recache_tokens, last_miss_at, recache_tokens_if_cold}; the whole object is omitted while requests===0. Captured 15 real samples by temporarily teeing status.sh stdin (tee since removed; status.sh restored byte-identical). THE COUNTDOWN IS USELESS: expires_at is a ROLLING 1h refreshed on every request, not a fixed deadline -- ttl_left never left 3545-3574s (59.1-59.6 min) across every sample in two concurrent sessions. It only decays while idle, i.e. when nobody is reading the statusline. That killed both shapes originally proposed. hit_ratio also measured as session-age rather than health: 79%->87% on a young session, pinned 95% here, drifting up monotonically as the shared prefix amortizes. The only actionable fields are misses / expected_rebuilds / caching_observed (all 0/0/true throughout = the healthy default), which would fit quota_seg's 'healthy stays bare' precedent. Teej chose to leave status.sh alone. REVISIT with this shape if ever wanted: absent when misses==0 && expected_rebuilds==0 && caching_observed; 'cache N miss <miss_recache_tokens>' red on a real miss; 'cache N rebuilds' yellow; 'cache off' red when caching_observed is false. Also measured: recache_tokens_if_cold scales with context (202k at 20% ctx vs 56k at 6%), so it is the right number to pair WITH a miss, not to display standing."
+    },
+    {
+      "feature": "CLAUDE_CODE_SUBAGENT_MODEL",
+      "introducedVersion": "2.1.251 (semantics change; var predates it)",
+      "reason": "not adopted 2026-08-28. 'Changed CLAUDE_CODE_SUBAGENT_MODEL to set the default subagent model rather than override everything: an agent definition's model: and an explicit per-spawn model now take precedence over it.' Traced the resolver: s7() returns the env value or 'inherit', with new telemetry keys override_dropped / parent_inherit marking the changed path. This is what made the var SAFE to set -- under the old semantics it would have clobbered the three skills that declare model: claude-sonnet-5 (monitoring-ci, validating-project, cleaning-commit-history); now those win and only the 23 unlabeled local skills would take the default. Genuine cost lever for Explore/Plan/general-purpose, which currently inherit opus[1m]. NOT VERIFIED whether it reaches agent-team teammates rather than only Task/Agent subagents -- the name and the resolver both say 'subagent', and the teammateDefaultModel decline (2.1.234) established teammates inherit the lead's model with no lever but the spawn prompt. Verify that before adopting for a cheaper fleet. Left unset: real quality tradeoff, no symptom reported."
+    },
+    {
+      "feature": "PreModelSwitch / PostModelSwitch hook events",
+      "introducedVersion": "2.1.251",
+      "reason": "declined 2026-08-28. Real new hook events (confirmed in the hook-event enum alongside SessionEnd/PostCompact/WorktreeCreate), able to block, confirm, or annotate a model switch; binary carries 'model switch blocked by a PreModelSwitch hook' and a native confirm dialog. No fit here: model is pinned to opus[1m] and the cache-invalidation warning such a hook would add ('This conversation is cached for the current <model>. Switching to <X> means the full history gets re-read') is already built in."
+    },
+    {
+      "feature": "SessionStart resume staleness + re-cache cost payload",
+      "introducedVersion": "2.1.251",
+      "reason": "nothing to consume 2026-08-28. 'SessionStart resume hooks now receive session staleness and the estimated re-cache cost.' hooks/session-title.sh is the only SessionStart hook and reads exactly two fields (.session_title to avoid clobbering an existing title, .cwd to derive the name). Staleness has no bearing on titling. Noted only so the grown payload is on record."
+    },
+    {
+      "feature": "modelSettings",
+      "introducedVersion": "surfaced by the 2.1.251 /effort change",
+      "reason": "not adopted 2026-08-28. Real settings.json key -- zod: per-model object keyed by canonical model name carrying effortLevel, 'Per-model settings keyed by canonical model name'. Undocumented in the settings-reference key index (159 top-level keys). Written by /effort, which 2.1.251 changed to save per model. GOTCHA WORTH REMEMBERING: running /effort while on a fallback model writes a per-model entry that then wins over the global effortLevel: xhigh for that model only. Absent from settings.json today and best left /effort-managed."
+    },
+    {
+      "feature": "rate_limits.spend_limit",
+      "introducedVersion": "2.1.251",
+      "reason": "not applicable 2026-08-28. New statusLine field (sits alongside five_hour / seven_day / overage) plus a Spend limit bar in /usage, scoped to developers behind a Claude apps gateway with spend limits. forceLoginMethod is 'claudeai' -- first-party, no gateway. hooks/status.sh already consumes five_hour and seven_day."
+    },
+    {
+      "feature": "Opus 5 effort-with-thinking-disabled fix",
+      "introducedVersion": "2.1.251",
+      "reason": "inert 2026-08-28. 'Fixed Opus 5 requests failing with effort ... is not supported when thinking is disabled when effort was xhigh/max and thinking was turned off; effort is now sent as high in that case.' effortLevel is xhigh here BUT alwaysThinkingEnabled is true, so the broken combination never arises. Relevant only if thinking is ever disabled while xhigh is kept."
+    },
+    {
+      "feature": "tmux/GNU screen italic rendering fix",
+      "introducedVersion": "2.1.251",
+      "reason": "inert 2026-08-28. 'Fixed italic text (such as the session recap line) rendering as highlighted blocks in GNU screen and in tmux sessions using a screen terminal type.' dotfiles/tmux sets default-terminal \"tmux-256color\", not screen*, so italics already rendered correctly. Confirms rules/status-marks.md's italic-for-detail convention was never affected -- it is bold, not italic, that is broken in this terminal."
+    },
+    {
+      "feature": "Co-Authored-By: Claude Code trailer default",
+      "introducedVersion": "2.1.251",
+      "reason": "inert 2026-08-28. 'Changed the default commit trailer to Co-Authored-By: Claude Code when the active model isn't a recognized Claude model.' includeCoAuthoredBy is false, so no trailer is emitted at all regardless of model."
+    },
+    {
+      "feature": "project settings env no longer setting CLAUDE_CONFIG_DIR / CLAUDE_CODE_TMPDIR / TMPDIR",
+      "introducedVersion": "2.1.251",
+      "reason": "nothing to fix 2026-08-28. Project-level .claude/settings.json env can no longer set those; no project settings here set them. The user-scope env block is unaffected by the change."
     }
   ],
   "deferred": [
