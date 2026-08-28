@@ -123,6 +123,7 @@
     ],
     "defaultMode": "auto"
   },
+  "model": "claude-fable-5[1m]",
   "fallbackModel": [
     "sonnet[1m]",
     "claude-sonnet-5"
@@ -293,18 +294,26 @@
       "brew *"
     ]
   },
+  "spellcheck": {
+    "enabled": true,
+    "color": "#eba0ac"
+  },
   "alwaysThinkingEnabled": true,
   "effortLevel": "xhigh",
   "fastModePerSessionOptIn": true,
   "emojiCompletionEnabled": false,
   "askUserQuestionTimeout": "5m",
   "tui": "fullscreen",
+  "voice": {
+    "enabled": true
+  },
   "autoDreamEnabled": true,
   "showThinkingSummaries": true,
   "skipDangerousModePermissionPrompt": true,
   "skipWorkflowUsageWarning": true,
   "theme": "custom:catppuccin-mocha",
   "editorMode": "normal",
+  "keybindingFlavor": "readline",
   "preferredNotifChannel": "ghostty",
   "switchModelsOnFlag": false,
   "fileCheckpointingEnabled": false,
@@ -312,14 +321,5 @@
   "remoteControlAtStartup": false,
   "inputNeededNotifEnabled": true,
   "agentPushNotifEnabled": true,
-  "skipAutoPermissionPrompt": true,
-  "voice": {
-    "enabled": true
-  },
-  "spellcheck": {
-    "enabled": true,
-    "color": "#eba0ac"
-  },
-  "keybindingFlavor": "readline",
-  "model": "opus[1m]"
+  "skipAutoPermissionPrompt": true
 }
