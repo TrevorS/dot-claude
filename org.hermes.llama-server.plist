@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+Local model backing the hermes agent: Qwen3.6-35B-A3B (MoE, 3B active) served
+by llama.cpp on Metal.
+
+Install:
+  cp org.hermes.llama-server.plist ~/Library/LaunchAgents/
+  launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/org.hermes.llama-server.plist
+
+Measured on this box (24GB M4, llama.cpp build 1925) on 2026-08-28:
+  ~28.7 tok/s generation at 128k context, flat across 16k..262k.
+  KV is only ~1.9GB at 128k -- the hybrid SSM/linear-attention layers give most
+  of the 40 blocks constant state instead of growing KV.
+  Prefill of hermes's ~16.4k-token system prompt takes ~54s cold; llama-server
+  caches prompts, so later turns in a session skip most of that.
+
+--parallel 1 matters: llama-server defaults to n_slots=4, which sizes the KV
+pool for four concurrent requests. hermes is a single agent, so the default
+would waste 4x the KV for nothing.
+
+Bound to 0.0.0.0 because hermes runs in Docker and reaches the host via
+host.docker.internal, not loopback. Started by launchd rather than from a shell
+so it is not attributed to com.apple.sshd-session, which on this headless box
+is subject to the Local Network permission grant.
+
+Do NOT pair this with a keep-warm pinger. llama-server holds the model resident
+for its whole lifetime -- there is nothing to keep warm, and that pattern is
+what wedged the flint router at a 262k context.
+-->
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>org.hermes.llama-server</string>
+    <key>ProgramArguments</key>
+    <array>
+        <string>/Users/trevor/Projects/llama.cpp/build/bin/llama-server</string>
+        <string>--model</string>
+        <string>/Users/trevor/Models/Qwen3.6-35B-A3B-GGUF/Qwen3.6-35B-A3B-UD-IQ3_XXS.gguf</string>
+        <string>--alias</string><string>qwen36-35b-a3b</string>
+        <string>--host</string><string>0.0.0.0</string>
+        <string>--port</string><string>8090</string>
+        <string>-ngl</string><string>999</string>
+        <string>--ctx-size</string><string>131072</string>
+        <string>--parallel</string><string>1</string>
+        <string>--cache-type-k</string><string>q8_0</string>
+        <string>--cache-type-v</string><string>q8_0</string>
+        <string>--jinja</string>
+    </array>
+    <key>RunAtLoad</key>
+    <true/>
+    <key>KeepAlive</key>
+    <true/>
+    <!-- A crash-loop on a 12GB model would thrash the box; back off between
+         restarts instead of retrying immediately. -->
+    <key>ThrottleInterval</key>
+    <integer>30</integer>
+    <key>StandardOutPath</key>
+    <string>/tmp/hermes-llama-server.log</string>
+    <key>StandardErrorPath</key>
+    <string>/tmp/hermes-llama-server.log</string>
+</dict>
+</plist>
