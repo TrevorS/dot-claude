@@ -1,6 +1,6 @@
 {
-  "claudeCodeVersion": "2.1.251",
-  "syncedDate": "2026-08-28",
+  "claudeCodeVersion": "2.1.252",
+  "syncedDate": "2026-09-01",
   "source": "https://api.github.com/repos/anthropics/claude-code/releases",
   "adopted": [
     {
