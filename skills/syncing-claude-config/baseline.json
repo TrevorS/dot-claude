@@ -1,5 +1,5 @@
 {
-  "claudeCodeVersion": "2.1.252",
+  "claudeCodeVersion": "2.1.257",
   "syncedDate": "2026-09-01",
   "source": "https://api.github.com/repos/anthropics/claude-code/releases",
   "adopted": [
@@ -260,6 +260,22 @@
       "feature": "hook stdout JSON emitted via jq instead of hand-rolled sed escaping",
       "introducedVersion": "2.1.248",
       "reason": "2.1.248: 'Fixed hooks silently treating a stdout {\u2026} object that isn't valid JSON as plain text; it's now reported as a hook error with the parse message.' session-title.sh and user-prompt-submit/project-context.sh both escaped with sed 's/\\\\/\\\\\\\\/g; s/\"/\\\\\"/g' -- backslash and quote only, NOT control characters. A cwd containing a tab or newline (legal on APFS) emitted a raw U+0009 inside a JSON string, which RFC 8259 forbids; reproduced and confirmed rejected by jq's parser. Before 2.1.248 that silently dropped the per-prompt context or the session title; after it, the same input surfaces a hook error on every prompt. Replaced both emit sites with jq -cn --arg, which escapes control chars correctly. jq was already a hard dependency of session-title.sh (lines 13/16) and stop-failure-notify.sh, so no new dependency. Verified: valid JSON for a tab-containing cwd and for the normal repo cwd, and the existing-title early-exit path still emits nothing."
+    },
+    {
+      "feature": "model = fable[1m] (alias migration off claude-fable-5[1m])",
+      "surface": "settings.json key",
+      "introducedVersion": "2.1.257",
+      "adoptedDate": "2026-09-01",
+      "value": "fable[1m]",
+      "note": "Not an edit by Teej: the 2.1.257 binary rewrote userSettings.model on launch (migration_fable5_to_fable_alias, fable5ToFableAliasMigrationTimestamp 2026-09-01T18:26:59Z). The fable alias resolves to claude-fable-5-1 in this build (binary: fable:\"claude-fable-5-1\"), so the effective main model moved from Fable 5 to Fable 5.1. Accepted 2026-09-01: 5.1 is the default Fable, keeps 1M context, and re-pinning claude-fable-5[1m] would be re-migrated. To stay on Fable 5 the lever is ANTHROPIC_DEFAULT_FABLE_MODEL=claude-fable-5 (per-alias env override, binary fable:\"ANTHROPIC_DEFAULT_FABLE_MODEL\"), not the model key. Launch-effort pin: wN() checks unpinFable5LaunchEffort for the fable family, and all three unpin flags are true in ~/.claude.json, so effortLevel: xhigh applies to 5.1 unchanged. Changelog: 'Added Claude Fable 5.1 (claude-fable-5-1), now the default Fable model'"
+    },
+    {
+      "feature": "ANTHROPIC_DEFAULT_MODEL removed from env",
+      "surface": "env var",
+      "introducedVersion": "pre-baseline cleanup (adopted 2.1.236, made inert 2026-08-28 by ffcc809; surfaced by the 2.1.257 Fable 5.1 bullet)",
+      "adoptedDate": "2026-09-01",
+      "value": null,
+      "note": "Removed 2026-09-01. The 2.1.236 adopted note says the env var and a hard model key must not both be set; ffcc809 re-added model on 2026-08-28 and the env var (opus[1m]) went inert. Binary confirms: rie() reads ANTHROPIC_DEFAULT_MODEL only inside the default-model chain (attribution \"env\"), and oie() applies that attribution only when the user model (Mf()) is null. It also disagreed with the live pin (opus vs fable). Re-add only if the model key is dropped again."
     }
   ],
   "declined": [
@@ -342,7 +358,7 @@
     },
     {
       "feature": "sandbox.network.strictAllowlist / filesystem.disabled / deniedDomains / failIfUnavailable",
-      "reason": "all gated on sandbox.enabled, which is false \u2014 the June 2026 trial was rolled back. Revisit together if the sandbox is re-enabled"
+      "reason": "all gated on sandbox.enabled, which is false \u2014 the June 2026 trial was rolled back. Revisit together if the sandbox is re-enabled [2026-09-01: no longer true for every scope; r-e-bot's settings.local.json enables the sandbox, see the 2.1.257 sandbox-fixes entry]"
     },
     {
       "feature": "subagentStatusLine",
@@ -559,6 +575,26 @@
       "feature": "project settings env no longer setting CLAUDE_CONFIG_DIR / CLAUDE_CODE_TMPDIR / TMPDIR",
       "introducedVersion": "2.1.251",
       "reason": "nothing to fix 2026-08-28. Project-level .claude/settings.json env can no longer set those; no project settings here set them. The user-scope env block is unaffected by the change."
+    },
+    {
+      "feature": "permissions.blockReadsOutsideWorkingDirectories",
+      "introducedVersion": "2.1.257",
+      "reason": "declined 2026-09-01. 'Added a one-time prompt in auto mode before the first file read outside the working directories, with the option to block such reads (permissions.blockReadsOutsideWorkingDirectories)'. Blocking would break the routine cross-cwd reads of ~/.claude, ~/Projects, and the memory dir. Left unset. The prompt itself is gated on ~/.claude.json hasSeenAutoModeOutsideReadPrompt (binary: !ie().hasSeenAutoModeOutsideReadPrompt, interactive sessions with userSettings as a source only); pre-seeding it to true was proposed and approved, but the auto-mode classifier blocked writing ~/.claude.json from the agent, so the one-liner was handed to Teej. Until it runs, answer Yes (keep allowing) when the prompt appears."
+    },
+    {
+      "feature": "timeFormat / timeZone",
+      "introducedVersion": "2.1.257",
+      "reason": "declined 2026-09-01. Enum auto|12-hour|24-hour|24-hour-utc or a strftime pattern; timeZone is an IANA id defaulting to the system zone. auto follows LANG=en_US.UTF-8 which is 12-hour, and macOS AppleICUForce24HourTime is unset, so the default already matches the machine. Set 24-hour only if the turn-end clock or transcript timestamps should differ from the system clock."
+    },
+    {
+      "feature": "CLAUDE_CODE_SUBAGENT_MODEL_FORCE",
+      "introducedVersion": "2.1.257",
+      "reason": "declined 2026-09-01. Applies CLAUDE_CODE_SUBAGENT_MODEL (unset here, declined at 2.1.251) or the main model to every subagent, ignoring per-spawn and agent-definition overrides, and rewrites the Agent tool prose to say the model parameter is ignored. With fable[1m] as main that would push Explore and Plan onto Fable 5.1 for no gain."
+    },
+    {
+      "feature": "2.1.257 sandbox fixes (deniedDomains trailing dot, /doctor stale mask files)",
+      "introducedVersion": "2.1.257",
+      "reason": "no-op 2026-09-01, with a ledger correction: the earlier 'sandbox.enabled is false everywhere' notes are stale. ~/Projects/r-e-bot/.claude/settings.local.json sets sandbox.enabled: true (+ autoAllowBashIfSandboxed), so user-scope sandbox.* rules ARE live in that project. Neither fix bites: user scope uses allowedDomains not deniedDomains, and macOS never writes mask files (credential masking falls back to deny)."
     }
   ],
   "deferred": [
