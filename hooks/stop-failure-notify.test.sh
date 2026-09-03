@@ -2,9 +2,10 @@
 # Regression test for stop-failure-notify.sh — the StopFailure hook that emits
 # an OSC 777 desktop notification when a turn dies on an API error.
 #
-# Two things are worth pinning down. First, the payload field carrying the error
-# type is undocumented, so the hook scans for any string matching the known enum
-# rather than reading a fixed key; the "renamed field" case guards that. Second,
+# Two things are worth pinning down. First, the error type lives in `error`, but
+# the hook falls back to scanning for any string matching the known enum so a
+# rename degrades gracefully; the "renamed field" and "precedence" cases guard
+# both halves. Second,
 # StopFailure ignores everything except `terminalSequence`, so malformed output
 # fails silently in production — hence the explicit JSON-validity and
 # byte-level ESC/BEL assertions.
@@ -44,20 +45,26 @@ run() {
 }
 
 run "known error type is extracted" \
-  '{"hook_event_name":"StopFailure","error_type":"rate_limit","cwd":"/x/repo"}' 'rate_limit'
+  '{"hook_event_name":"StopFailure","error":"rate_limit","cwd":"/x/repo"}' 'rate_limit'
+run "account_on_hold is a known type" \
+  '{"hook_event_name":"StopFailure","error":"account_on_hold","cwd":"/x/repo"}' 'account_on_hold'
+run "error field wins over stray enum strings elsewhere" \
+  '{"last_assistant_message":"API Error: rate_limit","error":"overloaded","cwd":"/x/repo"}' 'overloaded'
+run "unrecognised error value falls back to the scan" \
+  '{"error":"brand_new_kind","error_details":"server_error","cwd":"/x/repo"}' 'server_error'
 run "error type found under a renamed field" \
   '{"hookSpecificOutput":{"someFutureName":"overloaded"},"cwd":"/x/repo"}' 'overloaded'
 run "cwd basename is appended" \
-  '{"error_type":"server_error","cwd":"/a/b/myrepo"}' '(myrepo)'
+  '{"error":"server_error","cwd":"/a/b/myrepo"}' '(myrepo)'
 run "empty payload degrades to unknown" '{}' 'unknown'
 run "garbage stdin degrades to unknown" 'not json at all' 'unknown'
 run "empty stdin degrades to unknown" '' 'unknown'
 run "semicolons in cwd cannot break out of the OSC field" \
-  '{"error_type":"billing_error","cwd":"/a/b;notify;EVIL"}' 'bnotifyEVIL'
+  '{"error":"billing_error","cwd":"/a/b;notify;EVIL"}' 'bnotifyEVIL'
 
 # The sequence must decode to real ESC ... BEL bytes, not the literal text
 # "" — jq escapes them in its JSON output and Claude Code decodes them.
-seq=$(printf '%s' '{"error_type":"rate_limit","cwd":"/x/r"}' | "$HOOK" 2>/dev/null | jq -r '.terminalSequence')
+seq=$(printf '%s' '{"error":"rate_limit","cwd":"/x/r"}' | "$HOOK" 2>/dev/null | jq -r '.terminalSequence')
 if printf '%s' "$seq" | od -An -c | tr -s ' ' | grep -q '033 ] 7 7 7 ; n o t i f y'; then
   ok "decodes to a real ESC ]777;notify; prefix"
 else

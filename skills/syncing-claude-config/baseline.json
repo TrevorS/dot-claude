@@ -1,6 +1,6 @@
 {
-  "claudeCodeVersion": "2.1.257",
-  "syncedDate": "2026-09-01",
+  "claudeCodeVersion": "2.1.259",
+  "syncedDate": "2026-09-03",
   "source": "https://api.github.com/repos/anthropics/claude-code/releases",
   "adopted": [
     {
@@ -102,7 +102,7 @@
       "surface": "statusLine script",
       "introducedVersion": "2.1.145 (pr) / undated (fast_mode, context_window_size, cost.*)",
       "adoptedDate": "2026-07-29",
-      "note": "PASS 4 (2026-07-29) removed exceeds_200k_tokens entirely: it rendered as a bare \"+\" on the window size (\"of 1M+\"), unreadable without knowing the rule, and it signals long-context premium PRICING -- the same reason cost.total_cost_usd is omitted (DISABLE_COST_WARNINGS=1). Also stripped the \"(1M context)\" suffix from model.display_name so the window is stated once, not twice; renamed the pacing marker from \"fast\" (which collided with the fast_mode segment) to an explicit multiple, \"2.2x pace\"; switched burn_rate to tenths-of-a-percent precision because whole percent reported 4.5x for a true 5.4x; and made the context bar 5 cells of thin rules (\u2501/\u2500) instead of 8 of block shading, with rounded rather than floored cell counts so 18% is not a visually empty bar. PASS 3 (2026-07-29) added rate_limits.*.resets_at, a burn-rate pacing signal, an 8-cell context bar, ANSI threshold colours, and statusLine.refreshInterval=60. Pace = used% vs elapsed% of the window; green <=125, yellow <=175, red above, suppressed under 15% used, with absolute overrides at 75/90. A 'fast' word appears only past the warn band. Renders in ~50ms. PASS 2 note follows -- second pass after auditing all ~40 documented payload fields against the 12 in use. fast_mode matters because Opus 5 fast mode is $10/$50 per Mtok and the state drifts (2.1.219 fixed stale fast-mode on Remote Control). context_window_size disambiguates ctx% -- a fallbackModel hop to Haiku silently drops 1M to 200k, previously invisible. exceeds_200k_tokens folded into the size as a trailing '+' (long-context premium marker) instead of its own segment. Line churn uses the up/down arrow notation from rules/status-marks.md. PR label wrapped in OSC 8 with plain text inside per the linked-labels rule. Dropped the standalone 'think' segment: alwaysThinkingEnabled makes it near-constant"
+      "note": "PASS 4 (2026-07-29) removed exceeds_200k_tokens entirely: it rendered as a bare \"+\" on the window size (\"of 1M+\"), unreadable without knowing the rule, and it signals long-context premium PRICING -- the same reason cost.total_cost_usd is omitted (DISABLE_COST_WARNINGS=1). Also stripped the \"(1M context)\" suffix from model.display_name so the window is stated once, not twice; renamed the pacing marker from \"fast\" (which collided with the fast_mode segment) to an explicit multiple, \"2.2x pace\"; switched burn_rate to tenths-of-a-percent precision because whole percent reported 4.5x for a true 5.4x; and made the context bar 5 cells of thin rules (━/─) instead of 8 of block shading, with rounded rather than floored cell counts so 18% is not a visually empty bar. PASS 3 (2026-07-29) added rate_limits.*.resets_at, a burn-rate pacing signal, an 8-cell context bar, ANSI threshold colours, and statusLine.refreshInterval=60. Pace = used% vs elapsed% of the window; green <=125, yellow <=175, red above, suppressed under 15% used, with absolute overrides at 75/90. A 'fast' word appears only past the warn band. Renders in ~50ms. PASS 2 note follows -- second pass after auditing all ~40 documented payload fields against the 12 in use. fast_mode matters because Opus 5 fast mode is $10/$50 per Mtok and the state drifts (2.1.219 fixed stale fast-mode on Remote Control). context_window_size disambiguates ctx% -- a fallbackModel hop to Haiku silently drops 1M to 200k, previously invisible. exceeds_200k_tokens folded into the size as a trailing '+' (long-context premium marker) instead of its own segment. Line churn uses the up/down arrow notation from rules/status-marks.md. PR label wrapped in OSC 8 with plain text inside per the linked-labels rule. Dropped the standalone 'think' segment: alwaysThinkingEnabled makes it near-constant"
     },
     {
       "feature": "plugin marketplace `command` source + `mode: \"link\"`",
@@ -259,7 +259,7 @@
     {
       "feature": "hook stdout JSON emitted via jq instead of hand-rolled sed escaping",
       "introducedVersion": "2.1.248",
-      "reason": "2.1.248: 'Fixed hooks silently treating a stdout {\u2026} object that isn't valid JSON as plain text; it's now reported as a hook error with the parse message.' session-title.sh and user-prompt-submit/project-context.sh both escaped with sed 's/\\\\/\\\\\\\\/g; s/\"/\\\\\"/g' -- backslash and quote only, NOT control characters. A cwd containing a tab or newline (legal on APFS) emitted a raw U+0009 inside a JSON string, which RFC 8259 forbids; reproduced and confirmed rejected by jq's parser. Before 2.1.248 that silently dropped the per-prompt context or the session title; after it, the same input surfaces a hook error on every prompt. Replaced both emit sites with jq -cn --arg, which escapes control chars correctly. jq was already a hard dependency of session-title.sh (lines 13/16) and stop-failure-notify.sh, so no new dependency. Verified: valid JSON for a tab-containing cwd and for the normal repo cwd, and the existing-title early-exit path still emits nothing."
+      "reason": "2.1.248: 'Fixed hooks silently treating a stdout {…} object that isn't valid JSON as plain text; it's now reported as a hook error with the parse message.' session-title.sh and user-prompt-submit/project-context.sh both escaped with sed 's/\\\\/\\\\\\\\/g; s/\"/\\\\\"/g' -- backslash and quote only, NOT control characters. A cwd containing a tab or newline (legal on APFS) emitted a raw U+0009 inside a JSON string, which RFC 8259 forbids; reproduced and confirmed rejected by jq's parser. Before 2.1.248 that silently dropped the per-prompt context or the session title; after it, the same input surfaces a hook error on every prompt. Replaced both emit sites with jq -cn --arg, which escapes control chars correctly. jq was already a hard dependency of session-title.sh (lines 13/16) and stop-failure-notify.sh, so no new dependency. Verified: valid JSON for a tab-containing cwd and for the normal repo cwd, and the existing-title early-exit path still emits nothing."
     },
     {
       "feature": "model = fable[1m] (alias migration off claude-fable-5[1m])",
@@ -276,6 +276,13 @@
       "adoptedDate": "2026-09-01",
       "value": null,
       "note": "Removed 2026-09-01. The 2.1.236 adopted note says the env var and a hard model key must not both be set; ffcc809 re-added model on 2026-08-28 and the env var (opus[1m]) went inert. Binary confirms: rie() reads ANTHROPIC_DEFAULT_MODEL only inside the default-model chain (attribution \"env\"), and oie() applies that attribution only when the user model (Mf()) is null. It also disagreed with the live pin (opus vs fable). Re-add only if the model key is dropped again."
+    },
+    {
+      "feature": "StopFailure `error` field + account_on_hold enum value (hooks/stop-failure-notify.sh)",
+      "surface": "hook input payload",
+      "introducedVersion": "docs-surfaced (field predates baseline; enum verified against the 2.1.259 binary, no release note ever named it)",
+      "adoptedDate": "2026-09-03",
+      "note": "hook now reads .error first and falls back to the whole-payload scan; KNOWN enum gained account_on_hold (11 values, matching the binary). Test fixtures switched from the never-existed error_type key to error. Window 2.1.258-2.1.259 itself yielded nothing to adopt; the 2.1.259 frontmatter model: fix means the three context: fork skills pinned to claude-sonnet-5 now actually run on it"
     }
   ],
   "declined": [
@@ -333,7 +340,7 @@
     },
     {
       "feature": "autoMode.allow / autoMode.hard_deny / permissions.ask",
-      "reason": "deferred by Teej 2026-07-29 \u2014 'dont worry about auto mode or permissions ask for now'"
+      "reason": "deferred by Teej 2026-07-29 — 'dont worry about auto mode or permissions ask for now'"
     },
     {
       "feature": "cost.total_cost_usd in statusLine",
@@ -358,7 +365,7 @@
     },
     {
       "feature": "sandbox.network.strictAllowlist / filesystem.disabled / deniedDomains / failIfUnavailable",
-      "reason": "all gated on sandbox.enabled, which is false \u2014 the June 2026 trial was rolled back. Revisit together if the sandbox is re-enabled [2026-09-01: no longer true for every scope; r-e-bot's settings.local.json enables the sandbox, see the 2.1.257 sandbox-fixes entry]"
+      "reason": "all gated on sandbox.enabled, which is false — the June 2026 trial was rolled back. Revisit together if the sandbox is re-enabled [2026-09-01: no longer true for every scope; r-e-bot's settings.local.json enables the sandbox, see the 2.1.257 sandbox-fixes entry]"
     },
     {
       "feature": "subagentStatusLine",

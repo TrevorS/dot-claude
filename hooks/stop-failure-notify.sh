@@ -6,16 +6,20 @@
 # rate_limit death is otherwise silent.
 #
 # StopFailure discards output and exit code EXCEPT `terminalSequence`, hence the
-# OSC 777 escape. The field carrying the error type is undocumented, so this
-# scans the payload for any string in the known enum rather than guessing a key.
+# OSC 777 escape. The error type arrives in `error` (hooks reference, StopFailure
+# input; enum verified against the 2.1.259 binary). Read that first, then fall
+# back to scanning every string for a known value so a future rename still
+# yields a type instead of "unknown".
 # Never gates: no `set -euo pipefail`, always exits 0.
 
 INPUT=$(cat)
 
-KNOWN='["rate_limit","overloaded","authentication_failed","oauth_org_not_allowed","billing_error","invalid_request","model_not_found","server_error","max_output_tokens","unknown"]'
+KNOWN='["rate_limit","overloaded","authentication_failed","oauth_org_not_allowed","account_on_hold","billing_error","invalid_request","model_not_found","server_error","max_output_tokens","unknown"]'
 
 TYPE=$(printf '%s' "$INPUT" | jq -r --argjson known "$KNOWN" \
-  '[.. | strings | select(. as $s | $known | index($s))] | first // "unknown"' 2>/dev/null)
+  '(.error // empty | strings | select(. as $s | $known | index($s)))
+   // ([.. | strings | select(. as $s | $known | index($s))] | first)
+   // "unknown"' 2>/dev/null)
 [ -n "$TYPE" ] || TYPE="unknown"
 
 DIR=$(printf '%s' "$INPUT" | jq -r '.cwd // ""' 2>/dev/null)
