@@ -82,9 +82,11 @@ Additional output fields: `updatedToolOutput` (replace tool output, all tools), 
   array, system prompt, CLAUDE.md + eager rules + MEMORY.md, and the skill listing; only a change
   to *those* re-bills. `project-context.sh` emits a date rather than a clock for a different
   reason — a clock invites social commentary about the hour — not for caching.
-  The pairing that does matter: `MCP_CONNECTION_NONBLOCKING=1` lets servers connect late, which
-  would rewrite the tools array, except deferred tool loading keeps MCP tools out of it until
-  `ToolSearch` pulls a schema into a tool result. Safe only while both hold.
+  The pairing that does matter: non-blocking MCP connection (the default since at least 2.1.260;
+  `MCP_CONNECTION_NONBLOCKING` is only read as an opt-*out* and was dropped from `env` on
+  2026-09-03) lets servers connect late, which would rewrite the tools array, except deferred
+  tool loading keeps MCP tools out of it until `ToolSearch` pulls a schema into a tool result.
+  Safe only while both hold.
 - Hook script not executable: `chmod +x` and verify shebang.
 - Reading stdin twice: drain once, parse from a variable.
 - Forgetting `set -euo pipefail` in bash — but only for **gate** hooks. A gate

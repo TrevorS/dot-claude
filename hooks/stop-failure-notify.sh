@@ -7,9 +7,10 @@
 #
 # StopFailure discards output and exit code EXCEPT `terminalSequence`, hence the
 # OSC 777 escape. The error type arrives in `error` (hooks reference, StopFailure
-# input; enum verified against the 2.1.259 binary). Read that first, then fall
+# input; enum verified against the 2.1.260 binary). Read that first, then fall
 # back to scanning every string for a known value so a future rename still
-# yields a type instead of "unknown".
+# yields a type instead of "unknown". `error_details` (free text, 2.1.260
+# payload) is appended when present, truncated so the toast stays readable.
 # Never gates: no `set -euo pipefail`, always exits 0.
 
 INPUT=$(cat)
@@ -25,10 +26,14 @@ TYPE=$(printf '%s' "$INPUT" | jq -r --argjson known "$KNOWN" \
 DIR=$(printf '%s' "$INPUT" | jq -r '.cwd // ""' 2>/dev/null)
 DIR=${DIR##*/}
 
+DETAILS=$(printf '%s' "$INPUT" | jq -r '.error_details // "" | strings' 2>/dev/null)
+DETAILS=${DETAILS:0:120}
+
 # OSC 777 is `<ESC>]777;notify;<title>;<body><BEL>` — strip ';' and control
 # bytes from the body so a value cannot break out of the field.
 BODY="turn failed: $TYPE"
 [ -n "$DIR" ] && BODY="$BODY ($DIR)"
+[ -n "$DETAILS" ] && BODY="$BODY: $DETAILS"
 BODY=$(printf '%s' "$BODY" | tr -d ';[:cntrl:]')
 
 jq -cn --arg body "$BODY" \

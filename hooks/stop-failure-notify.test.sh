@@ -61,6 +61,12 @@ run "garbage stdin degrades to unknown" 'not json at all' 'unknown'
 run "empty stdin degrades to unknown" '' 'unknown'
 run "semicolons in cwd cannot break out of the OSC field" \
   '{"error":"billing_error","cwd":"/a/b;notify;EVIL"}' 'bnotifyEVIL'
+run "error_details is appended when present" \
+  '{"error":"rate_limit","error_details":"429 retry after 30s","cwd":"/x/r"}' 'rate_limit (r): 429 retry after 30s'
+run "semicolons in error_details are scrubbed too" \
+  '{"error":"rate_limit","error_details":"x;notify;EVIL","cwd":"/x/r"}' 'xnotifyEVIL'
+run "non-string error_details is ignored" \
+  '{"error":"rate_limit","error_details":{"code":429},"cwd":"/x/r"}' 'rate_limit (r)'
 
 # The sequence must decode to real ESC ... BEL bytes, not the literal text
 # "" — jq escapes them in its JSON output and Claude Code decodes them.

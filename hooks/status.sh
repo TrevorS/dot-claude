@@ -138,7 +138,7 @@ quota_seg() {
 }
 
 # ---- Row 2 data: one jq pass, tab-separated, "-" for anything absent.
-IFS=$'\t' read -r dir model fast effort ctx win rl5 rl5r rl7 rl7r la lr prnum prstate prurl wt <<<"$(
+IFS=$'\t' read -r dir model fast effort ctx win rl5 rl5r rl7 rl7r la lr prnum prstate prurl wt over <<<"$(
   jq -r '[
     (.workspace.current_dir // .cwd // "-"),
     # Strip a trailing "(1M context)" style parenthetical: the ctx segment already
@@ -164,7 +164,8 @@ IFS=$'\t' read -r dir model fast effort ctx win rl5 rl5r rl7 rl7r la lr prnum pr
     (.pr.number // "-"),
     (.pr.review_state // "-"),
     (.pr.url // "-"),
-    (.workspace.git_worktree // .worktree.name // "-")
+    (.workspace.git_worktree // .worktree.name // "-"),
+    (if .exceeds_200k_tokens then "1" else "-" end)
   ] | @tsv' <<<"$input" 2>/dev/null
 )"
 
@@ -216,7 +217,10 @@ if [[ "$ctx" != "-" ]]; then
   ((ctx >= 70)) && cc=$YELLOW
   ((ctx >= 90)) && cc=$RED
   label="ctx $(paint "$cc" "$(bar "$ctx")") ${ctx}%"
-  [[ "$win" != "-" ]] && label+=" of ${win}"
+  if [[ "$win" != "-" ]]; then
+    label+=" of ${win}"
+    [[ "$over" == "1" ]] && label+="+"
+  fi
   seg+=("$label")
 fi
 

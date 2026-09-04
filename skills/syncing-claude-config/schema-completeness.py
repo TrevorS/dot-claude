@@ -23,6 +23,7 @@ the only source that decides what actually runs -- in both directions:
 Usage:
     python3 schema-completeness.py                  # audit every surface
     python3 schema-completeness.py --surface themes
+    python3 schema-completeness.py --surface skills
     python3 schema-completeness.py --strings CACHE  # reuse an extracted strings dump
 
 Exit code 1 if any finding, 0 if clean -- so it can gate `make validate`.
@@ -279,9 +280,73 @@ def audit_settings(strings: str) -> list[str]:
     return findings
 
 
+# ---------------------------------------------------------------- skills surface
+
+
+def skill_frontmatter_keys(strings: str) -> set[str]:
+    """The SKILL.md frontmatter key set, read from the binary's zod shape.
+
+    The real load path is NON-strict: an unknown key is dropped and the skill loads
+    as if it were never written. A strict shadow parse exists but only emits
+    `tengu_frontmatter_shadow_unknown_key` telemetry -- no warning, no --debug
+    line. Same silent class as themes/*.json, hence a completeness diff here.
+
+    Anchor on a hyphenated key (always quoted in the shape) rather than a minified
+    variable name, then take the base object plus the `.extend({...})` that adds
+    the skill-only keys (when_to_use, paths, context, ...)."""
+    anchor = strings.find('"disable-model-invocation":')
+    if anchor < 0:
+        return set()
+    start = strings.rfind("c({", 0, anchor)
+    base_end = strings.find("}))", anchor)
+    ext = strings.find(".extend({", base_end, base_end + 200)
+    end = strings.find("}))", ext) if ext > 0 else base_end
+    shape = strings[start : end + 1]
+    # Blank the describe() prose so a sentence cannot masquerade as a key. Only
+    # the describe argument -- hyphenated keys are themselves quoted strings.
+    shape = re.sub(r'\.describe\("(?:[^"\\]|\\.)*"\)', '.describe("")', shape)
+    keys = {
+        a or b
+        for a, b in re.findall(r'[{,]\s*(?:"([\w-]+)"|([A-Za-z_]\w*))\s*:\s*[A-Za-z_$][\w$]*\(', shape)
+    }
+    # Sanity: both a base key and an extend-only key must be present, otherwise the
+    # anchors landed somewhere else in the binary and the set is garbage.
+    if not {"name", "when_to_use"} <= keys:
+        return set()
+    return keys
+
+
+def audit_skills(strings: str) -> list[str]:
+    findings: list[str] = []
+    accepted = skill_frontmatter_keys(strings)
+    if not accepted:
+        return ["skills: could not locate the SKILL.md frontmatter shape in the binary -- audit skipped"]
+
+    files = sorted(CLAUDE_DIR.glob("skills/*/SKILL.md")) + sorted(CLAUDE_DIR.glob("teej-skills/**/SKILL.md"))
+    checked = 0
+    for path in files:
+        lines = path.read_text(encoding="utf-8", errors="replace").split("\n")
+        if not lines or lines[0].strip() != "---":
+            continue
+        used: list[str] = []
+        for line in lines[1:]:
+            if line.strip() == "---":
+                break
+            m = re.match(r"^([A-Za-z_][\w-]*)\s*:", line)
+            if m:
+                used.append(m.group(1))
+        checked += len(used)
+        rel = path.relative_to(CLAUDE_DIR)
+        for k in used:
+            if k not in accepted:
+                findings.append(f"{rel}: frontmatter key {k!r} is not in the binary's shape -- silently dropped")
+    print(f"skills: {len(files)} SKILL.md files, {checked} frontmatter keys checked against {len(accepted)} accepted")
+    return findings
+
+
 # ---------------------------------------------------------------------- driver
 
-SURFACES = {"themes": audit_themes, "settings": audit_settings}
+SURFACES = {"themes": audit_themes, "settings": audit_settings, "skills": audit_skills}
 
 
 def main() -> int:

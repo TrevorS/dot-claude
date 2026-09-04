@@ -100,6 +100,7 @@ The two surfaces validate very differently:
 | --- | --- | --- |
 | `settings.json` | zod → raises `unrecognized_keys` | loud; a bad key can't survive |
 | `themes/*.json` | `Object.hasOwn(basePalette, k) && isValidColor(v)` | **silent**; unknown keys and invalid values are dropped with no warning, no error, no `--debug` line |
+| `skills/*/SKILL.md` frontmatter | non-strict parse; a strict shadow parse only emits `tengu_frontmatter_shadow_unknown_key` telemetry | **silent**; unknown or misspelled keys are dropped with no warning, and the skill loads as if the key were never written |
 
 A silent surface rots in both directions at once — a key you never added falls back to the built-in base, and a key that was renamed away just stops applying. Neither shows up anywhere.
 

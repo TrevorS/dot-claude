@@ -1,22 +1,21 @@
 {
   "$schema": "https://json.schemastore.org/claude-code-settings.json",
   "env": {
-    "CLAUDE_CODE_DISABLE_FEEDBACK_SURVEY": "1",
     "CLAUDE_CODE_ENABLE_TODO_TOOLS": "1",
     "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1",
     "CLAUDE_CODE_NEW_INIT": "1",
     "CLAUDE_CODE_RETRY_WATCHDOG": "1",
     "CLAUDE_CODE_TMUX_TRUECOLOR": "1",
-    "CLAUDE_CODE_WORKFLOWS": "1",
     "DISABLE_BUG_COMMAND": "1",
     "DISABLE_COST_WARNINGS": "1",
     "DISABLE_ERROR_REPORTING": "1",
     "JJ_EDITOR": "sh -c 'exec \"$HOME/.claude/hooks/jj-reject-editor.sh\"'"
   },
   "attribution": {
+    "commit": "",
+    "pr": "",
     "sessionUrl": false
   },
-  "includeCoAuthoredBy": false,
   "permissions": {
     "allow": [
       "Bash(brew install:*)",
@@ -57,15 +56,15 @@
       "Bash(traceroute:*)",
       "Bash(uv run ~/.claude/skills/monitoring-ci/ci-monitor.py:*)",
       "Bash(whois:*)",
-      "Read(/opt/**)",
-      "Read(/usr/local/**)",
+      "Read(//opt/**)",
+      "Read(//usr/local/**)",
       "Read(~/.config/**)",
       "Read(~/.local/**)",
       "Read(~/.rbt2/**)",
       "Read(~/Downloads/**)",
       "Read(~/Library/**)",
       "Skill(searching-history)",
-      "Skill(skill-creator)",
+      "Skill(skill-creator:skill-creator)",
       "WebFetch(domain:code.claude.com)",
       "WebFetch(domain:crates.io)",
       "WebFetch(domain:dev.to)",
@@ -101,15 +100,21 @@
       "Read(~/.secrets.zsh)",
       "Read(//**/.env)",
       "Read(//**/.env.*)",
-      "Read(**/*.pem)",
-      "Read(**/id_rsa*)",
-      "Read(**/id_ed25519*)",
+      "Read(//**/*.pem)",
+      "Read(//**/id_rsa*)",
+      "Read(//**/id_ed25519*)",
       "Bash(cat *~/.ssh/*)",
+      "Bash(cat *$HOME/.ssh/*)",
       "Bash(cat *~/.aws/*)",
+      "Bash(cat *$HOME/.aws/*)",
       "Bash(cat *~/.npmrc*)",
+      "Bash(cat *$HOME/.npmrc*)",
       "Bash(cat *~/.secrets*)",
+      "Bash(cat *$HOME/.secrets*)",
       "Bash(cat *~/.netrc*)",
+      "Bash(cat *$HOME/.netrc*)",
       "Bash(cat *~/.env*)",
+      "Bash(cat *$HOME/.env*)",
       "Bash(cat *id_rsa*)",
       "Bash(cat *id_ed25519*)",
       "Bash(cat *.pem*)",
@@ -166,6 +171,7 @@
     ],
     "SessionStart": [
       {
+        "matcher": "startup|resume|fork",
         "hooks": [
           {
             "type": "command",
@@ -206,9 +212,6 @@
         ]
       }
     ]
-  },
-  "worktree": {
-    "baseRef": "fresh"
   },
   "statusLine": {
     "type": "command",

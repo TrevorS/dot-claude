@@ -285,6 +285,95 @@
       "note": "hook now reads .error first and falls back to the whole-payload scan; KNOWN enum gained account_on_hold (11 values, matching the binary). Test fixtures switched from the never-existed error_type key to error. Window 2.1.258-2.1.259 itself yielded nothing to adopt; the 2.1.259 frontmatter model: fix means the three context: fork skills pinned to claude-sonnet-5 now actually run on it"
     },
     {
+      "feature": "permission path prefixes: Read(//opt/**), Read(//usr/local/**), Read(//**/*.pem), Read(//**/id_rsa*), Read(//**/id_ed25519*)",
+      "surface": "permission syntax",
+      "introducedVersion": "pre-baseline drift (rule syntax unchanged; NO release note ever named it -- found by the 2026-09-03 deep audit)",
+      "adoptedDate": "2026-09-03",
+      "note": "A single leading / in a file rule is settings-dir-relative, so at user scope Read(/opt/**) resolved to ~/.claude/opt/** and never matched; auto mode's classifier approved those reads anyway, which is why there was no symptom. Binary: sandbox describe 'relative to the settings file root (project root for project settings, ~/.claude for user settings)', and the permission path resolver uses the same userSettings root. Unprefixed deny patterns (**/*.pem) were cwd-relative only, so the three key/cert denies now use // to cover the whole filesystem, matching the pre-existing Read(//**/.env) form."
+    },
+    {
+      "feature": "Skill(skill-creator:skill-creator) allow rule",
+      "surface": "permission syntax",
+      "introducedVersion": "pre-baseline drift (plugin skills have been namespaced <plugin>:<skill> since plugins shipped)",
+      "adoptedDate": "2026-09-03",
+      "note": "Skill(skill-creator) compared only the typed name against the registered name skill-creator:skill-creator and never matched; the skill ran via the prompt-skill auto-allow branch. The alias/unqualifiedName fallback exists only on the deny path. Skill(searching-history) matches by exact name and was left alone."
+    },
+    {
+      "feature": "attribution.commit / attribution.pr (migrated off includeCoAuthoredBy)",
+      "surface": "settings.json key",
+      "introducedVersion": "pre-baseline (attribution object predates 2.1.234; the deprecation wording was found in the 2.1.260 binary, not a release note)",
+      "adoptedDate": "2026-09-03",
+      "value": {
+        "commit": "",
+        "pr": "",
+        "sessionUrl": false
+      },
+      "note": "Binary describe: 'Deprecated: Use attribution instead. Whether to include Claude's co-authored by attribution in commits and PRs'. Resolver order is attribution.commitTrailers -> attribution.commit==='' -> includeCoAuthoredBy -> default, so the old key still worked at third priority. Empty string on both commit and pr reproduces the old false exactly. commitTrailers sits behind a stripped gate in the zod shape -- do not use it."
+    },
+    {
+      "feature": "SessionStart matcher startup|resume|fork",
+      "surface": "hook matcher",
+      "introducedVersion": "pre-baseline (SessionStart source matchers predate 2.1.234; fork source is newer, exact version not established)",
+      "adoptedDate": "2026-09-03",
+      "note": "Binary runs SessionStart hooks with matchQuery = source, enum startup|resume|clear|compact|fork. session-title.sh already documented that sessionTitle is ignored on clear and compact, so the process was spawned for nothing on those two."
+    },
+    {
+      "feature": "env cleanup: MCP_CONNECTION_NONBLOCKING, CLAUDE_CODE_WORKFLOWS, CLAUDE_CODE_DISABLE_FEEDBACK_SURVEY removed",
+      "surface": "env var",
+      "introducedVersion": "n/a (all three are still read by the 2.1.260 binary; they are inert in THIS setup, not removed from the product)",
+      "adoptedDate": "2026-09-03",
+      "note": "MCP_CONNECTION_NONBLOCKING: tri-state parser, sole read site is !== false, non-blocking is the default. CLAUDE_CODE_WORKFLOWS: without it defaultOn is subscriptionType !== 'pro'; this account is claude_max so it was already on -- re-add if the plan ever drops to Pro. CLAUDE_CODE_DISABLE_FEEDBACK_SURVEY: read only under the claude-vscode entrypoint behind a default-false flag; re-add if the VS Code extension is ever used. DISABLE_COST_WARNINGS was judged probably-inert (fires only for API-key/console scopes or org admin/billing roles) but left in place as harmless."
+    },
+    {
+      "feature": "worktree.baseRef removed (was 'fresh')",
+      "surface": "settings.json key",
+      "introducedVersion": "n/a (default-valued key)",
+      "adoptedDate": "2026-09-03",
+      "note": "Binary describe: \"'fresh' (default) branches from origin/<default-branch>\". Removed under the ledger's standing rule against writing keys whose value equals the default (see includeGitInstructions, dialogExpiry)."
+    },
+    {
+      "feature": "statusLine exceeds_200k_tokens '+' marker (hooks/status.sh)",
+      "surface": "statusLine payload field",
+      "introducedVersion": "pre-baseline (field present in the 2.1.260 payload builder at top level; the comment promising the marker predates this sync but the jq array never read the field)",
+      "adoptedDate": "2026-09-03",
+      "note": "Dead branch: the comment above the ctx segment described a '+' suffix for crossing 200k total tokens, but the field was never in the jq array. Now read as a 17th tsv column and appended to the window size ('34% of 1M+'). On fable[1m] that boundary is the long-context pricing tier, so the marker earns its place."
+    },
+    {
+      "feature": "model: sonnet alias on the three context: fork skills (was claude-sonnet-5)",
+      "surface": "skill frontmatter field",
+      "introducedVersion": "n/a (both spellings accepted; the catalog ID was a hard pin, the alias floats)",
+      "adoptedDate": "2026-09-03",
+      "note": "cleaning-commit-history, monitoring-ci, validating-project. Frontmatter describe: 'Model override (haiku, sonnet, opus, fable, or a full ID)'. claude-sonnet-5 is a catalog ID and would not follow a Sonnet 5.x; the sonnet alias resolves per family at load time."
+    },
+    {
+      "feature": "StopFailure error_details appended to the OSC 777 body (hooks/stop-failure-notify.sh)",
+      "surface": "hook payload field",
+      "introducedVersion": "undated (present on the 2.1.260 StopFailure input alongside last_assistant_message; no release note named it)",
+      "adoptedDate": "2026-09-03",
+      "note": "Free text, truncated to 120 chars and passed through the same ';'/control-byte scrub as the rest of the body. Three new test cases: appended when present, semicolons scrubbed, non-string value ignored. The 11-value error enum was re-verified against the 2.1.260 binary and is unchanged."
+    },
+    {
+      "feature": "Bash(cat *$HOME/...) deny variants for .ssh .aws .npmrc .secrets .netrc .env",
+      "surface": "permission syntax",
+      "introducedVersion": "n/a (closes a spelling gap, not a product change)",
+      "adoptedDate": "2026-09-03",
+      "note": "The Bash path validator returns type 'other' for any argument containing '$', so cat $HOME/.ssh/id_rsa was never rule-denied and fell to the auto classifier; ~/ and absolute spellings are hard-denied twice (wildcard rule + the cat path validator that survived the 2.1.260 revert). The wildcard compiler escapes $ ([.+?^${}()|[\\]\\\\'\"] -> \\\\$&), so these compile to ^cat .*\\\\$HOME/\\\\.ssh/.*$ and match the literal spelling. ${HOME} and non-cat readers remain open; only the sandbox credentials block closes those, and sandbox.enabled is false at user scope by choice."
+    },
+    {
+      "feature": "schema-completeness.py 'skills' surface + SKILL.md row in the loud-vs-silent table",
+      "surface": "skill (this repo's tooling)",
+      "introducedVersion": "n/a (audit tooling)",
+      "adoptedDate": "2026-09-03",
+      "note": "SKILL.md frontmatter is a silent surface: the load path is non-strict and a strict shadow parse only emits tengu_frontmatter_shadow_unknown_key telemetry. The script now extracts the accepted key set from the binary's zod shape (anchored on the always-quoted \"disable-model-invocation\" key plus the .extend block) and diffs every skills/*/SKILL.md and teej-skills/**/SKILL.md against it. Clean on 2026-09-03; all keys in use were recognized."
+    },
+    {
+      "feature": "housekeeping outside the repo: ralph-loop@claude-plugins-official uninstalled; local-scope StableMCP-Metabase duplicate removed from ~/.claude.json",
+      "surface": "plugin cache / ~/.claude.json",
+      "introducedVersion": "n/a",
+      "adoptedDate": "2026-09-03",
+      "note": "ralph-loop had been installed at user scope since 2026-01-22 but was absent from settings.enabledPlugins, i.e. orphan cache. StableMCP-Metabase was defined identically at user scope and again at the ~/.claude local scope; the user-scope definition remains and the project-level disabledMcpServers entry still keeps it off for this repo."
+    },
+    {
       "feature": "bashOutputMaxChars",
       "surface": "settings.json key",
       "introducedVersion": "2.1.261",
