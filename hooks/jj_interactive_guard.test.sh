@@ -115,6 +115,17 @@ run BLOCK 'env jj commit'
 run BLOCK 'FOO=1 jj split'
 run PASS  'timeout 5 jj describe -m "msg"'
 run PASS  'timeout 5 jj status'
+# An assignment value is one shell word even when it holds whitespace inside
+# quotes or $(...). The old prefix regex stopped at the first space, so these
+# never began with `jj` and slipped past the gate entirely.
+run BLOCK 'X="$(a b)" jj describe'
+run BLOCK 'X=$(a b) jj describe'
+run BLOCK "X='a b' jj describe"
+run BLOCK 'X="a\" b" jj describe'                          # escaped quote in the value
+run BLOCK 'X="$(echo "a b")" jj describe'                  # quotes nested inside $( )
+run BLOCK 'JJ_EDITOR="$(jq -r .env.JJ_EDITOR ~/.claude/settings.json)" timeout 10 jj describe'
+run PASS  'X="$(a b)" jj describe -m "msg"'
+run PASS  'X="jj describe" echo hi'                        # jj only inside the value
 
 echo
 if [ "$fails" -eq 0 ]; then

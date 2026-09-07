@@ -91,6 +91,16 @@ run BLOCK 'stdbuf -oL git push --force'
 run BLOCK 'git status && timeout 5 git push --force'   # wrapper in the second segment
 run PASS  'timeout 5 git status'                       # wrapper on a safe command
 run PASS  'git commit -m "timeout 5 git push --force"' # wrapper name inside a message
+# An assignment value is one shell word even when it holds whitespace inside
+# quotes or $(...). The old prefix regex stopped at the first space and skipped
+# the segment entirely.
+run BLOCK 'X="$(a b)" git push --force'
+run BLOCK 'X=$(a b) git push -f'
+run BLOCK "X='a b' git commit --amend"
+run BLOCK 'X="a\" b" git push --force'                  # escaped quote in the value
+run BLOCK 'X="$(echo "a b")" git push --force'          # quotes nested inside $( )
+run PASS  'X="$(a b)" git push'
+run PASS  'X="git push --force" echo hi'                # git only inside the value
 
 echo
 if [ "$fails" -eq 0 ]; then echo "all pass"; else echo "$fails failing"; fi

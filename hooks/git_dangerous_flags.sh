@@ -134,13 +134,61 @@ has_arg() {
 #
 # Peeling only ever exposes MORE of the command line to the checks below, so an
 # over-eager strip risks a false block, never a missed one.
+#
+# NAME=value prefix, quote-aware. The value is one shell word, and a word may
+# carry whitespace inside quotes or $(...) -- `X="$(a b)" git ...` is a single
+# assignment followed by a git command. The old `[^[:space:]]*` regex stopped at
+# the first space, so the segment never began with `git` and skipped every check
+# (same gap as jj_interactive_guard.sh, found 2026-09-07).
+# Sets the global `peeled` to the text after the assignment, or "" when the
+# segment is not an assignment prefix (or is an assignment with nothing after).
+peel_assignment() {
+  local s="$1" c q="" stack="" i n
+  n=${#s}
+  peeled=""
+  [[ "$s" =~ ^[A-Za-z_][A-Za-z0-9_]*= ]] || return 0
+  for (( i = ${#BASH_REMATCH[0]}; i < n; i++ )); do
+    c="${s:i:1}"
+    if [ "$q" = "'" ]; then
+      if [ "$c" = "'" ]; then q=""; fi
+      continue
+    fi
+    if [ "$c" = '\' ]; then i=$((i+1)); continue; fi
+    if [ "$q" = '"' ]; then
+      case "$c" in
+        '"') q="" ;;
+        # $( ) opens a fresh unquoted context inside the string; remember to
+        # return to double-quote mode at the matching ).
+        '$') if [ "${s:i+1:1}" = '(' ]; then stack+='"'; q=""; i=$((i+1)); fi ;;
+      esac
+      continue
+    fi
+    case "$c" in
+      "'" | '"') q="$c" ;;
+      '(') stack+='-' ;;
+      ')')
+        if [ -n "$stack" ]; then
+          q="${stack: -1}"; if [ "$q" = '-' ]; then q=""; fi
+          stack="${stack%?}"
+        fi ;;
+      ' ' | $'\t')
+        if [ -z "$stack" ]; then
+          peeled="${s:i}"
+          peeled="${peeled#"${peeled%%[![:space:]]*}"}"
+          return 0
+        fi ;;
+    esac
+  done
+}
+
 strip_wrappers() {
   local s="$1" prev="" rest
   while [ "$s" != "$prev" ]; do
     prev="$s"
     # VAR=value prefix (also covers `env FOO=1 ...` on the next pass).
-    if [[ "$s" =~ ^[A-Za-z_][A-Za-z0-9_]*=[^[:space:]]*[[:space:]]+(.*)$ ]]; then
-      s="${BASH_REMATCH[1]}"; continue
+    if [[ "$s" =~ ^[A-Za-z_][A-Za-z0-9_]*= ]]; then
+      peel_assignment "$s"
+      if [ -n "$peeled" ]; then s="$peeled"; continue; fi
     fi
     # Wrappers that take no options of their own.
     if [[ "$s" =~ ^(command|builtin|exec|nohup|setsid|time)[[:space:]]+(.*)$ ]]; then
