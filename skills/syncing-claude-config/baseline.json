@@ -1,6 +1,6 @@
 {
-  "claudeCodeVersion": "2.1.259",
-  "syncedDate": "2026-09-03",
+  "claudeCodeVersion": "2.1.263",
+  "syncedDate": "2026-09-07",
   "source": "https://api.github.com/repos/anthropics/claude-code/releases",
   "adopted": [
     {
@@ -283,6 +283,28 @@
       "introducedVersion": "docs-surfaced (field predates baseline; enum verified against the 2.1.259 binary, no release note ever named it)",
       "adoptedDate": "2026-09-03",
       "note": "hook now reads .error first and falls back to the whole-payload scan; KNOWN enum gained account_on_hold (11 values, matching the binary). Test fixtures switched from the never-existed error_type key to error. Window 2.1.258-2.1.259 itself yielded nothing to adopt; the 2.1.259 frontmatter model: fix means the three context: fork skills pinned to claude-sonnet-5 now actually run on it"
+    },
+    {
+      "feature": "bashOutputMaxChars",
+      "surface": "settings.json key",
+      "introducedVersion": "2.1.261",
+      "adoptedDate": "2026-09-07",
+      "value": 100000,
+      "note": "raises inline Bash output from the 30000 default; clamps 4000-128000 and overrides BASH_MAX_OUTPUT_LENGTH when set. Measured before proposing: 15 persisted overflow files in the 30 days to 2026-09-07, 12 of them >60KB, 6 >128KB. Trade-off: an inline overflow can now cost ~25K tokens instead of a ~2KB preview. Rollback: delete the key"
+    },
+    {
+      "feature": "keybindingFlavor removed (deprecated, inert)",
+      "surface": "settings.json key",
+      "introducedVersion": "2.1.261 (deprecation; the key itself was adopted at 2.1.238)",
+      "adoptedDate": "2026-09-07",
+      "note": "supersedes the earlier keybindingFlavor adopted entry. 2.1.261 made readline word-editing the only behavior, so the key validates but does nothing; docs settings-reference says deprecated since v2.1.261. Removed rather than left as dead weight"
+    },
+    {
+      "feature": "MCP_CONNECTION_NONBLOCKING removed from env",
+      "surface": "env var",
+      "introducedVersion": "pre-baseline (var added 2.1.89 for -p mode; the default flip to non-blocking is undated in CHANGELOG, confirmed in the 2.1.263 binary as `!== false` and in docs env-vars)",
+      "adoptedDate": "2026-09-07",
+      "note": "value \"1\" was a no-op: non-blocking MCP startup is the default. Found by the env-var liveness pass (grep each settings.env var read site in the binary), not by a release note. Set MCP_CONNECTION_NONBLOCKING=0 to get the old blocking behavior back"
     }
   ],
   "declined": [
@@ -602,6 +624,16 @@
       "feature": "2.1.257 sandbox fixes (deniedDomains trailing dot, /doctor stale mask files)",
       "introducedVersion": "2.1.257",
       "reason": "no-op 2026-09-01, with a ledger correction: the earlier 'sandbox.enabled is false everywhere' notes are stale. ~/Projects/r-e-bot/.claude/settings.local.json sets sandbox.enabled: true (+ autoAllowBashIfSandboxed), so user-scope sandbox.* rules ARE live in that project. Neither fix bites: user scope uses allowedDomains not deniedDomains, and macOS never writes mask files (credential masking falls back to deny)."
+    },
+    {
+      "feature": "taskOutputMaxChars",
+      "introducedVersion": "2.1.261",
+      "reason": "left unset 2026-09-07: CLAUDE.md already routes background-task output through Read on the <output-file> path rather than TaskOutput, so the TaskOutput inline window rarely matters. Revisit if TaskOutput truncation ever bites"
+    },
+    {
+      "feature": "prompt_cache.last_miss_cause / miss_causes statusLine fields",
+      "introducedVersion": "2.1.260",
+      "reason": "extends the prompt_cache object declined at 2.1.251; hooks/status.sh does not read prompt_cache at all"
     }
   ],
   "deferred": [

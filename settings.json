@@ -11,8 +11,7 @@
     "DISABLE_BUG_COMMAND": "1",
     "DISABLE_COST_WARNINGS": "1",
     "DISABLE_ERROR_REPORTING": "1",
-    "JJ_EDITOR": "/Users/trevorstrieber/.claude/hooks/jj-reject-editor.sh",
-    "MCP_CONNECTION_NONBLOCKING": "1"
+    "JJ_EDITOR": "/Users/trevorstrieber/.claude/hooks/jj-reject-editor.sh"
   },
   "attribution": {
     "sessionUrl": false
@@ -312,7 +311,6 @@
   "skipWorkflowUsageWarning": true,
   "theme": "custom:catppuccin-mocha",
   "editorMode": "normal",
-  "keybindingFlavor": "readline",
   "preferredNotifChannel": "ghostty",
   "switchModelsOnFlag": false,
   "fileCheckpointingEnabled": false,
@@ -320,5 +318,6 @@
   "remoteControlAtStartup": false,
   "inputNeededNotifEnabled": true,
   "agentPushNotifEnabled": true,
-  "skipAutoPermissionPrompt": true
+  "skipAutoPermissionPrompt": true,
+  "bashOutputMaxChars": 100000
 }
