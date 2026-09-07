@@ -305,6 +305,14 @@
       "introducedVersion": "pre-baseline (var added 2.1.89 for -p mode; the default flip to non-blocking is undated in CHANGELOG, confirmed in the 2.1.263 binary as `!== false` and in docs env-vars)",
       "adoptedDate": "2026-09-07",
       "note": "value \"1\" was a no-op: non-blocking MCP startup is the default. Found by the env-var liveness pass (grep each settings.env var read site in the binary), not by a release note. Set MCP_CONNECTION_NONBLOCKING=0 to get the old blocking behavior back"
+    },
+    {
+      "feature": "JJ_EDITOR made HOME-relative (sh -c wrapper)",
+      "surface": "env var (config portability fix, not product drift)",
+      "introducedVersion": "n/a",
+      "adoptedDate": "2026-09-07",
+      "value": "sh -c 'exec \"$HOME/.claude/hooks/jj-reject-editor.sh\"'",
+      "note": "settings.json is shared between machines whose home dirs differ (/Users/trevor vs /Users/trevorstrieber); commit 8e28ad5 on 2026-08-04 switched the absolute path to the other machine and broke it here. Claude Code does not expand $HOME or ~ in settings env values (docs settings-reference, env section), and jj 0.45 does not expand ~ in JJ_EDITOR either (probed: Failed to edit description). jj parses JJ_EDITOR with shell-words and appends the message file as a trailing arg, so a sh -c wrapper expands $HOME at run time and the reject script ignores the extra arg. Probed 2026-09-07 in a throwaway repo: exit 1 with the full retry message"
     }
   ],
   "declined": [

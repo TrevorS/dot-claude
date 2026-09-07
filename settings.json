@@ -11,7 +11,7 @@
     "DISABLE_BUG_COMMAND": "1",
     "DISABLE_COST_WARNINGS": "1",
     "DISABLE_ERROR_REPORTING": "1",
-    "JJ_EDITOR": "/Users/trevorstrieber/.claude/hooks/jj-reject-editor.sh"
+    "JJ_EDITOR": "sh -c 'exec \"$HOME/.claude/hooks/jj-reject-editor.sh\"'"
   },
   "attribution": {
     "sessionUrl": false
