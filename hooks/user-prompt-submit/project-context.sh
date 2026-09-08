@@ -8,12 +8,14 @@
 # variation (change id, dirty flag) cannot invalidate the cached prefix; the
 # only caching rule is to never emit anything that belongs in the system prompt.
 #
-# Date only, no clock: a clock time invites commentary about working late.
+# No date and no cwd: since 2.1.2xx the system prompt carries today's date and
+# the environment block carries the working directory, so emitting them here
+# was a per-turn duplicate. Only VCS, package-manager, CI, and sed facts remain.
 
 # Drain stdin to prevent blocking
 cat > /dev/null
 
-ctx="date=$(date '+%Y-%m-%d') cwd=$PWD"
+ctx=""
 
 # Repo root = nearest ancestor (cwd included) holding .jj or .git, walked in
 # pure bash so a session started in a subdirectory still sees its repo without
@@ -34,7 +36,7 @@ while :; do
   d=${d:-/}
 done
 
-ctx+=" vcs=$vcs"
+ctx="vcs=$vcs"
 [[ $root != "$PWD" ]] && ctx+=" root=$root"
 
 case $vcs in

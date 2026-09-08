@@ -1,58 +1,16 @@
 # Version Control
 
-Use **jj (jujutsu)** for local work, **git** for GitHub interface. Load `using-jj` skill for advanced jj workflows (revsets, absorb, oplog recovery, conflict resolution).
+Use **jj (jujutsu)** for local work, **git** for the GitHub interface. Load the `using-jj` skill for anything past the basics (revsets, absorb, oplog recovery, conflicts, the split form).
 
-## Non-interactive jj (critical)
+## jj
 
-Always pass `-m` — unset opens an editor and blocks the agent:
+- Always pass `-m` to `describe`, `commit`, `new`, `squash`. Without it jj opens an editor and the session blocks. Two hooks (`jj_interactive_guard.sh`, `$JJ_EDITOR` reject) catch the editor-opening forms and print the fix; if a mutating jj command seems to vanish, that is what happened. Re-run with `-m`.
+- Use change IDs (`kpqxywon`), not commit hashes; they survive rewrites.
+- To untrack a file use `jj file untrack <path>`. `jj forget` does not exist in this jj version.
+- Conflicts are state, not emergencies: jj records them in commits and rebase still succeeds.
 
-```bash
-jj new -m "msg"
-jj describe -m "msg"
-jj commit -m "msg"
-jj squash -m "msg"   # or -u to reuse the destination commit's message
-```
+## git
 
-**Every command that opens an editor and hangs (verified against jj 0.44) — use the safe form:**
-
-| Command | Opens an editor when… | Safe form |
-| --- | --- | --- |
-| `jj describe` | no message | add `-m "msg"` or `--stdin` |
-| `jj commit` | no message | add `-m "msg"` — **`jj commit` has no `--stdin`**; for a long message use `jj describe --stdin` then `jj new -m` |
-| `jj squash` | combining descriptions | add `-m "msg"`, or `-u` to reuse the destination's |
-| `jj commit` / `jj squash` `-i`/`--interactive`/`--tool` | always (diff editor for hunks; `--tool` implies `-i`) | drop the flag — edit files, then `jj squash -m` |
-| `jj split` | no filesets (`-i` is the default), no `-m` (description editor), or `-i`/`--tool`/`--editor` | `jj split -r <rev> -m "msg" <paths>` — **both** paths and `-m` required |
-| `jj diffedit` | always | no non-interactive mode — restructure with `jj squash -m` / `jj new -m` |
-| `jj resolve` | always (merge editor) | edit the conflict markers in the files, then `jj squash -m`; or pass `--tool` |
-| `jj config edit` | always | `jj config set <name> <value>` (`--user`/`--repo` for scope) |
-
-**`jj split` needs paths *and* `-m`.** Three different editors can open: with no
-filesets `-i` is the documented default (diff editor); with no `-m` the description
-editor opens for the split-out commit; `--editor` forces the description editor even
-with `-m`. `hooks/jj_interactive_guard.sh` enforces exactly that shape, so a wrong
-form is a fast block rather than a hang.
-
-**To untrack a file** use `jj file untrack <path>` — `jj forget` does **not** exist in this jj version.
-
-**Tell for "an editor tried to open":** if a mutating jj command *auto-backgrounds* or seems to vanish, it's blocking on an editor, not a mystery — re-run it with `-m`. Two guards enforce this so a hang becomes a fast error instead:
-
-- `hooks/jj_interactive_guard.sh` (PreToolUse hook) blocks editor-opening invocations *before* they run, with the exact fix.
-- `$JJ_EDITOR` → `hooks/jj-reject-editor.sh` fail-fasts any editor jj still tries to open (exit 1, instant), so it never hangs. This is scoped to Claude Code's env only; your interactive `nvim` editor is unaffected.
-
-## Core concepts
-
-- Working copy = commit. Every file edit is tracked in `@`. No staging area, no `git add`.
-- `@` = current change, `@-` = parent, `@--` = grandparent.
-- Change IDs (e.g. `kpqxywon`) are stable across rewrites. Use these, not commit hashes.
-- Conflicts are state, not emergencies — jj records them in commits and rebase still succeeds.
-
-## git essentials
-
-- Use Write tool for commit messages (avoids shell escaping issues).
-- Pre-commit hooks modify files during commit — re-stage and retry.
-- `git reset --soft HEAD~N` to squash N commits non-interactively.
-- Never use `git rebase -i` or `git add -i` — interactive modes block the agent.
-- Never rebase shared branches.
-- Before destructive ops (reset --hard, force push), create a backup: `git branch backup-$(date +%s)`.
-
-See `pr-safety.md` for rules on rewriting history of branches that already have a PR open.
+- Long commit messages go in a scratchpad file (`-F`), not inline quoting.
+- Pre-commit hooks modify files during commit; re-stage and retry.
+- Rewriting history on a branch with an open PR is governed by `pr-safety.md`.

@@ -1,6 +1,6 @@
 ---
 name: specifying-and-planning
-description: Plan project implementation -- extract requirements from specs, break into tasks, create GitHub issues, set up project boards, or generate agent team configurations. Use when planning a project, extracting requirements, breaking down tasks, creating issues from a spec, setting up GitHub projects, or generating team plans.
+description: Plan project implementation -- extract requirements from a spec, break them into tasks, create GitHub issues and project boards, or generate an agent team configuration from the task list.
 when_to_use: "Typed as 'break this down', 'turn this spec into issues', 'plan the work', 'what are the tasks', 'set up a board', or when handed a spec or design doc to decompose."
 argument-hint: "<mode> [file-or-args]"
 ---
@@ -19,13 +19,7 @@ spec -> requirements -> tasks -> issues -> team
 
 **Trigger**: "extract requirements", "analyze spec", references to `spec.md`
 
-Analyze a spec file and produce structured `requirements.md`:
-
-- **Functional Requirements**: Features, user interactions, data, integrations
-- **Non-Functional Requirements**: Performance, security, usability, reliability
-- **Requirement Dependencies**: Prerequisites, interdependencies, optional links
-
-Each requirement gets clear acceptance criteria.
+Analyze a spec file and produce a structured `requirements.md` (functional, non-functional, dependencies). Each requirement gets clear acceptance criteria.
 
 ### requirements-to-tasks
 
@@ -81,14 +75,7 @@ Apply labels: component (frontend, backend), type (feature, refactor), complexit
 
 **Trigger**: "set up project", "create project board", references to `issues.md`
 
-Create complete GitHub project infrastructure:
-
-1. Parse issues file for labels, milestones, relationships
-2. Create labels with smart color coding
-3. Set up milestones with due dates
-4. Create project board with custom fields
-5. Generate all issues with proper labels and milestones
-6. Link issue dependencies
+From the issues file: labels, milestones, a project board with custom fields, the issues themselves, and dependency links.
 
 ### tasks-to-team
 
@@ -108,18 +95,13 @@ Target 3-5 teammates, 5-6 tasks per teammate. Prefer fewer focused teammates ove
 
 Guidance, not a rule:
 
-- `claude-opus-5` — roles that drive architectural decisions, gnarly debugging, cross-cutting refactors with high blast radius, or where a single mistake cascades. Use here freely; this is where Opus earns its keep.
-- `claude-sonnet-5` — default for implementation work: most writing-code, refactoring, integration, review. Near-Opus quality on coding and agentic work, reliable enough for parallel execution.
-- `claude-sonnet-5` + `effort: low` — the cheap tier for roles where the failure mode is obvious: shell-command runners, file movers, status reporters, well-specified doc generation. Lower effort, not a lower model — dropping tier below Sonnet is not worth the retry risk.
+- `claude-fable-5-1` — the top tier: architectural decisions, gnarly debugging, cross-cutting refactors with high blast radius, anything where a single mistake cascades.
+- `claude-opus-5` — heavy implementation and review where Fable's cost isn't justified.
+- `claude-sonnet-5` — default for implementation work: writing code, refactoring, integration; reliable enough for parallel execution.
+- `claude-sonnet-5` + `effort: low` — the cheap tier for roles where the failure mode is obvious: shell-command runners, file movers, status reporters. Lower effort, not a lower model.
 
-Set `model:` explicitly in each teammate's frontmatter — unset inherits the parent model silently. If a role sits on the Sonnet/Opus boundary, pick Opus. Scale cost with `effort` rather than by dropping below Sonnet 5.
+Set `model:` explicitly in each teammate's frontmatter — unset inherits the lead's model silently (Fable here). If a role sits on a tier boundary, pick the higher one. Scale cost with `effort` rather than by dropping below Sonnet 5.
 
 **Context discipline**: instruct each teammate to return a **≤1500-token summary** to the root agent, not raw tool output. The root agent's context is the scarce resource; teammates that dump full output defeat the parallelism benefit.
 
-## General Principles
-
-- No artificial timelines or phases (except team coordination)
-- Focus on deliverables and dependencies
-- Each requirement/task/issue should be independently verifiable
-- Use TDD approach in task descriptions
-- Cache project information in CLAUDE.md
+Use a TDD approach in task descriptions.

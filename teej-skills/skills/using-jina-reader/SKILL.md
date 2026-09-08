@@ -32,9 +32,14 @@ The response is the page content converted to clean markdown.
 
 ## Headers
 
-For better results, pass these headers via `WebFetch`:
+`WebFetch` takes only a URL and a prompt; it cannot send headers. When you need
+them, fetch from Bash instead:
 
-- `Accept: text/markdown` — ensures markdown output
+```bash
+curl -sL -H 'Accept: text/markdown' -H 'X-No-Cache: true' https://r.jina.ai/https://example.com
+```
+
+- `Accept: text/markdown` — markdown output
 - `X-No-Cache: true` — bypass Jina's cache for fresh content
 
 ## Limitations

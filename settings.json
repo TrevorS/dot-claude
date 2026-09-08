@@ -137,19 +137,6 @@
     "executing-test-plans": "user-invocable-only"
   },
   "hooks": {
-    "PostToolUse": [
-      {
-        "matcher": "Write|Edit|Bash",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python3 $HOME/.claude/hooks/flagged-words.py",
-            "asyncRewake": true,
-            "rewakeSummary": "Flagged prose"
-          }
-        ]
-      }
-    ],
     "PreToolUse": [
       {
         "matcher": "Bash",

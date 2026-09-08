@@ -1,6 +1,6 @@
 ---
 name: using-jj
-description: Jujutsu (jj) version control reference. MUST load this skill whenever a query mentions jj, jujutsu, revsets, bookmarks, absorb, evolog, oplog, immutable_heads, divergent changes, or jj-specific concepts — jj differs from git in non-obvious ways and the skill contains critical constraints (e.g., always pass -m, the exact non-interactive form of split, which revision a bookmark must target before pushing) that prevent broken workflows. Skip only for trivial jj commands you're certain about (describe, new, commit, push).
+description: Jujutsu (jj) reference for anything past describe/new/commit/push -- the non-interactive split form, which revision a bookmark must target before pushing, absorb, evolog, oplog recovery, immutable heads, revsets. Load whenever a git habit could produce a wrong or editor-blocking jj command.
 when_to_use: "Typed as 'how do I X in jj', or any question about squash, rebase, split, absorb, evolog, oplog, bookmarks, or conflicts — especially where a git habit would produce a wrong or editor-blocking jj command."
 ---
 
@@ -8,47 +8,30 @@ when_to_use: "Typed as 'how do I X in jj', or any question about squash, rebase,
 
 For daily-command tables, git equivalents, troubleshooting, parallel-experiment patterns, immutable-heads disable/restore commands, recommended config, and the full revset cheatsheet, see `REFERENCE.md`.
 
-## Philosophy
+## House style
 
-1. **Commits are cheap, descriptions are mandatory.** The working copy is always a commit. Never leave it as "(no description set)".
-2. **Experiment freely, the oplog is your safety net.** `jj undo` and `jj op restore` make anything reversible.
-3. **Conflicts are state, not emergencies.** jj records conflicts in commits as structured data; rebase still succeeds.
-4. **Change IDs are your handle on work.** Commit hashes change on rewrite; change IDs don't.
-5. **Bookmarks exist for GitHub, not for you.** Work with anonymous changes; add bookmarks only when pushing.
-6. **Keep the stack shallow.** Squash early.
-7. **Use `absorb` over manual squash routing.** Let jj distribute hunks to the right ancestor.
-8. **Colocated = invisible to the team.** Teammates see standard git.
+1. **Descriptions are mandatory.** Never leave the working copy as "(no description set)".
+2. **Change IDs are your handle on work.** Commit hashes change on rewrite; change IDs don't.
+3. **Bookmarks exist for GitHub, not for you.** Work with anonymous changes; add bookmarks only when pushing.
+4. **Use `absorb` over manual squash routing.** Let jj distribute hunks to the right ancestor.
 
-## CRITICAL: AI-specific rules
+## Editor-opening commands
 
-The full editor-hazard table (every command that opens an editor, and its safe form)
-is in the always-loaded `rules/version-control.md` — not repeated here. The one-line
-version: **always pass `-m`**, never pass `-i`/`--interactive`/`--tool`, and never
-reach for `jj diffedit` or `jj resolve` without `--tool`.
+Always pass `-m`; never pass `-i`/`--interactive`/`--tool`; never reach for `jj diffedit`
+or `jj resolve` without `--tool` (`rules/version-control.md`; the hooks block the rest
+and print the fix).
 
-`jj split` is the exception worth knowing: it has a non-interactive form (verified
-against jj 0.44), but it needs **both** paths and `-m`:
+`jj split` has a non-interactive form (verified against jj 0.44) that needs **both**
+paths and `-m`; without filesets `-i` is the default, without `-m` the description
+editor opens, and `--editor` forces one even with `-m`:
 
 ```bash
 jj split -r <rev> -m "first part" path/a path/b   # rest stays in the child commit
 ```
 
-Without filesets `-i` is the default (diff editor); without `-m` the description editor
-opens; `--editor` forces one even with `-m`. `hooks/jj_interactive_guard.sh` allows only
-the safe shape, so a wrong form blocks instantly instead of hanging. This is the clean
-way to break one change into several commits — no restore/copy dance needed.
+## Evolog addressing
 
-Two guards enforce it: `hooks/jj_interactive_guard.sh` blocks editor-opening
-invocations pre-run, and `$JJ_EDITOR` (`hooks/jj-reject-editor.sh`) fail-fasts any
-editor jj still opens.
-
-## Core concepts
-
-- Working copy = commit. Every file edit is tracked in `@`. No staging area, no `git add`.
-- `@` = current change, `@-` = parent, `@--` = grandparent.
-- Change IDs (e.g. `kpqxywon`) are stable across rewrites. Use these, not commit hashes.
-- Conflicts are state, not emergencies — jj records them in commits and rebase still succeeds.
-- Previous versions: `<change-id>/0` (latest), `/1` (previous). `jj restore --from xyz/1 --to xyz` reverts to a prior state.
+Previous versions: `<change-id>/0` (latest), `/1` (previous). `jj restore --from xyz/1 --to xyz` reverts to a prior state.
 
 ## Workflows
 
@@ -96,7 +79,7 @@ Check with `jj log -r @` before setting the bookmark if you're unsure.
 
 ## Don't rewrite reviewed PR history
 
-If a PR has review comments, do NOT squash or rewrite the original commits — review threads detach from line anchors. Add new commits on top instead, and only rewrite after Teej confirms. See `rules/version-control.md`.
+Governed by `rules/pr-safety.md`: review activity on the PR means new commits on top, not a rewrite, until Teej confirms.
 
 Default (safe — preserves comment anchors):
 

@@ -18,9 +18,7 @@ When you'd reach for an effort word, report:
 - **Verification** — existing tests / new tests needed / manual repro / hardware or benchmark run / none
 - **Risk axes** — yes/no flags, not adjectives: public API change · data migration · cross-module (name them) · reversible · external blocker (name it)
 
-## When this applies
-
-Research and survey summaries, plans in ExitPlanMode, PR descriptions, commit-prep summaries — anywhere "effort", "cost", "lift", "difficulty", or a time word would otherwise appear.
+Applies anywhere "effort", "cost", "lift", "difficulty", or a time word would otherwise appear: research summaries, plans, PR descriptions, commit-prep summaries.
 
 ## Template
 
@@ -30,12 +28,8 @@ Research and survey summaries, plans in ExitPlanMode, PR descriptions, commit-pr
 > - Verification: existing suite + 1 new integration test
 > - Risk: public API no · data migration no · cross-module no · reversible yes · external blocker no
 
-## Bad → good
+## Example
 
-Bad:
-> Port cost: ~580 LOC across 5-7 kernels + host driver. Effort 4-6 days. Low-medium risk — kernels are self-contained.
-
-Good:
 > **Port scope**
 > - Files: `ds4_cuda.cu` (+580/-0)
 > - Named units: 5 kernels (`moe_gate_up_mid_expert_tile8_rowspan_kernel<512|1024|2048>`, `moe_down_expert_tile16_row2048_kernel`, `moe_build_expert_tile_offsets_kernel`, `moe_build_expert_tiles_kernel`) + host driver pipeline

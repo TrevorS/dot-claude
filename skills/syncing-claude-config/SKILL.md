@@ -1,6 +1,7 @@
 ---
 name: syncing-claude-config
-description: Sync this Claude Code config against the shipped product — find config features added since the pinned baseline that this config should adopt, and audit silently-validating surfaces (themes, settings) for keys that are missing, dropped, or invalid. Use when Claude Code has been updated, when the user asks what's new / what changed / whether to adopt new settings or hooks, after a version bump, when checking config currency, or when a custom theme or settings block looks stale or isn't taking effect. Reports adoptable settings/hooks/env-vars/permissions plus schema drift as a risk-tiered proposal, then bumps the baseline. Do NOT use for judging whether config is well-shaped, debugging hooks, or organizing rules — that is `maintaining-claude-code`.
+description: Sync this config against the shipped Claude Code -- new settings, hooks, and env vars since the pinned baseline; schema drift on silently-validating surfaces (themes, settings); and instruction drift where CLAUDE.md, rules, or skills duplicate or contradict the product's own system prompt. Not for judging whether config is well-shaped (that is maintaining-claude-code).
+when_to_use: "After a Claude Code update or model upgrade, or typed as 'what's new', 'what changed', 'should I adopt X', 'is my config current', 'this theme/setting looks stale'."
 argument-hint: "[check]"
 ---
 
@@ -22,8 +23,9 @@ This skill answers *"where has my config drifted from the product?"* — in two 
 
 - **Forward drift** (steps 2–5) — what new releases added that this config should adopt.
 - **Schema drift** (step 6) — where the config no longer matches the shipped schema in either direction, regardless of whether any release note mentioned it.
+- **Instruction drift** (step 7) — where `CLAUDE.md`, `rules/`, hooks, and skill bodies duplicate, contradict, or work around what the product's system prompt and the current model already do.
 
-Both are drift *against the product*. It does **not** judge whether config is well-*shaped* — whether a hook belongs as a rule, whether a permission is too broad, whether the file is organized well. Hand any "is this edit correct / sensibly structured" question to the `maintaining-claude-code` skill after applying.
+All three are drift *against the product*. It does **not** judge whether config is well-*shaped* — whether a hook belongs as a rule, whether a permission is too broad, whether the file is organized well. Hand any "is this edit correct / sensibly structured" question to the `maintaining-claude-code` skill after applying.
 
 ## Sources of truth
 
@@ -45,7 +47,13 @@ jq -r .claudeCodeVersion ~/.claude/skills/syncing-claude-config/baseline.json   
 claude --version                                                                 # installed
 ```
 
-If installed == baseline, report `❨✓❩ Config targets <version> — up to date` and stop. Nothing to sync.
+Also check whether the product's own prompt moved:
+
+```bash
+python3 ~/.claude/skills/syncing-claude-config/prompt-drift.py   # exit 1 = a tracked system-prompt section changed
+```
+
+If installed == baseline **and** `prompt-drift.py` is clean, report `❨✓❩ Config targets <version> — up to date` and stop. If only the prompt drifted (same version, different build is rare but possible), run step 7 alone.
 
 ### 2. Fetch release notes for the window
 
@@ -119,7 +127,7 @@ Reuse the strings dump from step 4 via `--strings` or it re-extracts; drop the f
 
 **The `suspect` check.** Some palette keys are named like surfaces but are actually **accent foregrounds** — `background` is cyan in every built-in, not a fill. Assigning it a dark surface color yields valid, accepted, invisible text. The script tells the two apart without assuming a terminal background: **surfaces invert between the light and dark built-ins** (`userMessageBackground` 240→55), **accents keep their hue and brighten** (`background` 153→204). It then flags any accent sitting far from its own built-in value. This is what caught `background: #313244` at 6.3:1 off-target on 2026-08-26.
 
-Findings here are **reported, never auto-applied** — they flow into the step 7 proposal table like everything else. Note that a missing key is not automatically a defect: the fallback may be the value you want. Propose the catppuccin-correct value and let Teej choose.
+Findings here are **reported, never auto-applied** — they flow into the step 8 proposal table like everything else. Note that a missing key is not automatically a defect: the fallback may be the value you want. Propose the catppuccin-correct value and let Teej choose.
 
 Two things the script deliberately does **not** flag: env vars without a Claude-owned prefix (`JJ_EDITOR` is a legitimate pass-through), and free-form maps whose keys are user data (`enabledPlugins`, `skillOverrides`, `extraKnownMarketplaces`). Free-form maps are *detected* — under half their children resolve to zod entries — rather than blacklisted, so new maps in future versions don't produce a wall of false positives.
 
@@ -145,7 +153,23 @@ grep -rl '"sandbox"' --include='settings*.json' ~/Projects ~/.claude 2>/dev/null
 
 Use `if has(...) then ... else` — **not** `//`. jq's alternative operator treats `false` as empty, so `.sandbox.enabled // "unset"` reports a disabled sandbox as unset and inverts the finding.
 
-### 7. Present the proposal (two-zone)
+### 7. Audit instruction drift against the system prompt
+
+Steps 2–6 catch drift a release note or a schema can name. This step catches the third kind: config written to compensate for an older model or an older product prompt that now duplicates or fights the current one. It is what the "delete your CLAUDE.md every six months and see what the model does" advice is aiming at, done as a diff instead of a purge. Run it fully whenever `prompt-drift.py` reports a changed section or the main model changed since `baseline.json`'s `syncedDate`; otherwise a spot check of files touched since the last sync is enough.
+
+Read `instruction-drift.md` first — it summarises what the system prompt already instructs and lists the stale patterns the Claude 5 guidance names (verification loops, "be conservative", exhaustiveness demands, narration bans, blanket ask-first rules, fixed-bug workarounds, tool tutorials). The authoritative text is the binary, not the summary:
+
+```bash
+python3 ~/.claude/skills/syncing-claude-config/prompt-drift.py --show delivering-work   # any tracked section
+```
+
+Then go file by file, line by line, over the always-loaded set — `~/.claude/CLAUDE.md`, the repo's `.claude/CLAUDE.md`, every unscoped `rules/*.md`, and every hook that injects text per turn — and, for skills, the frontmatter description plus body. Give each line one verdict: **KEEP** (fact, gotcha, preference, or external gate the product does not express), **TRIM** (substance stays, words go), **DITCH** (restates the system prompt, is enforced by a hook, teaches the model what it knows, or works around a bug the changelog says is fixed), or **CONFLICT** (contradicts the system prompt — say which side should win and why). Fan the 20+ skill files out to forked agents with the rubric path; do the docs yourself, they are already in context.
+
+Measure, don't guess: line and word counts per always-loaded file before and after, and for a hook, how often it actually fired (`grep -l` over the last 30 days of transcripts) and what it fired on. The 2026-09-09 audit found 284 always-loaded lines of which ~140 were redundant, three direct conflicts with the autonomous-posture block, one workaround for a bug fixed 180 releases earlier, and a slop-word hook that fired on ordinary technical vocabulary — none of it visible to steps 2–6.
+
+Findings feed the step 8 proposal as their own zone. CONFLICTs are **behavioral**; DITCH of a fixed-bug workaround is **additive-safe** once the changelog line is cited.
+
+### 8. Present the proposal (two-zone)
 
 Lead with a scannable table, risk-tiered, safest first:
 
@@ -159,13 +183,17 @@ Risk tiers:
 
 Under each row, cite the **exact changelog line** that justifies it, with the version. Then the collapsed "other release changes" bucket. End with the version window covered and the bump that will be recorded.
 
-### 8. Apply (only on approval)
+### 9. Apply (only on approval)
 
 For each accepted change, edit the real config (`~/.claude/settings.json`, hooks, skill frontmatter). Record the rationale for every non-obvious edit in `baseline.json`, **not** as a comment in the config. `settings.json` is parsed by `jq` in steps 5-6 and by `check-json` in this repo's pre-commit, and both reject `//` comments — a breadcrumb in the file would fail `make validate`. One logical change per edit so git is the undo layer. After applying, hand the result to `maintaining-claude-code` for a well-formedness pass if any edit was non-trivial.
 
-### 9. Bump the baseline
+### 10. Bump the baseline
 
-Update `~/.claude/skills/syncing-claude-config/baseline.json`: set `claudeCodeVersion` to installed, `syncedDate` to today (from the environment context, not a guess), append accepted changes to `adopted` (with the version that introduced them) and rejected ones to `declined`. The `declined` list is what stops the same proposal resurfacing next run.
+Update `~/.claude/skills/syncing-claude-config/baseline.json`: set `claudeCodeVersion` to installed, `syncedDate` to today (from the environment context, not a guess), append accepted changes to `adopted` (with the version that introduced them) and rejected ones to `declined`. The `declined` list is what stops the same proposal resurfacing next run. Then retake the prompt snapshot so the next run diffs against this build:
+
+```bash
+python3 ~/.claude/skills/syncing-claude-config/prompt-drift.py --update
+```
 
 ## Notes
 

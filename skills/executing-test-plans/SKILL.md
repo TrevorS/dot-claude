@@ -16,12 +16,8 @@ allowed-tools:
 
 Execute test plans end-to-end with strict state control and concise reporting.
 
-**Note on `allowed-tools`:** the frontmatter list is turn-scoped *pre-approval*, not a
-whitelist — it suppresses permission prompts for those Bash prefixes while this skill
-runs and clears on the next message. It does not restrict the tool pool, so Read/Write
-stay available for the output documents below. It does mean `mysql`, `aws sqs`, and
-`docker` run unprompted here while `settings.json` keeps them prompting everywhere
-else; that is deliberate for unattended QA runs, but worth knowing before invoking.
+**Note on `allowed-tools`:** the frontmatter list is pre-approval, not a restriction.
+`mysql`, `aws sqs`, and `docker` run unprompted here on purpose (unattended QA runs).
 
 ## Policy (per section, in order)
 
@@ -40,19 +36,8 @@ else; that is deliberate for unattended QA runs, but worth knowing before invoki
 
 ## Execution Rules
 
-- Follow plan sections strictly; only minimal fixes allowed (record them)
-- Prefer tiny adjustments over skips; never reorder unless required (record it)
+- Follow plan sections strictly; prefer tiny recorded adjustments over skips or reordering
 - Continue after failures unless they hard-block subsequent steps
-
-## For Each Test Step
-
-Document clearly:
-
-- Test step description/objective
-- All inputs provided
-- Actual output/result received
-- Expected vs actual comparison
-- Pass/Fail determination with reasoning
 
 ## Output
 
@@ -91,9 +76,4 @@ Write `<out-dir>/test-results.json` with this schema:
 
 Also write a human-readable Markdown summary alongside the JSON.
 
-## Quality Standards
-
-- Be thorough and methodical -- missing a test step undermines the process
-- Remain objective in pass/fail -- base decisions on evidence, not assumptions
-- Document unexpected findings even if not part of the plan
-- Documentation should be detailed enough for reproduction
+Document unexpected findings even if not part of the plan.

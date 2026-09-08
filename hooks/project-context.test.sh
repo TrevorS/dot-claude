@@ -88,7 +88,7 @@ for tok in $ctx; do
 done
 [ "$shape_ok" -eq 1 ] && ok "every field is key=value"
 case "$ctx" in
-  "date=$(date +%Y-%m-%d) cwd="*) ok "leads with date=YYYY-MM-DD cwd=" ;;
+  "vcs="*) ok "leads with vcs= (date and cwd are supplied by the harness)" ;;
   *) bad "unexpected prefix: $ctx" ;;
 esac
 has "bare dir reports vcs=none" "$ctx" "vcs=none"

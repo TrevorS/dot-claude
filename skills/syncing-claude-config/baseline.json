@@ -1,6 +1,6 @@
 {
-  "claudeCodeVersion": "2.1.263",
-  "syncedDate": "2026-09-07",
+  "claudeCodeVersion": "2.1.267",
+  "syncedDate": "2026-09-09",
   "source": "https://api.github.com/repos/anthropics/claude-code/releases",
   "adopted": [
     {
@@ -402,6 +402,34 @@
       "adoptedDate": "2026-09-07",
       "value": "sh -c 'exec \"$HOME/.claude/hooks/jj-reject-editor.sh\"'",
       "note": "settings.json is shared between machines whose home dirs differ (/Users/trevor vs /Users/trevorstrieber); commit 8e28ad5 on 2026-08-04 switched the absolute path to the other machine and broke it here. Claude Code does not expand $HOME or ~ in settings env values (docs settings-reference, env section), and jj 0.45 does not expand ~ in JJ_EDITOR either (probed: Failed to edit description). jj parses JJ_EDITOR with shell-words and appends the message file as a trailing arg, so a sh -c wrapper expands $HOME at run time and the reject script ignores the extra arg. Probed 2026-09-07 in a throwaway repo: exit 1 with the full retry message"
+    },
+    {
+      "feature": "instruction-drift audit (SKILL.md step 7, instruction-drift.md, prompt-drift.py, system-prompt-snapshot.json)",
+      "surface": "skill",
+      "introducedVersion": "n/a (config-side; prompted by the Claude 5 context-engineering guidance and 2.1.267 audit)",
+      "adoptedDate": "2026-09-09",
+      "note": "Third drift axis next to release notes and schema: config lines that duplicate, contradict, or work around the product's own system prompt. prompt-drift.py extracts 11 behavioural sections from the installed binary (JS template literals; the compiled constant-pool copies are skipped by requiring a clean terminator) and diffs against the snapshot taken at each baseline bump. First full audit 2026-09-09 found 284 always-loaded lines -> ~140, three CONFLICTs with the autonomous-posture block, and two fixed-bug workarounds"
+    },
+    {
+      "feature": "flagged-words.py hook retired -> one-line prose rule in CLAUDE.md",
+      "surface": "hook (PostToolUse removed) + CLAUDE.md",
+      "introducedVersion": "n/a",
+      "adoptedDate": "2026-09-09",
+      "note": "Hook woke the model in 37/657 transcripts over 30 days; sampled firings were an npm package name and ordinary technical words (additionally, dynamic, ensure), and it fired on the audit's own rubric for quoting 'comprehensive'. Each firing is a full turn. Teej: fine to ditch if it can be an instruction fragment now, which it could not be for older models; Opus 5 is still flowery so the rule lives in the global CLAUDE.md where teammates load it too. The two behavioral-eval cases (no-flagged-word-*) stay and now test the instruction"
+    },
+    {
+      "feature": "CLAUDE.md + rules/ trimmed against the system prompt",
+      "surface": "CLAUDE.md, .claude/CLAUDE.md, rules/{version-control,pr-safety,ci-monitoring,status-marks,estimating}.md, hooks/user-prompt-submit/project-context.sh",
+      "introducedVersion": "n/a",
+      "adoptedDate": "2026-09-09",
+      "note": "Resolved three conflicts on the product's side (narration ban, ask-what-success-looks-like, ask-whether-to-run-or-hand-off); deleted the TaskOutput workaround (deprecated 2.1.83); dropped date= and cwd= from the prompt hook (system prompt and environment block carry both); collapsed the jj editor table (enforced by two hooks, duplicated in using-jj); status-marks now says explicitly that the harness's bold lead-ins are invisible here. 284 -> ~120 always-loaded lines"
+    },
+    {
+      "feature": "local skills deduped to one canonical home per paragraph; teej-skills factual fixes",
+      "surface": "skills/*/SKILL.md, teej-skills/skills/{using-jina-reader,building-swiftui,testing-whisper}",
+      "introducedVersion": "n/a",
+      "adoptedDate": "2026-09-09",
+      "note": "PR-safety gate -> rules/pr-safety.md; SHA/@- trap and fork background rules -> monitoring-ci; bookmark -r @ vs @- -> using-jj. Removed two 'cache facts in CLAUDE.md' instructions, Strict/Safety/Error-Handling blocks, tool tutorials. teej-skills (disabled) got only the three factual corrections: WebFetch takes no headers; @Observable/@State and .glassEffect() for macOS 26; one whisper install form. Full line verdicts in the 2026-09-09 review (scratchpad, not kept)"
     }
   ],
   "declined": [
@@ -731,6 +759,16 @@
       "feature": "prompt_cache.last_miss_cause / miss_causes statusLine fields",
       "introducedVersion": "2.1.260",
       "reason": "extends the prompt_cache object declined at 2.1.251; hooks/status.sh does not read prompt_cache at all"
+    },
+    {
+      "feature": "maxEffortLevel",
+      "introducedVersion": "2.1.267",
+      "reason": "declined 2026-09-09. Ceiling keyed like effortLevel (low|medium|high|xhigh|max), lowest value wins across settings files, per-model form under modelSettings.<model>.maxEffortLevel; listed among the managed-restrictive keys. Effort here is already chosen by effortLevel, so a cap would be a no-op or a second lever for the same thing. Shared-deployment surface"
+    },
+    {
+      "feature": "modelSettings.claude-fable-5-1.effortLevel = high",
+      "introducedVersion": "surfaced by /effort on 2.1.26x",
+      "reason": "ABANDONED 2026-09-09 by Teej ('4 abandon'). An uncommitted /effort-written per-model entry was pinning Fable 5.1 to high under the global xhigh (resolver: per-model entry wins when present). The Fable 5 guidance says high is the everyday setting and xhigh for the hardest work, so the entry matched guidance; Teej chose to keep global xhigh. Dropped from settings.json. If /effort is run again on Fable it will re-write the entry"
     }
   ],
   "deferred": [

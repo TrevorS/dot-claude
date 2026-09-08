@@ -65,13 +65,15 @@ Choose the mode that matches your task:
 
 ### State Management
 
-**Correct pattern**:
+**Correct pattern** (Observation framework, macOS 14+; the only pattern for macOS 26 code):
 
-- Owner: `@StateObject private var viewModel = ViewModel()`
-- Child: `@ObservedObject var viewModel: ViewModel`
-- ViewModel: `@MainActor class ViewModel: ObservableObject`
+- Model: `@Observable final class Model` — plain stored properties, no `@Published`
+- Owner: `@State private var model = Model()`
+- Child (read): `let model: Model` — a plain property, no wrapper
+- Child (two-way bindings): `@Bindable var model: Model`
+- Main-thread isolation still comes from `@MainActor` on the class when it drives UI
 
-**Why**: Only owner creates instance. Children observe shared instance. @MainActor ensures thread-safe UI updates.
+**Why**: `@State` owns the instance; children observe it through plain properties. Views update only on the specific properties they read, and optionals and collections are tracked. `ObservableObject` / `@Published` / `@StateObject` / `@ObservedObject` are the pre-Observation API; use them only in code that must run on macOS 13 or earlier.
 
 ### Navigation (macOS)
 
@@ -89,7 +91,7 @@ Choose the mode that matches your task:
 
 ### macOS 26 Tahoe: Liquid Glass
 
-Use `.background(.ultraThinMaterial)` for adaptive backgrounds. See REFERENCE.md for examples.
+Liquid Glass is `.glassEffect()` (with `Glass` styles such as `.regular` / `.clear`, and `in:` for a shape), grouped in a `GlassEffectContainer` when several glass views sit together so they can merge and morph. `.ultraThinMaterial` is the pre-Tahoe material API, not Liquid Glass. See REFERENCE.md for examples.
 
 ## Workflow for Each Mode
 
@@ -104,7 +106,7 @@ Use `.background(.ultraThinMaterial)` for adaptive backgrounds. See REFERENCE.md
 ### Review: Assess Code Quality
 
 1. Check property wrappers for correctness
-2. Verify @StateObject ownership pattern
+2. Verify `@State` ownership of `@Observable` models (one owner, children get plain properties)
 3. Validate thread safety (@MainActor usage)
 4. Check async/await patterns
 5. Identify anti-patterns and improvements
@@ -130,8 +132,8 @@ Use `.background(.ultraThinMaterial)` for adaptive backgrounds. See REFERENCE.md
 
 ## Key Principles
 
-- **Thread Safety**: Use `@MainActor` on ViewModels with `@Published` properties
-- **Ownership**: One `@StateObject` per data source, pass via `@ObservedObject`
+- **Thread Safety**: Mark UI-driving `@Observable` classes `@MainActor`
+- **Ownership**: One `@State` per `@Observable` data source; pass it down as a plain property (`@Bindable` when a child needs bindings)
 - **Async**: Use `.task()` for view lifecycle (not `Task {}` in `.onAppear`)
 - **macOS**: Use `NavigationSplitView`, proper menus, keyboard management
 - **State**: Keep close to where it's used, lift only when shared
@@ -139,7 +141,7 @@ Use `.background(.ultraThinMaterial)` for adaptive backgrounds. See REFERENCE.md
 ## Common Anti-Patterns to Avoid
 
 ❌ **State in wrong place**: `@State` in non-view classes
-❌ **Multiple @StateObject instances**: Each child has its own instead of sharing
+❌ **Multiple `@State` model instances**: Each child creates its own `@Observable` model instead of receiving the owner's
 ❌ **Missing @MainActor**: Publishing from background thread
 ❌ **Task in .onAppear**: Should use `.task()` for lifecycle management
 ❌ **Business logic in views**: Network calls, complex data processing in body

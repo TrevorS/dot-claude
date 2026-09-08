@@ -13,19 +13,11 @@ Auto-stage, validate, and commit changes. Pass `--push` to also push and monitor
 
 ### 1. Detect VCS
 
-```bash
-if jj root 2>/dev/null; then
-  # USE JJ WORKFLOW
-else
-  # USE GIT WORKFLOW
-fi
-```
-
-**CRITICAL: Always use `-m` flag with jj** to prevent editor from blocking.
+`jj root` decides; jj is preferred.
 
 ### 2. Check Branch Safety
 
-Check `./CLAUDE.md` **and** `./.claude/CLAUDE.md` for a `direct-commits-allowed: true` marker. If on a protected branch without it, suggest a feature branch. Cache decisions for future runs.
+Check `./CLAUDE.md` **and** `./.claude/CLAUDE.md` for a `direct-commits-allowed: true` marker. It is the documented exception to the default "branch first when on the default branch"; without it, suggest a feature branch.
 
 ### 3. Run Validation
 
@@ -45,20 +37,15 @@ report-only checks (`ruff check`, `ty`, `luacheck`, hook tests).
 
 ### 4. Craft Commit Message
 
-Use **conventional commits** format: `type(scope): description`
+This is the canonical commit-message spec (`cleaning-commit-history` points here).
 
-Valid types: `feat`, `fix`, `refactor`, `docs`, `style`, `perf`, `test`, `build`, `ci`, `chore`.
+```text
+<type>(<scope>): <imperative subject, under 72 chars>
 
-Choose type from the diff:
+- <what changed and why>
+```
 
-- New functionality → `feat`
-- Bug fix → `fix`
-- Code restructuring without behavior change → `refactor`
-- CI/CD config → `ci`
-- Build system, deps → `build`
-- Documentation → `docs`
-
-Scope is optional but encouraged for multi-module repos. Keep subject under 50 chars, use imperative mood ("add" not "added"). Focus on the "why" not the "what".
+Types: `feat`, `fix`, `refactor`, `docs`, `style`, `perf`, `test`, `build`, `ci`, `chore`. Scope is optional but encouraged for multi-module repos. Focus on the "why" not the "what".
 
 ### 5. Commit
 
@@ -76,19 +63,13 @@ git add <specific-files>
 git commit -F <scratchpad>/commit-msg.txt
 ```
 
-Use the Write tool for commit message files (avoids shell escaping). Write them to the session scratchpad directory given in the environment context — not `/tmp`. There is no env var for it; substitute the literal path. Handle pre-commit hook failures by re-staging and retrying once.
+Write the message to a scratchpad file rather than quoting it inline (avoids shell escaping). Use the session scratchpad directory given in the environment context — not `/tmp`. There is no env var for it; substitute the literal path. Handle pre-commit hook failures by re-staging and retrying once.
 
 ### 6. Push (if --push or explicitly requested)
 
-**PR-safety gate first.** If the branch already has an open PR, check for review activity before pushing anything that rewrites what's there:
+PR-safety check first (`rules/pr-safety.md`): plain new commits on top are always safe; a push that rewrites reviewed commits needs a go-ahead.
 
-```bash
-gh pr view <branch> --json reviews,comments 2>/dev/null
-```
-
-Plain new commits on top are always safe. But if `reviews` or `comments` is non-empty and this push would rewrite already-pushed commits (amended description, squash, rebase), **stop and ask Teej** — force-pushing detaches review threads from their line anchors. See `rules/pr-safety.md`.
-
-**jj**:
+**jj** (`-r @` not `-r @-`, see `using-jj`):
 
 ```bash
 jj bookmark set <branch> -r @
@@ -109,25 +90,9 @@ If `.github/workflows/` exists and `ci=github-actions` in hook output:
 uv run ~/.claude/skills/monitoring-ci/ci-monitor.py --branch <branch-name>
 ```
 
-**Do NOT pre-resolve the SHA and pass `--sha`.** The script resolves it from the bookmark/branch, which is correct under every workflow. Deriving it from `@-` is wrong whenever `@` *is* the pushed commit (the `jj describe -m` + `jj bookmark set -r @` flow used in step 6 above), and the failure is silent: the monitor watches the previous commit's finished run and a green predecessor reports a false pass. See `skills/monitoring-ci/SKILL.md`.
+Do not pre-resolve the SHA (`monitoring-ci` explains the `@-` trap). Background it from here with `run_in_background: true`; the main session receives the notification.
 
-Run it with `run_in_background: true` and tell the user "CI monitor running in
-background." That is correct **here** because this runs in the main conversation,
-which stays alive to receive the completion notification. It is *not* correct
-inside the `monitoring-ci` skill itself, which is a backgrounded fork whose
-session ends as soon as the command is launched — see that skill for why.
+## Recovery
 
-## Error Handling
-
-- Ask user about unknown project permissions
-- Stop on protected branch violations
-- Auto-fix code quality issues using detected formatters/linters
 - Re-stage once if pre-commit hooks fail (git only)
 - For jj: use `jj op restore` if something goes wrong
-
-## Safety Rules
-
-- Never commit to protected branches without permission
-- Use temporary files for all commit message operations
-- Stop on merge conflicts
-- Check branch protection before making changes

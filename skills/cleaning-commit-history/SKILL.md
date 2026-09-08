@@ -8,29 +8,13 @@ model: sonnet
 
 # Cleaning Commit History
 
-Clean up messy git histories into logical commit sequences that are easy to review and maintain.
-
-## VCS Detection
-
-Check which VCS to use first:
-
-```bash
-jj root 2>/dev/null && echo "USE_JJ=true" || echo "USE_JJ=false"
-```
-
-If jj is available, prefer jj commands -- they're non-interactive and the oplog provides automatic safety (no manual backup branch needed).
+Detect the VCS with `jj root`; prefer jj (the oplog is the safety net).
 
 ## Operating Procedure
 
 ### Phase 0: Safety
 
-**PR-safety gate — do this first, before any inventory.** Rewriting commits detaches review comments from their line anchors. Per `rules/pr-safety.md`:
-
-```bash
-gh pr view <branch> --json reviews,comments 2>/dev/null
-```
-
-If a PR exists **and** `reviews` or `comments` is non-empty, **stop and ask Teej** before rewriting anything. Default to adding new commits on top instead. Proceed without asking only when there is no PR, or the PR has zero review activity.
+Run the PR-safety check first (`rules/pr-safety.md`): if the branch has an open PR with review activity, ask before rewriting anything.
 
 **Git**: Create backup branch before any surgery:
 
@@ -42,10 +26,7 @@ git branch ${CURRENT_BRANCH}-backup
 
 ### Phase 1: Inventory
 
-1. Determine base branch (main, master, or dev)
-2. Use `git merge-base` (or `jj log`) to find comparison point
-3. Inventory all feature-only changes with `git log --oneline $BASE..$FEATURE_BRANCH`
-4. Note large files, generated paths, vendored code, migrations
+Determine the base branch, inventory feature-only changes with `git log --oneline $BASE..$FEATURE_BRANCH`, and note large files, generated paths, vendored code, and migrations.
 
 ### Phase 2: Sea of Changes
 
@@ -86,7 +67,7 @@ Every intermediate state must build and pass tests.
 **jj workflow**:
 
 ```bash
-# Squash related changes (always use -m!)
+# Squash related changes
 jj squash --from <change1> --into <change2> -m "combined message"
 
 # Split one change into several — non-interactive, needs BOTH paths and -m.
@@ -106,34 +87,13 @@ jj op restore <before-surgery>
 ### Phase 6: Validation
 
 - `git diff $BASE..HEAD` equals the original sea (no loss of intent)
-- Each commit shows clean boundaries with minimal file overlap
 - Every commit builds and tests successfully
-- No secrets or large binary blobs
 
 ## Commit Message Style
 
-```text
-<type>(<scope>): <short description in present tense, under 72 chars>
-
-- <Bullet point starting with verb>
-- <What changed and why>
-
-[Optional: BREAKING CHANGE:, Refs:, Co-authored-by:]
-```
-
-Types: feat, fix, refactor, perf, chore, test, docs, build, ci
-
-## Strict Rules
-
-- **Never** mix formatting/import-order with behavior changes
-- **Always** separate file renames/moves from edits to those files
-- **Always** keep generated and vendored changes isolated
-- **Always** co-locate tests with their logic change
-- **Never** create broken intermediate states
+Use the format in `committing-changes` (conventional type(scope), 72-char subject, bullets for why).
 
 ## Deliverables
 
-1. **Safety Confirmation**: Backup branch (git) or oplog snapshot (jj)
-2. **Commit Plan**: Ordered list with title, scope, type, rationale, and files
-3. **Applied History**: Rewritten commits matching the plan
-4. **Summary Report**: Changes vs original, tradeoffs, recovery instructions
+1. **Commit Plan**: Ordered list with title, scope, type, rationale, and files
+2. **Summary Report**: Changes vs original, tradeoffs, recovery instructions

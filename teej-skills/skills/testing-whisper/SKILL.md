@@ -10,7 +10,8 @@ is intelligible. Optionally compare against expected text.
 
 ## Setup
 
-Whisper is installed as a uv tool: `uv tool install openai-whisper`.
+Whisper is not installed globally; every invocation pulls it in with
+`uv run --no-project --with openai-whisper --with scipy --python 3.11` (see below).
 
 Since this machine may lack `ffmpeg`, always use the Python API approach that
 loads WAV files with scipy (bypasses the ffmpeg requirement).

@@ -30,7 +30,7 @@ Glyphs need a space before the number (`` `↑` `` 213, not `` `↑` ``213). Dif
 
 ## Detail styling
 
-*italic* for descriptive prose, `code` for terse data (paths, identifiers, SHAs). Don't rely on bold — it renders identical to plain in this terminal/theme. Linked labels, continuation lines (`` `├─` ``/`` `╰─` ``), and multi-item proposal layout are in the reference.
+*italic* for descriptive prose, `code` for terse data (paths, identifiers, SHAs). The harness asks for bold lead-ins on bullets; in this terminal/theme bold renders identical to plain, so lead with italics or plain text instead. Linked labels, continuation lines (`` `├─` ``/`` `╰─` ``), and multi-item proposal layout are in the reference.
 
 ## Never (silently broken in this terminal)
 
@@ -38,10 +38,4 @@ Glyphs need a space before the number (`` `↑` `` 213, not `` `↑` ``213). Dif
 
 ## When this applies
 
-Any per-item status list — validation reports, test results, CI summaries, multi-step plan completion, file-by-file results, commit-prep summaries.
-
-## Not for
-
-- **Single-item results** — use plain text ("passed", "failed") in a sentence
-- **Inline narrative prose** — don't insert marks into running sentences
-- **Output bound for GitHub PRs / issues** — use native task lists `[x]`/`[ ]` so they render as real checklists in the GitHub UI
+Any per-item status list: validation reports, test results, CI summaries, plan completion, file-by-file results. Not for single-item results (plain prose) or inline sentences. Output bound for GitHub PRs and issues uses native task lists `[x]`/`[ ]` so they render as checklists there.

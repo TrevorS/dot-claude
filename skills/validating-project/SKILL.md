@@ -14,95 +14,18 @@ Auto-detect project tooling and run validation steps in the correct order.
 
 ## Process
 
-1. Check `./CLAUDE.md` **and** `./.claude/CLAUDE.md` for validation tools and project permissions — this repo keeps its project instructions in the latter
-2. Auto-detect project type if needed (package.json, pyproject.toml, Cargo.toml, Makefile, go.mod)
-3. Run validation pipeline: **Format -> Lint -> Type Check -> Test**
-4. Stop immediately on failures
-5. Report results
+1. Check `./CLAUDE.md` **and** `./.claude/CLAUDE.md` for validation tools and project permissions — this repo keeps its project instructions in the latter.
+2. A Makefile gate wins (`make validate`, else `make format && make lint && make typecheck && make test`); otherwise detect from the manifest.
+3. Run **Format -> Lint -> Type Check -> Test**; stop on the first failure.
 
-## Tool Commands by Project Type
+| project | format | lint | type check | test |
+| --- | --- | --- | --- | --- |
+| Python (`pyproject.toml`) | `uv run ruff format .` | `uv run ruff check .` | `uv run ty check` (or mypy, pyright) | `uv run pytest` |
+| Node / TS (`package.json`) | `bun run format` | `bun run lint` | `bun run typecheck` | `bun test` |
+| Rust (`Cargo.toml`) | `cargo fmt` | `cargo clippy` | (clippy) | `cargo test` |
+| Go (`go.mod`) | `gofmt -w .` | `go vet ./...`, `staticcheck ./...` (or golangci-lint) | (vet) | `go test ./...` |
 
-### Make-based (check first -- overrides everything)
-
-```bash
-make format && make lint && make typecheck && make test
-```
-
-Or `make validate` if available.
-
-### Python
-
-```bash
-uv run ruff format .
-uv run ruff check .
-uv run ty check        # or uv run mypy, uv run pyright
-uv run pytest
-```
-
-### Node.js / TypeScript
-
-Prefer `bun`, fall back to `pnpm` then `yarn` (see `rules/typescript.md`):
-
-```bash
-bun run format         # or pnpm run format, npx prettier --write .
-bun run lint           # or pnpm run lint, npx eslint .
-bun run typecheck      # or pnpm run typecheck, npx tsc --noEmit
-bun test
-```
-
-### Rust
-
-```bash
-cargo fmt
-cargo clippy
-cargo test
-```
-
-### Go
-
-```bash
-gofmt -w .
-go vet ./...
-staticcheck ./...     # or golangci-lint run, when available (rules/go.md)
-go test ./...
-```
-
-## Auto-Discovery Logic
-
-```bash
-# Priority order
-if [ -f "Makefile" ]; then
-  # Check for make validate/format/lint/test targets
-elif [ -f "pyproject.toml" ]; then
-  # Python -- check for uv, poetry
-elif [ -f "package.json" ]; then
-  # Node.js -- check for pnpm, npm, yarn
-elif [ -f "Cargo.toml" ]; then
-  # Rust
-elif [ -f "go.mod" ]; then
-  # Go
-fi
-```
-
-## Error Handling
-
-- **Tool not found**: Provide installation instructions
-- **Configuration missing**: Suggest minimal setup
-- **Validation failures**: Show specific fix recommendations
-- **Dependency conflicts**: Suggest resolution strategies
-
-## CLAUDE.md Integration
-
-Cache discovered validation info in the project's CLAUDE.md:
-
-```markdown
-## Project Validation Tools
-
-- **Format**: make format
-- **Lint**: make lint
-- **Type Check**: make typecheck
-- **Test**: make test
-```
+Node: prefer `bun`, fall back to `pnpm` then `yarn` (`rules/typescript.md`).
 
 ## Reporting Format
 
@@ -117,4 +40,4 @@ Example output:
 ❨`✗`❩ Markdownlint (3 errors)
 ```
 
-After the list, add a plain-text summary with no marks — e.g. "all checks passed" or "1 failure: markdownlint". Skip reasons go in parens on the same line. Never collapse the per-item list into a single emoji'd summary.
+After the list, add a plain-text summary with no marks — e.g. "all checks passed" or "1 failure: markdownlint". Skip reasons go in parens on the same line; keep the per-item list, it is the report.

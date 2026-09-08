@@ -1,19 +1,11 @@
 # PR Safety: Don't Rewrite Reviewed History Without Asking
 
-If a branch already has an open PR **and any review comments, review threads, or inline comments**, do NOT rebase, squash, amend, force-push, `jj squash --into`, or otherwise rewrite its commits without explicit permission. Rewriting history detaches existing review comments from their line anchors and makes the discussion hard or impossible to follow.
+If a branch has an open PR **with any review comments, review threads, or inline comments**, do not rebase, squash, amend, force-push, `jj squash --into`, `--ignore-immutable`, or otherwise rewrite its commits without asking Teej. Rewriting detaches review comments from their line anchors.
 
 Before any history-rewriting operation on a PR branch:
 
-1. Check whether a PR exists (`gh pr view <branch>` or check the bookmark).
-2. If yes, check for review comments (`gh pr view <branch> --json reviews,comments` — non-empty `reviews` or `comments`).
-3. If there are comments, **stop and ask Teej** before rewriting. Default to adding new commits on top (`jj new` + `jj git push`, or `git commit` + `git push`) so review threads stay anchored.
-4. Force-pushing is allowed only when (a) Teej confirms, or (b) the PR has zero review activity.
+1. `gh pr view <branch>` to see whether a PR exists.
+2. `gh pr view <branch> --json reviews,comments` to check for review activity.
+3. If there is any, stop and ask. Default to new commits on top (`jj new` + `jj git push`) so threads stay anchored.
 
-This applies equally to jj (`jj squash`, `jj rebase`, `jj abandon` of pushed changes, `--ignore-immutable`) and git (`rebase`, `commit --amend`, `push -f`, `push --force-with-lease`). The `immutable_heads()` revset already protects pushed jj commits — treat a "do you want to override?" moment as the same checkpoint: ask first.
-
-On the git side this is enforced, not just documented: `hooks/git_dangerous_flags.sh`
-(PreToolUse) blocks `push --force`/`-f`/`--force-with-lease`, `commit --amend`,
-`--no-verify`, `reset --hard`, and `gh pr merge --admin` before they run. It walks
-tokens rather than matching a prefix, so flag position and `git -C <path>` don't
-evade it. The block is on the agent only — run the command yourself with the `!`
-prefix once you've decided it's the right move.
+Force-pushing is fine only when Teej confirms or the PR has zero review activity. `hooks/git_dangerous_flags.sh` blocks the git forms (`push --force`, `commit --amend`, `reset --hard`, `--no-verify`, `gh pr merge --admin`) for the agent; when you and Teej agree it is the right move, hand him the command to run with the `!` prefix.
