@@ -66,7 +66,17 @@ def unescape(b: bytes) -> str:
     s = b.decode("utf-8", "replace")
     s = re.sub(r"\\u([0-9a-fA-F]{4})", lambda m: chr(int(m.group(1), 16)), s)
     s = s.replace("\\n", "\n").replace("\\`", "`").replace("\\'", "'")
-    return s
+    return normalize(s)
+
+
+# Minified identifiers inside template interpolations (${dSr(n,"lean")},
+# ${To.join(...)}) are renamed on every build. Replace the leading identifier
+# so only a change in the interpolation's shape or arguments counts as drift.
+_MINIFIED = re.compile(r"\$\{[A-Za-z_$][\w$]*")
+
+
+def normalize(s: str) -> str:
+    return _MINIFIED.sub("${_", s)
 
 
 def _unescaped_backtick(chunk: bytes) -> int:
@@ -92,6 +102,7 @@ def extract(data: bytes) -> dict[str, str]:
                 for p in (
                     _unescaped_backtick(chunk),
                     chunk.find(b'",', 1),
+                    chunk.find(b'";', 1),
                     chunk.find(b"\x00", 1),
                     chunk.find(b"\n# ", len(anchor)),
                 )

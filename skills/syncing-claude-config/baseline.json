@@ -1,6 +1,6 @@
 {
-  "claudeCodeVersion": "2.1.267",
-  "syncedDate": "2026-09-09",
+  "claudeCodeVersion": "2.1.268",
+  "syncedDate": "2026-09-10",
   "source": "https://api.github.com/repos/anthropics/claude-code/releases",
   "adopted": [
     {
@@ -430,6 +430,13 @@
       "introducedVersion": "n/a",
       "adoptedDate": "2026-09-09",
       "note": "PR-safety gate -> rules/pr-safety.md; SHA/@- trap and fork background rules -> monitoring-ci; bookmark -r @ vs @- -> using-jj. Removed two 'cache facts in CLAUDE.md' instructions, Strict/Safety/Error-Handling blocks, tool tutorials. teej-skills (disabled) got only the three factual corrections: WebFetch takes no headers; @Observable/@State and .glassEffect() for macOS 26; one whisper install form. Full line verdicts in the 2026-09-09 review (scratchpad, not kept)"
+    },
+    {
+      "feature": "prompt-drift.py masks minified identifiers and stops at '\";'",
+      "surface": "skills/syncing-claude-config/{prompt-drift.py,system-prompt-snapshot.json}",
+      "introducedVersion": "n/a",
+      "adoptedDate": "2026-09-10",
+      "note": "The 2.1.267 -> 2.1.268 run reported 4 drifted sections with zero prose changes: every diff was a minifier rename inside a template interpolation (${dSr(n,\"lean\")} -> ${gEr(...)}, ${To.join( -> ${Ao.join(, ${Zcr(e)?...} -> ${Dfr(e)?...}). The pronouns section also ran past its closing '\";' into the next JS function body because only '\",' was a terminator. normalize() now rewrites the leading identifier of every ${...} to ${_ so only a change in the interpolation's shape or arguments counts; '\";' joins the terminator list. Verified: patched tool against a normalized 2.1.267 snapshot reports the 2.1.268 prompt unchanged. Snapshot retaken under the new normalization"
     }
   ],
   "declined": [
@@ -769,6 +776,16 @@
       "feature": "modelSettings.claude-fable-5-1.effortLevel = high",
       "introducedVersion": "surfaced by /effort on 2.1.26x",
       "reason": "ABANDONED 2026-09-09 by Teej ('4 abandon'). An uncommitted /effort-written per-model entry was pinning Fable 5.1 to high under the global xhigh (resolver: per-model entry wins when present). The Fable 5 guidance says high is the everyday setting and xhigh for the hardest work, so the entry matched guidance; Teej chose to keep global xhigh. Dropped from settings.json. If /effort is run again on Fable it will re-write the entry"
+    },
+    {
+      "feature": "CLAUDE_CODE_ENABLE_TODO_TOOLS",
+      "introducedVersion": "2.1.233 (gate restated as an allow-list in 2.1.268)",
+      "reason": "REVERTED 2026-09-10 by Teej ('clean it up'). Adopted 2026-08-17 for agent teams on the theory that teammates coordinate through the shared task list. Measured over the 30 days to 2026-09-10: TaskCreate was called in 1 of 318 transcripts (a solo sbox session on 2026-09-08), and neither of the two real team runs (2026-09-09 label-slice x6, 2026-09-10 lit-* x4) used it; teammates coordinated via inboxes. 2.1.268 flipped the binary gate from a deny-list to an allow-list of Claude 3.x / Opus 4.0-4.7 / Sonnet 4.0-4.6 / Haiku 4.5 (NAo set in bL()), and the TaskCreate description itself says the tool exists to 'demonstrate thoroughness to the user'. Keeping it on cost four tool schemas plus the periodic 'task tools haven't been used recently' reminder. Removed from settings.json env; no project scope had it. Background sessions and Claude Code on the web keep the tools regardless. CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1 and teammateMode stay: eo() still requires the flag in 2.1.268 and teams are in active use"
+    },
+    {
+      "feature": "CLAUDE_CODE_WEBFETCH_DEADLINE_MS",
+      "introducedVersion": "2.1.268",
+      "reason": "declined 2026-09-10. New env var; binary reads it in PYn() ahead of the tengu_webfetch_deadline_ms gate, default 300000 ms, capped. Added alongside the fix for WebFetch hanging on a server that never closes the response. No hangs observed here and CI monitoring goes through gh, so the default stands"
     }
   ],
   "deferred": [
