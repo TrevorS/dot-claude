@@ -1,6 +1,6 @@
 {
-  "claudeCodeVersion": "2.1.268",
-  "syncedDate": "2026-09-10",
+  "claudeCodeVersion": "2.1.269",
+  "syncedDate": "2026-09-11",
   "source": "https://api.github.com/repos/anthropics/claude-code/releases",
   "adopted": [
     {
@@ -786,6 +786,16 @@
       "feature": "CLAUDE_CODE_WEBFETCH_DEADLINE_MS",
       "introducedVersion": "2.1.268",
       "reason": "declined 2026-09-10. New env var; binary reads it in PYn() ahead of the tengu_webfetch_deadline_ms gate, default 300000 ms, capped. Added alongside the fix for WebFetch hanging on a server that never closes the response. No hangs observed here and CI monitoring goes through gh, so the default stands"
+    },
+    {
+      "feature": "bashEditDiffEnabled",
+      "introducedVersion": "2.1.269",
+      "reason": "declined 2026-09-11. Left unset because the default is already on here: h0r() returns true when defaultMode is auto or bypassPermissions and the bash-first gate Aot() (CLAUDE_CODE_THRIFTY_SONIC / tengu thrifty_sonic) is active, both true in this config. The key's only lever is false to turn the diff off; CLAUDE_CODE_BASH_EDIT_DIFF is the env override. The diff lands inside the Bash tool result so it counts against bashOutputMaxChars (100000), and no PostToolUse Bash hook consumes the changed-file list. Set false if Bash results bloat"
+    },
+    {
+      "feature": "CLAUDE_CODE_WORKFLOW_MAX_CONCURRENT_AGENTS",
+      "introducedVersion": "2.1.269",
+      "reason": "declined 2026-09-11. Workflow tool is in use (69 transcripts in the prior 30 days) but the default per-run concurrent gate is lr(ir()) = min(16, max(2, n-2)) and the session guideline keeps runs under 15 agents, so the cap rarely binds. Adopt only if a fan-out visibly serializes"
     }
   ],
   "deferred": [

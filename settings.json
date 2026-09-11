@@ -199,6 +199,7 @@
       }
     ]
   },
+  "bashOutputMaxChars": 100000,
   "statusLine": {
     "type": "command",
     "command": "$HOME/.claude/hooks/status.sh",
@@ -307,6 +308,5 @@
   "remoteControlAtStartup": false,
   "inputNeededNotifEnabled": true,
   "agentPushNotifEnabled": true,
-  "skipAutoPermissionPrompt": true,
-  "bashOutputMaxChars": 100000
+  "skipAutoPermissionPrompt": true
 }
