@@ -1,0 +1,82 @@
+[
+  {
+    "query": "I need to write the product brief for the mailroom project myself, my name is going on it. can you pull together everything from KICKOFF.md, the quotes file and the spike results so I have the facts and quotes to write from? don't write the brief",
+    "should_trigger": true
+  },
+  {
+    "query": "turn BRIEF.md into inspo I can use to write my own version. I want the sources and the choices it made, not the prose",
+    "should_trigger": true
+  },
+  {
+    "query": "make me a kit for the RFC on moving billing to the queue worker. sources are docs/billing-design.md, the two linear tickets and the perf numbers in bench/results.json",
+    "should_trigger": true
+  },
+  {
+    "query": "im writing a memo to finance about retiring the nightly export. give me what i need to write it: numbers with where they came from, what people will push back on, what's decided vs open",
+    "should_trigger": true
+  },
+  {
+    "query": "Claude wrote a draft of the post-mortem last week and it reads like Claude. I want to rewrite it in my own words. Break it down into the facts, the quotes from the incident channel, and the calls the draft made so I can start from those",
+    "should_trigger": true
+  },
+  {
+    "query": "here is the brief I wrote (BRIEF-v2.md). check it against BRIEF-KIT.md and the source files, did I get every number right and keep the caveats? don't rewrite anything",
+    "should_trigger": true
+  },
+  {
+    "query": "brief me for writing the PR/FAQ on scheduled reports. i'll do the writing, you do the research packet: facts, sources, objections the exec team will raise",
+    "should_trigger": true
+  },
+  {
+    "query": "I have the transcript from today's call with Taylor in taylor-convo.md. fold it into the writing kit: what got decided, what conflicts with the docs now, what's still open",
+    "should_trigger": true
+  },
+  {
+    "query": "we need a design review doc for the new auth flow but I want it in my voice. gather the material from the ADRs and the threat model and hand me the pieces, not a draft",
+    "should_trigger": true
+  },
+  {
+    "query": "what do i need to write the quarterly platform update for the board? pull facts from the metrics dashboard exports in data/ and the roadmap doc, with where each number came from, and leave the writing to me",
+    "should_trigger": true
+  },
+  {
+    "query": "write the product brief for the mailroom project from KICKOFF.md and customer-quotes.md. one page, plain language",
+    "should_trigger": false
+  },
+  {
+    "query": "summarize taylor-convo.md into decisions and action items",
+    "should_trigger": false
+  },
+  {
+    "query": "draft a PR/FAQ for scheduled reports using the working backwards format",
+    "should_trigger": false
+  },
+  {
+    "query": "proofread BRIEF-v2.md for typos and awkward sentences and fix them in place",
+    "should_trigger": false
+  },
+  {
+    "query": "give me a quick outline for a blog post about jj vs git, five headings is fine",
+    "should_trigger": false
+  },
+  {
+    "query": "write a slack message to #eng telling them the nightly export is being retired on the 30th",
+    "should_trigger": false
+  },
+  {
+    "query": "find every customer quote in customer-quotes.md that mentions due dates and put them in a table with the company name",
+    "should_trigger": false
+  },
+  {
+    "query": "rewrite the problem section of BRIEF.md so it leads with routing instead of urgency",
+    "should_trigger": false
+  },
+  {
+    "query": "write a commit message for the changes in KICKOFF.md and NEXT-STEPS.md",
+    "should_trigger": false
+  },
+  {
+    "query": "research prior art on LLM writing assistants and homogenization of ideas, I want a list of papers with one line each",
+    "should_trigger": false
+  }
+]

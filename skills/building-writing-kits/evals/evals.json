@@ -1,0 +1,79 @@
+{
+  "skill_name": "building-writing-kits",
+  "evals": [
+    {
+      "id": 0,
+      "name": "gtm-faq-kit-from-docs-repo",
+      "prompt": "I need to draft GTM talking points and an FAQ for Jeff (head of sales) about AI Mailroom. Two tracks: 'we will build what you asked for' and 'here is how it works under the hood'. I'm going to write it myself; my name goes on it. Give me what I need to write it, don't write the talking points.",
+      "assertions": [
+        "Every number in the output carries a source (file and section, query, or call timestamp) on the same line",
+        "Accuracy numbers carry the pre-human-review caveat on the same line",
+        "Quotes are verbatim with speaker name and company or timestamp",
+        "The choices a draft would make (which pain leads, name the vendor, how many numbers) are listed as explicit forks with the alternative",
+        "Questions only the author can answer (pricing, liability, who has been told) are listed as blanks, not guessed",
+        "Objections in the reader's voice are listed with the fact that answers each, or an explicit 'nothing in the sources'",
+        "The output is material, not a finished doc: no section is paste-ready prose the author would sign",
+        "Any discovery draft is labelled as not the deliverable"
+      ],
+      "files": []
+    },
+    {
+      "id": 1,
+      "name": "kit-from-config-repo",
+      "prompt": "I've been asked to write a post for the Claude Code community blog about running your ~/.claude config as a repo: skills, hooks, rules, dotfiles via stow, CI validating the whole thing. About 1,200 words, I'm writing it myself. Give me the material to write from: what's actually in the repo, how it's wired, the decisions I made and why (git history has a lot of it), and what readers will push back on. Repo: /Users/trevorstrieber/.claude. Don't write the post.",
+      "assertions": [
+        "Every factual claim about the repo carries a source on the same line (a file path, a Makefile target, a commit hash or message, a hook name)",
+        "Choices the post could make are listed as explicit forks: what one option is, the alternative, and when the alternative is better",
+        "Reader objections are listed in the reader's voice, each with the fact that answers it or an explicit statement that nothing in the sources does",
+        "There is a section of blanks for things only the author knows (why a decision was made when history does not say, audience assumptions, what did not work)",
+        "Where wording matters (title, one-line summary, opening) the output offers two or more variants rather than one",
+        "No section of the output is paste-ready prose the author would sign as their own; the output is material, not a draft",
+        "The deliverable is one kit file (a separate discovery draft, if present, is labelled as not the deliverable)",
+        "The kit is between 2,000 and 5,000 words (two to four times a 1,200-word post)",
+        "The repo at /Users/trevorstrieber/.claude was not modified (no new or changed files there)"
+      ],
+      "files": []
+    },
+    {
+      "id": 2,
+      "name": "check-written-doc",
+      "prompt": "Here's my draft of the GTM talking points and FAQ for Jeff: inputs/GTM-FAQ-TREVOR.md. The kit it was written from is inputs/GTM-FAQ-KIT.md and the sources are the docs repo at /Users/trevorstrieber/Projects/sbox/git/ai-mailroom-docs. Check my doc against the kit and the sources. Don't rewrite it, just tell me what's off.",
+      "assertions": [
+        "Flags document type accuracy stated as 92% when the sources say 89%",
+        "Flags that the accuracy numbers appear without the labels-not-yet-human-reviewed caveat",
+        "Flags the Allexis Licciardi quote as altered from the verbatim source",
+        "Flags the Cailie Ryan quote as misattributed to Numeral instead of Snorkl",
+        "Flags 'three enterprise customers have already signed up for the pilot' as having no source",
+        "Flags 'Decided: notifications ship in the first milestone' as not decided in the written sources (docs place notifications in M2; the call only discussed moving it)",
+        "Flags 'five times the price' for Opus as wrong (sources say fifty times)",
+        "Flags the opt-out count of four organisations as wrong (sources say six)",
+        "Names at least one Track 2 'when it is wrong' fact the doc dropped relative to the kit (undesigned feedback UI, liability position, the AI-can-make-mistakes disclaimer) or states outright that the section is thin",
+        "Does not rewrite the doc: the output is a list of findings, not a revised draft",
+        "Makes no comments on style, voice, or sentence quality",
+        "Reports no false positives: does not flag a number, quote, or claim that actually matches the sources",
+        "Each flagged number, quote, or claim names the source file it was checked against",
+        "Flags the doc's internal inconsistency: 'five groups' announced, six quotes listed"
+      ],
+      "files": []
+    },
+    {
+      "id": 3,
+      "name": "fold-new-source",
+      "prompt": "taylor-convo.md in /Users/trevorstrieber/Projects/sbox/git/ai-mailroom-docs is the transcript of today's call with Taylor. BRIEF-KIT.md in the same repo is the writing kit for the product brief and predates the call. Fold the call into the kit: what got decided, what now conflicts with the docs, what's still open, who owns what. Give me the updated kit. Don't touch the repo.",
+      "assertions": [
+        "A delta is stated before or alongside the updated kit: decided, conflicts, left open, action items, framing worth keeping",
+        "Decided items from the call carry who and when (2026-09-11 call): returned mail badge-only, urgency computed at read time with a configurable window, feedback on the whole mail item, taxonomy as source of truth, summaries stay a separate pipeline",
+        "Conflicts are named by file: KICKOFF.md and BRIEF.md place notifications in M2 while the call moved them toward M1; DESIGN-BRIEF.md makes document type the primary M1 badge while the call said compute it and show later",
+        "Open items include the urgency-versus-priority naming question and where the summary sits once fields exist",
+        "Action items are listed with owners (Trevor's and Taylor's)",
+        "All five spoken misstatements on the call (Opus five times vs fifty, document type 90 vs 89, consequence 85 vs 84, 'beat Opus', 'cheaper than summaries') are reconciled against the docs rather than adopted",
+        "Trevor's closing framing at 54:10 is quoted with no silent trims (a trimmed quote must show an ellipsis) and placed as material under 'What we are building' or in the delta's framing section",
+        "The existing kit's sections and sourced facts are preserved; the update adds and re-marks rather than rewriting",
+        "Items re-marked from open to decided, or newly open, carry the date and the call as the source",
+        "The docs repo was not modified",
+        "Every call quote is attributed to the right speaker and every docs citation points at the item that actually contains the claim (spot-check five)"
+      ],
+      "files": []
+    }
+  ]
+}
