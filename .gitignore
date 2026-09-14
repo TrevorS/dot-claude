@@ -8,7 +8,7 @@ settings.local.json
 !.env.example
 
 # Team plan
-policy-limits.json
+policy-limits.json*
 
 # Logs
 *.log

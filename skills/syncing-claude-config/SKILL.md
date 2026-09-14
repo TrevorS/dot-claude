@@ -55,6 +55,8 @@ python3 ~/.claude/skills/syncing-claude-config/prompt-drift.py   # exit 1 = a tr
 
 If installed == baseline **and** `prompt-drift.py` is clean, report `❨✓❩ Config targets <version> — up to date` and stop. If only the prompt drifted (same version, different build is rare but possible), run step 7 alone.
 
+A `gate off -> on` line with no text diff is a dormant section going live: treat it as a changed section. `--show <section>` prints the gate under the text.
+
 ### 2. Fetch release notes for the window
 
 Sync off the **releases API**, not `CHANGELOG.md` — it carries per-release `published_at` dates and clean record boundaries the markdown lacks.
@@ -197,6 +199,8 @@ python3 ~/.claude/skills/syncing-claude-config/prompt-drift.py --update
 
 ## Notes
 
+- **Tracked sections can be dormant.** The prompt string lives in the binary behind `function X(e){if(!G(e))return null;return"..."}`; `prompt-drift.py` resolves `G` and stores `off`/`on`/the flag or model prefix it tests beside the text. The "approval covers the task end to end" block sat at `off` through 2.1.269–2.1.272. Text-only diffing would report the day it lands as "unchanged". For prompt changes outside the tracked anchors, a whole-binary prose diff (runs of 22+ words, set-differenced between two installed versions in `~/.local/share/claude/versions/`) is cheap: ~13 s, and on 2.1.269→2.1.272 it surfaced the Agent tool rewrite that no anchor covered.
+- **Zero hook fires is a finding, not reassurance.** Measure per hook over 30 days of transcripts (`hook error: [$HOME/.claude/hooks/<name>.sh]` is the PreToolUse block signature), then probe the hook with harness-shaped payloads for the commands it should block. `branch_protection.sh` had 0 fires for months because jj renders an ahead-of-remote bookmark as `master*` and the hook matched the bare name; `git_dangerous_flags.sh` had 0 fires because the workflow is jj and never issues the git forms. Same number, opposite conclusions.
 - Patch-only releases legitimately yield zero config changes — reporting "nothing to adopt" is a correct, expected outcome, not a failure.
 - If the releases API is unreachable, fall back to `https://raw.githubusercontent.com/anthropics/claude-code/main/CHANGELOG.md` (same bullets, no dates).
 - Never propose `enforceAvailableModels`, `requiredMinimumVersion`, or other managed/enterprise keys for this single-user config unless Teej asks — they target shared/managed deployments.

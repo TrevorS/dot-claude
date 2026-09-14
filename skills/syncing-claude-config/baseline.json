@@ -1,6 +1,6 @@
 {
-  "claudeCodeVersion": "2.1.269",
-  "syncedDate": "2026-09-11",
+  "claudeCodeVersion": "2.1.272",
+  "syncedDate": "2026-09-15",
   "source": "https://api.github.com/repos/anthropics/claude-code/releases",
   "adopted": [
     {
@@ -437,6 +437,41 @@
       "introducedVersion": "n/a",
       "adoptedDate": "2026-09-10",
       "note": "The 2.1.267 -> 2.1.268 run reported 4 drifted sections with zero prose changes: every diff was a minifier rename inside a template interpolation (${dSr(n,\"lean\")} -> ${gEr(...)}, ${To.join( -> ${Ao.join(, ${Zcr(e)?...} -> ${Dfr(e)?...}). The pronouns section also ran past its closing '\";' into the next JS function body because only '\",' was a terminator. normalize() now rewrites the leading identifier of every ${...} to ${_ so only a change in the interpolation's shape or arguments counts; '\";' joins the terminator list. Verified: patched tool against a normalized 2.1.267 snapshot reports the 2.1.268 prompt unchanged. Snapshot retaken under the new normalization"
+    },
+    {
+      "feature": "prompt-drift.py section terminators",
+      "surface": "skills/syncing-claude-config/prompt-drift.py",
+      "introducedVersion": "n/a",
+      "adoptedDate": "2026-09-15",
+      "note": "2.1.272 moved the 'irreversible' block into function EDo(e){...return\"...\"} and the extractor, which only knew '\",' and '\";', ran past '\"}' into the next function body; the constant-pool copy then won the longest-wins tie by one length-prefix byte. Now stops at '\"}' followed by a JS keyword or closer (not the '\"}' that ends a ${_(e)?\"\":\"...\"} interpolation) and cuts at the first invalid UTF-8 byte. Verified: 2.1.269 reports unchanged against the old snapshot; 2.1.272 diff is only the real change"
+    },
+    {
+      "feature": "prompt-drift.py gate tracking + anchors agreed-task, agent-when-to-use",
+      "surface": "skills/syncing-claude-config/{prompt-drift.py,system-prompt-snapshot.json}",
+      "introducedVersion": "n/a",
+      "adoptedDate": "2026-09-15",
+      "note": "'When a task has been agreed, the approval covers it end to end...' ships in 2.1.269 and 2.1.272 behind function Zin(e){return!1}: dormant. The snapshot now stores each section's gate ('off'/'on'/flag or model prefix tested) so the flip counts as drift without a text change. It carves out irreversible and shared-system actions, so rules/pr-safety.md stays consistent if it lands. agent-when-to-use tracks the Agent tool's rewritten delegation guidance (new in 2.1.272, remote-overridable via tengu_lucky_cerf_text): do it yourself for a handful of calls, don't spawn when in doubt, brief agents like peers. No conflict with monitoring-ci or syncing-claude-config step 7"
+    },
+    {
+      "feature": "jj_interactive_guard.sh: exempt jj resolve -l/--list",
+      "surface": "hooks/jj_interactive_guard.sh, hooks/jj_interactive_guard.test.sh",
+      "introducedVersion": "n/a",
+      "adoptedDate": "2026-09-15",
+      "note": "Rule 7 blocked every jj resolve without --tool; --list only prints conflicted paths. 30 days of transcripts: 18 guard fires, 5 on resolve --list. 5 new test cases"
+    },
+    {
+      "feature": "branch_protection.sh rewritten for jj",
+      "surface": "hooks/branch_protection.sh, hooks/branch_protection.test.sh",
+      "introducedVersion": "n/a",
+      "adoptedDate": "2026-09-15",
+      "note": "0 fires in 30 days. Cause: it matched the rendered `bookmarks` template string, which jj decorates as master* when the bookmark is ahead of its remote and master?? when conflicted, and it took only the first comma field so two bookmarks on one change (feat* master*) never matched either. Blind exactly when master carried unpushed commits. Also exited 1 (set -e + pipefail) when jj was absent, only checked @ for jj commands so `jj squash` into a master parent, `jj squash --into master` and `jj bookmark set|move|advance master` all passed, and still had the pre-2026-09-07 NAME=value peel. Now reads names via bookmarks.map(|b| b.name()), --ignore-working-copy (no snapshot side effect per hook call), segments && chains, shares the parser with git_dangerous_flags.sh, drops `jj new` (creates a child, moves nothing). Suite: 14 git + 29 jj cases in a colocated repo with a remote. git_dangerous_flags.sh is NOT broken: all 7 probes block; it is idle because the workflow is jj (10,712 Bash calls in 30 days: 108 jj git push, 2 git push, 4 git commit, 0 --force/--amend/--hard/--admin). jj's history rewrites (17 squash --ignore-immutable, approved) push without any flag, so that path is governed by rules/pr-safety.md prose, not a hook -- accepted"
+    },
+    {
+      "feature": "using-jj immutable-commits paragraph defers to pr-safety",
+      "surface": "skills/using-jj/SKILL.md",
+      "introducedVersion": "n/a",
+      "adoptedDate": "2026-09-15",
+      "note": "'Always ask Teej before disabling protection' contradicted memory (squash --into --ignore-immutable is the approved fold flow) and rules/pr-safety.md (ask only with review activity). Reworded to name the flow and point at pr-safety for the gate"
     }
   ],
   "declined": [

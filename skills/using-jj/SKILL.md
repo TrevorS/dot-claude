@@ -116,7 +116,7 @@ jj evolog [-r <change-id>]
 
 ## Immutable commits
 
-Pushed commits are protected by `immutable_heads()`. **Always ask Teej before disabling protection** — rewriting remote bookmarks means force-pushing shared history. See `REFERENCE.md` for the disable/restore commands.
+Pushed commits are protected by `immutable_heads()`. `jj squash --into <id> --ignore-immutable` is the approved way to fold a fix into a pushed commit; `rules/pr-safety.md` decides when to ask first (any review activity on the PR). See `REFERENCE.md` for the disable/restore commands.
 
 ## Revsets
 

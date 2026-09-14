@@ -14,7 +14,7 @@ binary before judging lines against it.
 
 Any config line that restates one of these is REDUNDANT. Any line that contradicts one is a CONFLICT. Lines that are repo/tool facts, gotchas, or preferences the product does not express are KEEP.
 
-## What the system prompt covers (snapshot 2.1.267; verify with --show)
+## What the system prompt covers (snapshot 2.1.272; verify with --show)
 
 ### Harness / working style
 
@@ -79,8 +79,9 @@ Any config line that restates one of these is REDUNDANT. Any line that contradic
 
 ### Agents / delegation
 
-- Agent tool: fork inherits context; Explore for fan-out search; don't fabricate pending agent results; relay what matters from the agent's report.
+- Agent tool (rewritten 2.1.272): a fresh agent knows only the prompt and returns only a summary; do the work yourself for a handful of calls or a known target; delegate for parallel work, side quests, or reading across several files; when in doubt, don't spawn; brief it like a peer (goal, what's ruled out, files to read, narrow scope). Fork inherits context; don't fabricate pending agent results; relay what matters.
 - Workflow tool only on explicit opt-in.
+- Dormant (gate off in 2.1.272, tracked as `agreed-task`): once a task is agreed, in-scope steps need no re-confirmation, irreversible or shared-system actions still do; announcing a step without running it hands control back. If it lands, ask-first rules for ordinary steps become CONFLICT; pr-safety's gate stays KEEP.
 
 ### Artifacts
 

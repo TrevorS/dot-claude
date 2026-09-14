@@ -16,6 +16,11 @@ snapshot taken at the last sync.
 A changed section is the trigger for re-running the line-by-line config
 review (SKILL.md step 7): every KEEP/DITCH verdict in the ledger was made
 against the old text.
+
+Some sections ship dormant: the string is in the binary but the function
+returning it is guarded (`if(!G(e))return null`). The guard is resolved to a
+stable summary ("off", "on", or the flag / model prefix it tests) and stored
+beside the text, so a gate flipping on with no text change is still drift.
 """
 
 from __future__ import annotations
@@ -50,9 +55,14 @@ ANCHORS: dict[str, bytes] = {
     "state-change-evidence": b"Before running a command that changes system state",
     "concise-style": b"The user chose brevity over narration.",
     "memory": b"# Memory\n",
+    # Dormant in 2.1.272 (gate returns false); tracked so the flip is drift.
+    "agreed-task": b"When a task has been agreed, the approval covers it end to end",
+    # Agent tool "when to use" guidance; governs delegation that several skills instruct on.
+    "agent-when-to-use": b"A fresh agent costs more than it looks.",
 }
 
 MAX_SECTION = 8000
+GATES: dict[str, str] = {}  # filled by extract(): section -> gate summary
 
 
 def installed_binary() -> Path:
@@ -85,6 +95,46 @@ def _unescaped_backtick(chunk: bytes) -> int:
     return m.start() + 1 if m else -1
 
 
+def _closing_brace(chunk: bytes) -> int:
+    """Offset of a `"}` that closes the enclosing function body, or -1.
+
+    `"}` also ends a template interpolation such as ${_(e)?"":"..."}, which is
+    followed by more prose; only a `"}` followed by a JS keyword or another
+    closer is a real section boundary.
+    """
+    m = re.search(rb'"\}(?=(?:function|var|let|const|return)\b|[});])', chunk[1:])
+    return m.start() + 1 if m else -1
+
+
+_FLAG = re.compile(rb"[A-Z][A-Z0-9_]{5,}")
+_MODEL = re.compile(rb'startsWith\("([^"]+)"\)|==="([^"]+)"')
+
+
+def gate_state(data: bytes, pos: int) -> str:
+    """Summarise the guard on the prompt string starting at pos.
+
+    Handles the shape function X(e){if(!G(e))return null;return"..."} and
+    resolves G to a stable summary: "off"/"on" for constant bodies, the flag or
+    model-prefix names it tests otherwise. Minified helper names are dropped so
+    only a change in what the gate tests counts as drift.
+    """
+    head = data[max(0, pos - 100) : pos]
+    m = re.search(rb'if\((!?)(\w+)\(e\)\)return null;return"$', head)
+    if not m:
+        return "ungated"
+    neg, g = m.group(1) == b"!", m.group(2)
+    b = re.search(rb"function " + re.escape(g) + rb"\(e\)\{(.{0,240}?)\}(?=function|var|let|const|;)", data, re.S)
+    if not b:
+        return "gate unresolved"
+    body = b.group(1)
+    if body == b"return!1":
+        return "off" if neg else "on"
+    if body == b"return!0":
+        return "on" if neg else "off"
+    names = sorted(set(_FLAG.findall(body)) | {x for t in _MODEL.findall(body) for x in t if x})
+    return "gate: " + ", ".join(n.decode() for n in names) if names else "gate: other"
+
+
 def extract(data: bytes) -> dict[str, str]:
     """Pull each anchored section out of the binary.
 
@@ -93,9 +143,13 @@ def extract(data: bytes) -> dict[str, str]:
     longest cleanly terminated one wins.
     """
     out: dict[str, str] = {}
+    GATES.clear()
     for key, anchor in ANCHORS.items():
         best = ""
         for m in re.finditer(re.escape(anchor), data):
+            g = gate_state(data, m.start())
+            if g != "ungated":
+                GATES[key] = g
             chunk = data[m.start() : m.start() + MAX_SECTION]
             ends = [
                 p
@@ -103,6 +157,7 @@ def extract(data: bytes) -> dict[str, str]:
                     _unescaped_backtick(chunk),
                     chunk.find(b'",', 1),
                     chunk.find(b'";', 1),
+                    _closing_brace(chunk),
                     chunk.find(b"\x00", 1),
                     chunk.find(b"\n# ", len(anchor)),
                 )
@@ -110,7 +165,12 @@ def extract(data: bytes) -> dict[str, str]:
             ]
             if not ends:
                 continue  # ran off the cap: not a real section boundary
-            text = unescape(chunk[: min(ends)]).strip()
+            raw = chunk[: min(ends)]
+            try:
+                raw.decode("utf-8")
+            except UnicodeDecodeError as e:
+                raw = raw[: e.start]  # constant-pool copies run into the next entry's length prefix
+            text = unescape(raw).strip()
             if len(text) > len(best):
                 best = text
         out[key] = best
@@ -139,6 +199,7 @@ def main() -> int:
         if args.show not in current:
             sys.exit(f"unknown section; choose from {', '.join(ANCHORS)}")
         print(current[args.show])
+        print(f"\n[gate: {GATES.get(args.show, 'ungated')}]")
         return 0
 
     missing = [k for k, v in current.items() if not v]
@@ -147,7 +208,7 @@ def main() -> int:
 
     if args.update:
         args.snapshot.write_text(
-            json.dumps({"claudeCodeVersion": ver, "sections": current}, indent=2, ensure_ascii=False) + "\n"
+            json.dumps({"claudeCodeVersion": ver, "sections": current, "gates": dict(GATES)}, indent=2, ensure_ascii=False) + "\n"
         )
         print(f"snapshot written for {ver}: {len(current)} sections -> {args.snapshot}")
         return 0
@@ -158,8 +219,13 @@ def main() -> int:
 
     snap = json.loads(args.snapshot.read_text())
     old = snap.get("sections", {})
+    old_gates = snap.get("gates", {})
     changed = 0
     for key in ANCHORS:
+        ga, gb = old_gates.get(key, "ungated"), GATES.get(key, "ungated")
+        if ga != gb and key in old:
+            changed += 1
+            print(f"\n== {key}: gate {ga} -> {gb}")
         a, b = old.get(key, ""), current.get(key, "")
         if a == b:
             continue
