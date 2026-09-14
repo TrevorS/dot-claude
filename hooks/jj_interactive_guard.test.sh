@@ -78,6 +78,12 @@ run PASS 'jj new'
 run PASS 'jj file untrack foo.lock'
 run PASS 'jj log -r @ --no-graph'
 run PASS 'jj resolve --tool :ours'
+# --list / -l only print conflicted paths; blocked 5x in 30 days of transcripts before the fix
+run PASS 'jj resolve --list'
+run PASS 'jj resolve -l -r abc'
+run PASS 'jj resolve --list -r qsxrwlwt 2>&1 | head -20'
+run BLOCK 'jj resolve -r abc'
+run BLOCK 'jj resolve src/main.rs'
 run PASS 'jj config set ui.editor nvim'
 run PASS 'jj config get ui.editor'
 # split: the one safe shape — filesets + -m, no interactive flag

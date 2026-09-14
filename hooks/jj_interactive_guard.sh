@@ -310,7 +310,8 @@ for seg in "${segments[@]}"; do
   fi
 
   # 7. resolve opens the interactive merge editor unless a tool is named.
-  if [[ "$bare" =~ ^jj[[:space:]]+resolve([[:space:]]|$) ]] && ! has '--tool'; then
+  #    -l/--list only prints the conflicted paths and never opens anything.
+  if [[ "$bare" =~ ^jj[[:space:]]+resolve([[:space:]]|$) ]] && ! has '--tool' && ! has '-l|--list'; then
     block "  $seg
   -> opens the interactive merge editor. Resolve by editing the conflict
      markers in the files directly, then \`jj squash -m\` / \`jj describe -m\`."
