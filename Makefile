@@ -40,7 +40,7 @@ typecheck:
 # suppression under [tool.ty.rules], but ty 0.0.71 parses that key without
 # applying it to unresolved-import (module resolution fails before rule mapping).
 # Kept in both places: the flag works today, the config works again once fixed.
-	@uv run ty check --ignore unresolved-import $$(find skills teej-skills/skills -name '*.py' -not -path '*/evals/*')
+	@uv run ty check --ignore unresolved-import $$(find skills teej-skills/skills -name '*.py' -not -path '*/evals/*' -not -path 'skills/synced/*')
 
 hook-tests:
 	@for t in hooks/*.test.sh; do echo "-- $$t"; "$$t" || exit 1; done

@@ -48,6 +48,7 @@ plugins/
 projects/
 session-env/
 sessions/
+skills/synced/
 shell-snapshots/
 stats-cache.json
 statsig/
