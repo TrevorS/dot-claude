@@ -125,7 +125,7 @@
     ],
     "defaultMode": "auto"
   },
-  "model": "fable[1m]",
+  "model": "claude-fable-5-1[1m]",
   "fallbackModel": [
     "sonnet[1m]",
     "claude-sonnet-5"
@@ -142,15 +142,28 @@
         "hooks": [
           {
             "type": "command",
-            "command": "$HOME/.claude/hooks/branch_protection.sh"
+            "command": "$HOME/.claude/hooks/branch_protection.sh",
+            "if": "Bash(git *)"
           },
           {
             "type": "command",
-            "command": "$HOME/.claude/hooks/jj_interactive_guard.sh"
+            "command": "$HOME/.claude/hooks/branch_protection.sh",
+            "if": "Bash(jj *)"
           },
           {
             "type": "command",
-            "command": "$HOME/.claude/hooks/git_dangerous_flags.sh"
+            "command": "$HOME/.claude/hooks/jj_interactive_guard.sh",
+            "if": "Bash(jj *)"
+          },
+          {
+            "type": "command",
+            "command": "$HOME/.claude/hooks/git_dangerous_flags.sh",
+            "if": "Bash(git *)"
+          },
+          {
+            "type": "command",
+            "command": "$HOME/.claude/hooks/git_dangerous_flags.sh",
+            "if": "Bash(gh *)"
           }
         ]
       }

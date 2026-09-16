@@ -1,5 +1,5 @@
 {
-  "claudeCodeVersion": "2.1.272",
+  "claudeCodeVersion": "2.1.273",
   "syncedDate": "2026-09-15",
   "source": "https://api.github.com/repos/anthropics/claude-code/releases",
   "adopted": [
@@ -472,6 +472,13 @@
       "introducedVersion": "n/a",
       "adoptedDate": "2026-09-15",
       "note": "'Always ask Teej before disabling protection' contradicted memory (squash --into --ignore-immutable is the approved fold flow) and rules/pr-safety.md (ask only with review activity). Reworded to name the flow and point at pr-safety for the gate"
+    },
+    {
+      "feature": "hook `if` filters on the three PreToolUse Bash guards",
+      "surface": "settings.json hooks.PreToolUse",
+      "introducedVersion": "2.1.85",
+      "adoptedDate": "2026-09-15",
+      "note": "Pre-baseline surface (2.1.85, 2026-03-26) that was never proposed; surfaced by the 2.1.273 docs scan of hooks.md, not by a release note in the window. branch_protection.sh now runs under Bash(git *) and Bash(jj *), jj_interactive_guard.sh under Bash(jj *), git_dangerous_flags.sh under Bash(git *) and Bash(gh *): five entries, two scripts doubled because `if` takes a single rule string. Measured over 30 days of transcripts: 10,904 Bash calls, 32,712 guard spawns -> 2,467 (branch_protection 1,074, jj_interactive_guard 574, git_dangerous_flags 819). Filter is fail-open per docs: the hook runs when the command cannot be analysed, and every && segment is checked. Verified against the 2.1.273 binary with claude -p --debug-file: echo skips all five, jj log and git status skip three and run two, gh --version skips four, `echo && jj log` still runs the jj entries, and `jj describe` without -m is still blocked by jj_interactive_guard through the gate. Debug signature to look for: 'Skipping hook due to if condition \"Bash(jj *)\" not matching'. hooks/*.test.sh suites unchanged and passing."
     }
   ],
   "declined": [
@@ -831,6 +838,10 @@
       "feature": "CLAUDE_CODE_WORKFLOW_MAX_CONCURRENT_AGENTS",
       "introducedVersion": "2.1.269",
       "reason": "declined 2026-09-11. Workflow tool is in use (69 transcripts in the prior 30 days) but the default per-run concurrent gate is lr(ir()) = min(16, max(2, n-2)) and the session guideline keeps runs under 15 agents, so the cap rarely binds. Adopt only if a fan-out visibly serializes"
+    },
+    {
+      "feature": "statusMessage on hook handlers",
+      "reason": "offered in the 2026-09-15 report (2.1.273 scan) as available, not taken up. Cosmetic: names the running guard in the spinner. 2.1.271 already shows hook name + elapsed time while a PreToolUse hook runs, so the default text is adequate"
     }
   ],
   "deferred": [
