@@ -33,6 +33,7 @@ linear-cli comment ENG-456 "Shipped in v2.1.0"
 linear-cli issues --team ENG
 linear-cli issues --status "In Progress"
 linear-cli issues --assignee me
+linear-cli issues --assignee me --creator katya   # assigned to me, opened by Katya
 ```
 
 ### Search

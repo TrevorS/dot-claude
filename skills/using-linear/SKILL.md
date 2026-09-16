@@ -31,6 +31,7 @@ linear-cli comment ENG-456 "Shipped in v2.1.0"
 - `--status "In Progress"` - Set or filter by status
 - `--priority 1` - Set priority (1-4, 1 is highest)
 - `--assignee name` - Assign to team member
+- `--creator name` - Filter `issues` by who created them (`me` or a name substring)
 - `--description` - Add issue description
 
 ## More Info
