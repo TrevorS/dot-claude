@@ -24,6 +24,10 @@ window-padding-balance = true
 mouse-hide-while-typing = true
 scrollback-limit = 100000
 
+# Updates — track the tip (nightly) channel; installed via the ghostty@tip cask.
+# Tip builds fix rendering issues on the latest macOS before they reach stable.
+auto-update-channel = tip
+
 # Shell integration — keep Ghostty defaults but add SSH support so remote hosts
 # get the ghostty terminfo auto-installed (ssh-terminfo) and a sane TERM
 # fallback (ssh-env). Fixes "unknown terminal type xterm-ghostty" / garbled
