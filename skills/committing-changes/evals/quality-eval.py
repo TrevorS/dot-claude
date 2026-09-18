@@ -318,7 +318,8 @@ def main():
                         print(f"  [{status}] {name}: {grade['description']}", file=sys.stderr)
             else:
                 if args.verbose:
-                    print("  SKIP — no commit was created", file=sys.stderr)
+                    reason = "no model output (auth, rate limit, crash)" if not result["claude_output"] else "no commit was created"
+                    print(f"  SKIP — {reason}", file=sys.stderr)
 
             all_results.append({
                 "scenario": scenario["name"],

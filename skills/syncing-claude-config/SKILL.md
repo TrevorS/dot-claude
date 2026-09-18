@@ -14,18 +14,18 @@ Diff this config against Claude Code release notes published since the pinned ba
 State lives in `~/.claude/skills/syncing-claude-config/baseline.json`:
 
 ```json
-{ "claudeCodeVersion": "2.1.234", "syncedDate": "2026-08-17", "adopted": [...], "declined": [...] }
+{ "claudeCodeVersion": "<installed version>", "syncedDate": "<YYYY-MM-DD>", "adopted": [...], "declined": [...] }
 ```
 
 ## Boundary
 
-This skill answers *"where has my config drifted from the product?"* — in two directions:
+This skill answers *"where has my config drifted from the product?"* — in three directions:
 
 - **Forward drift** (steps 2–5) — what new releases added that this config should adopt.
 - **Schema drift** (step 6) — where the config no longer matches the shipped schema in either direction, regardless of whether any release note mentioned it.
 - **Instruction drift** (step 7) — where `CLAUDE.md`, `rules/`, hooks, and skill bodies duplicate, contradict, or work around what the product's system prompt and the current model already do.
 
-All three are drift *against the product*. It does **not** judge whether config is well-*shaped* — whether a hook belongs as a rule, whether a permission is too broad, whether the file is organized well. Hand any "is this edit correct / sensibly structured" question to the `maintaining-claude-code` skill after applying.
+Hand any "is this edit correct / sensibly structured" question to the `maintaining-claude-code` skill after applying.
 
 ## Sources of truth
 
@@ -102,7 +102,7 @@ Demote, never delete: changes that don't intersect go into a collapsed **"other 
 
 ### 6. Audit the silently-validating surfaces
 
-Steps 2–5 only find drift a release note *mentions*. That misses an entire failure class: config that no changelog line ever names, on surfaces that reject bad input **without saying so**. Run this every time — it is not conditional on the release window, and it is the step that catches four-month-old rot.
+Steps 2–5 only find drift a release note *mentions*. That misses an entire failure class: config that no changelog line ever names, on surfaces that reject bad input **without saying so**. Run this every time — it is not conditional on the release window, and it is the step that catches four-month-old rot: the theme sat 4 keys behind with 1 dead key for four months while `settings.json` stayed clean.
 
 The two surfaces validate very differently:
 
@@ -157,15 +157,15 @@ Use `if has(...) then ... else` — **not** `//`. jq's alternative operator trea
 
 ### 7. Audit instruction drift against the system prompt
 
-Steps 2–6 catch drift a release note or a schema can name. This step catches the third kind: config written to compensate for an older model or an older product prompt that now duplicates or fights the current one. It is what the "delete your CLAUDE.md every six months and see what the model does" advice is aiming at, done as a diff instead of a purge. Run it fully whenever `prompt-drift.py` reports a changed section or the main model changed since `baseline.json`'s `syncedDate`; otherwise a spot check of files touched since the last sync is enough.
+Steps 2–6 catch drift a release note or a schema can name. This step catches the third kind: config written to compensate for an older model or an older product prompt that now duplicates or fights the current one. Run it fully whenever `prompt-drift.py` reports a changed section or the main model changed since `baseline.json`'s `syncedDate`; otherwise a spot check of files touched since the last sync is enough.
 
-Read `instruction-drift.md` first — it summarises what the system prompt already instructs and lists the stale patterns the Claude 5 guidance names (verification loops, "be conservative", exhaustiveness demands, narration bans, blanket ask-first rules, fixed-bug workarounds, tool tutorials). The authoritative text is the binary, not the summary:
+Read `instruction-drift.md` first — it summarises what the system prompt already instructs and lists the stale patterns the Claude 5 guidance names. The authoritative text is the binary, not the summary:
 
 ```bash
 python3 ~/.claude/skills/syncing-claude-config/prompt-drift.py --show delivering-work   # any tracked section
 ```
 
-Then go file by file, line by line, over the always-loaded set — `~/.claude/CLAUDE.md`, the repo's `.claude/CLAUDE.md`, every unscoped `rules/*.md`, and every hook that injects text per turn — and, for skills, the frontmatter description plus body. Give each line one verdict: **KEEP** (fact, gotcha, preference, or external gate the product does not express), **TRIM** (substance stays, words go), **DITCH** (restates the system prompt, is enforced by a hook, teaches the model what it knows, or works around a bug the changelog says is fixed), or **CONFLICT** (contradicts the system prompt — say which side should win and why). Fan the 20+ skill files out to forked agents with the rubric path; do the docs yourself, they are already in context.
+Then go file by file, line by line, over the always-loaded set — `~/.claude/CLAUDE.md`, the repo's `.claude/CLAUDE.md`, every unscoped `rules/*.md`, and every hook that injects text per turn — and, for skills, the frontmatter description plus body. Give each line one verdict from the rubric's vocabulary; pass the rubric path to any agent auditing skill files.
 
 Measure, don't guess: line and word counts per always-loaded file before and after, and for a hook, how often it actually fired (`grep -l` over the last 30 days of transcripts) and what it fired on. The 2026-09-09 audit found 284 always-loaded lines of which ~140 were redundant, three direct conflicts with the autonomous-posture block, one workaround for a bug fixed 180 releases earlier, and a slop-word hook that fired on ordinary technical vocabulary — none of it visible to steps 2–6.
 
@@ -191,7 +191,7 @@ For each accepted change, edit the real config (`~/.claude/settings.json`, hooks
 
 ### 10. Bump the baseline
 
-Update `~/.claude/skills/syncing-claude-config/baseline.json`: set `claudeCodeVersion` to installed, `syncedDate` to today (from the environment context, not a guess), append accepted changes to `adopted` (with the version that introduced them) and rejected ones to `declined`. The `declined` list is what stops the same proposal resurfacing next run. Then retake the prompt snapshot so the next run diffs against this build:
+Update `~/.claude/skills/syncing-claude-config/baseline.json`: set `claudeCodeVersion` to installed, `syncedDate` to today, append accepted changes to `adopted` (with the version that introduced them) and rejected ones to `declined`. The `declined` list is what stops the same proposal resurfacing next run. Then retake the prompt snapshot so the next run diffs against this build:
 
 ```bash
 python3 ~/.claude/skills/syncing-claude-config/prompt-drift.py --update
@@ -203,13 +203,9 @@ python3 ~/.claude/skills/syncing-claude-config/prompt-drift.py --update
 - **The release window cannot see surfaces older than the baseline.** Steps 2–5 only propose what a release note in the window names, so a feature that landed before the first sync and was never proposed stays invisible forever. The docs pages are the enumerator for that class: on 2026-09-15 the hooks reference surfaced the handler-level `if` filter (2.1.85, six months pre-baseline, never in the ledger), worth a 13× cut in guard spawns. Once per sync, diff the docs' hook handler fields, skill frontmatter table, and settings key index against what the config actually uses, not just against the binary.
 - **Verify a hook `if` filter against the binary, not by reading the docs.** `claude -p '<prompt forcing one Bash command>' --debug-file F` and grep F for `Skipping hook due to if condition "Bash(jj *)" not matching`: one line per skipped handler, none for the ones that ran. Six commands cover it: a non-VCS command (all skip), one per tool (others skip), a compound `echo && jj …` (segment match), and a command the guard must still block. `.claude/settings.local.json` is not written by these runs; the debug log's "Applying permission update … localSettings" lines are the load, not a write.
 - **Zero hook fires is a finding, not reassurance.** Measure per hook over 30 days of transcripts (`hook error: [$HOME/.claude/hooks/<name>.sh]` is the PreToolUse block signature), then probe the hook with harness-shaped payloads for the commands it should block. `branch_protection.sh` had 0 fires for months because jj renders an ahead-of-remote bookmark as `master*` and the hook matched the bare name; `git_dangerous_flags.sh` had 0 fires because the workflow is jj and never issues the git forms. Same number, opposite conclusions.
-- Patch-only releases legitimately yield zero config changes — reporting "nothing to adopt" is a correct, expected outcome, not a failure.
 - If the releases API is unreachable, fall back to `https://raw.githubusercontent.com/anthropics/claude-code/main/CHANGELOG.md` (same bullets, no dates).
 - Never propose `enforceAvailableModels`, `requiredMinimumVersion`, or other managed/enterprise keys for this single-user config unless Teej asks — they target shared/managed deployments.
 - **Undocumented ≠ stale.** Keys tagged `@internal` in their zod `.describe()` are deliberately excluded from the docs but fully live. `skipWorkflowUsageWarning` is one (*"@internal Whether the user has accepted the multi-agent workflow usage warning"*); `autoDreamEnabled` is undocumented without the tag. Never propose deleting a key on doc-absence alone.
 - **Pre-baseline drift.** A bullet can *expose* an older surface without introducing it — the 2.1.239 `voice.enabled` mention is the case in point, since the nested object was already in the 2.1.238 binary. Before recording an `adopted` entry, check whether the anchor predates the baseline, and say so in the note; the ledger is only useful if provenance is honest.
 - **Measure before proposing context-budget keys.** Anything that trades context for fidelity (`skillListingBudgetFraction`, `skillListingMaxDescChars`, `autoCompactWindow`) needs the actual corpus measured first, not estimated — the 2026-08-24 decline held up only because the numbers were counted. `/skill-doctor` (2.1.261+) is the direct instrument: it lists every loaded skill with its usage count and estimated resident context cost, so an unused-and-expensive entry is a number, not a hunch. `/doctor` covers the same ground under its "unused skills, MCP servers, and plugins" check, plus the ~1% listing budget beyond which entries truncate and skill routing degrades. Run one of them before touching any listing-budget key, and paste the totals into the proposal row.
-- **Loud vs silent validation is the whole reason step 6 exists.** `settings.json` goes through zod and raises `unrecognized_keys`, so a bad key there cannot survive a single launch. `themes/*.json` filters overrides through `Object.hasOwn(basePalette, key) && isValidColor(value)` and drops the rest in total silence. That asymmetry is why the theme sat 4 keys behind with 1 dead key for four months while `settings.json` stayed clean the entire time. Before trusting *any* surface to self-report, check which kind it is — and if it's silent, it needs a completeness diff, not a spot check.
-- **`jq`'s `//` operator treats `false` as empty.** `.sandbox.enabled // "unset"` reports a *disabled* sandbox as unset, which inverts the conclusion. Use `if has("enabled") then .enabled else "unset" end` whenever the value being probed can legitimately be `false` — which is most feature gates.
-- **A live key can still be inert.** `sandbox.*` rules at user scope do nothing until something sets `sandbox.enabled: true`, and that switch is commonly written per-project into `.claude/settings.local.json` by the `/sandbox` panel. Before reporting a block of config as dead, grep the other scopes for the gate. Rules and their switch living at different scopes is a real state, not a contradiction.
 - **Cross-check completeness against the weekly digests.** `https://code.claude.com/docs/en/whats-new/2026-w<NN>.md` groups releases into themed summaries with an "Other wins" list. It is a *verification* source, not a primary one — it surfaced nothing the releases API had missed on 2026-08-24 — but it is a cheap way to confirm the ledger caught everything in a window. `https://code.claude.com/docs/llms.txt` indexes every docs page.

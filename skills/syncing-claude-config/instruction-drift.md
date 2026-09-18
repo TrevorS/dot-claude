@@ -12,13 +12,13 @@ the last sync. The summary below is a reading aid and goes stale -- when
 `prompt-drift.py` reports a changed section, re-read that section from the
 binary before judging lines against it.
 
-Any config line that restates one of these is REDUNDANT. Any line that contradicts one is a CONFLICT. Lines that are repo/tool facts, gotchas, or preferences the product does not express are KEEP.
+Any config line that restates one of these is DITCH. Any line that contradicts one is a CONFLICT. Lines that are repo/tool facts, gotchas, or preferences the product does not express are KEEP.
 
-## What the system prompt covers (snapshot 2.1.272; verify with --show)
+## What the system prompt covers (snapshot 2.1.276; verify with --show)
 
 ### Harness / working style
 
-- Say in one line what you're about to do; brief updates while working; close with a standalone recap.
+- Say in a line what you're about to do; brief updates while working. The concise output style overrides the closing recap: leave it out.
 - Prefer dedicated file/search tools; in auto mode prefer Bash (cat/sed/grep) over Read/Edit/Write.
 - Independent tool calls in parallel. Reference code as `path:line`.
 - Confirm first for hard-to-reverse or outward-facing actions; look at the target before deleting/overwriting.
@@ -82,10 +82,11 @@ Any config line that restates one of these is REDUNDANT. Any line that contradic
 - Agent tool (rewritten 2.1.272): a fresh agent knows only the prompt and returns only a summary; do the work yourself for a handful of calls or a known target; delegate for parallel work, side quests, or reading across several files; when in doubt, don't spawn; brief it like a peer (goal, what's ruled out, files to read, narrow scope). Fork inherits context; don't fabricate pending agent results; relay what matters.
 - Workflow tool only on explicit opt-in.
 - Dormant (gate off in 2.1.272, tracked as `agreed-task`): once a task is agreed, in-scope steps need no re-confirmation, irreversible or shared-system actions still do; announcing a step without running it hands control back. If it lands, ask-first rules for ordinary steps become CONFLICT; pr-safety's gate stays KEEP.
+- Dormant: the harness section carries a pasted-text guard bullet behind `tengu_virtual_pancake`, gate off in 2.1.276.
 
 ### Artifacts
 
-- Full guidance on publishing, titles, favicons, CDN allowlist, theme-aware CSS, responsive, never-publish list.
+- Full guidance on publishing, titles, icon, CDN allowlist, theme-aware CSS, responsive, never-publish list.
 
 ## Stale-pattern checklist (Claude 5 generation)
 

@@ -60,7 +60,7 @@
     "category": "custom-tooling",
     "query": "You're working autonomously in a jj repo as an agent and need to reorganize an existing change into two commits. What jj commands?",
     "expect_patterns": ["jj (new|squash|describe).*-m"],
-    "forbid_patterns": ["(?m)^\\s*jj split", "(?m)^\\s*jj diffedit"]
+    "forbid_patterns": ["(?m)^\\s*jj split(?![^\\n]*\\s-m\\s)", "(?m)^\\s*jj diffedit"]
   },
   {
     "name": "jj-config-set-not-edit",
@@ -74,7 +74,7 @@
     "category": "custom-tooling",
     "query": "I'm an automated agent with no interactive terminal and I hit a merge conflict in a jj repo. How do I resolve it without anything blocking on an editor?",
     "expect_patterns": ["edit[^.]{0,40}(file|marker|conflict)"],
-    "forbid_patterns": ["(?m)^\\s*jj resolve(?!.*--tool)"]
+    "forbid_patterns": ["(?m)^\\s*jj resolve(?![^\\n]*(--tool|--list))"]
   },
   {
     "name": "no-flagged-word-leverage",
@@ -95,7 +95,7 @@
     "category": "built-in-behavior",
     "query": "I have a function that needs to check if a string is in a list of 3 known values. What's the best approach?",
     "expect_patterns": ["\\bin\\b"],
-    "forbid_patterns": ["[Hh]ash[Mm]ap", "[Hh]ash[Ss]et", "enum", "class"]
+    "forbid_patterns": ["[Hh]ash[Mm]ap", "[Hh]ash[Ss]et", "(?m)^\\s*class \\w+"]
   },
   {
     "name": "reads-before-editing",

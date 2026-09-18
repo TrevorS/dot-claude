@@ -322,7 +322,11 @@ def audit_skills(strings: str) -> list[str]:
     if not accepted:
         return ["skills: could not locate the SKILL.md frontmatter shape in the binary -- audit skipped"]
 
-    files = sorted(CLAUDE_DIR.glob("skills/*/SKILL.md")) + sorted(CLAUDE_DIR.glob("teej-skills/**/SKILL.md"))
+    files = (
+        sorted(CLAUDE_DIR.glob("skills/*/SKILL.md"))
+        + sorted(CLAUDE_DIR.glob(".claude/skills/*/SKILL.md"))
+        + sorted(CLAUDE_DIR.glob("teej-skills/**/SKILL.md"))
+    )
     checked = 0
     for path in files:
         lines = path.read_text(encoding="utf-8", errors="replace").split("\n")

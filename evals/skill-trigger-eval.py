@@ -46,6 +46,7 @@ def run_single_query(
     )
 
     skills_invoked = set()
+    got_output = False
     start_time = time.time()
     buffer = ""
     pending_tool_name = None
@@ -106,6 +107,7 @@ def run_single_query(
 
                 # Also check full assistant messages
                 elif event.get("type") == "assistant":
+                    got_output = True
                     message = event.get("message", {})
                     for item in message.get("content", []):
                         if item.get("type") == "tool_use" and item.get("name") == "Skill":
@@ -113,6 +115,7 @@ def run_single_query(
 
                 # Early exit once we see the result
                 elif event.get("type") == "result":
+                    got_output = True
                     break
     finally:
         if process.poll() is None:
@@ -126,6 +129,10 @@ def run_single_query(
         "triggered": triggered,
         "skills_invoked": list(skills_invoked),
         "elapsed": elapsed,
+        # No assistant or result event means the run never reached the model
+        # (logged out, rate limited, crashed). Scoring it as "not triggered"
+        # would silently pass every negative case.
+        "error": None if got_output else "no model output",
     }
 
 
@@ -155,6 +162,7 @@ def run_eval(
 
         # Aggregate by query
         query_triggers: dict[str, list[bool]] = {}
+        query_errors: dict[str, int] = {}
         query_skills: dict[str, list[list[str]]] = {}
         query_items: dict[str, dict] = {}
 
@@ -164,18 +172,33 @@ def run_eval(
             query_items[query] = item
             if query not in query_triggers:
                 query_triggers[query] = []
+                query_errors[query] = 0
                 query_skills[query] = []
             try:
                 result = future.result()
+                if result.get("error"):
+                    query_errors[query] += 1
+                    continue
                 query_triggers[query].append(result["triggered"])
                 query_skills[query].append(result["skills_invoked"])
             except Exception as e:
                 print(f"Warning: query failed: {e}", file=sys.stderr)
-                query_triggers[query].append(False)
-                query_skills[query].append([])
+                query_errors[query] += 1
 
     for query, triggers in query_triggers.items():
         item = query_items[query]
+        if not triggers:
+            results.append({
+                "query": query,
+                "should_trigger": item["should_trigger"],
+                "trigger_rate": None,
+                "triggers": 0,
+                "runs": 0,
+                "pass": False,
+                "error": True,
+                "skills_seen": [],
+            })
+            continue
         trigger_rate = sum(triggers) / len(triggers)
         should_trigger = item["should_trigger"]
         threshold = 0.5
@@ -195,6 +218,7 @@ def run_eval(
         })
 
     passed = sum(1 for r in results if r["pass"])
+    errors = sum(1 for r in results if r.get("error"))
     total = len(results)
 
     return {
@@ -203,7 +227,8 @@ def run_eval(
         "summary": {
             "total": total,
             "passed": passed,
-            "failed": total - passed,
+            "failed": total - passed - errors,
+            "errors": errors,
             "positive_rate": f"{sum(1 for r in results if r['should_trigger'] and r['pass'])}/{sum(1 for r in results if r['should_trigger'])}",
             "negative_rate": f"{sum(1 for r in results if not r['should_trigger'] and r['pass'])}/{sum(1 for r in results if not r['should_trigger'])}",
         },
@@ -223,13 +248,21 @@ def main():
     parser.add_argument("--summary", action="store_true", help="Print a summary table (useful with --all)")
     args = parser.parse_args()
 
-    skills_dir = Path(__file__).parent.parent / "skills"
+    repo = Path(__file__).parent.parent
+    skill_dirs: dict[str, Path] = {}
+    for root in (repo / "skills", repo / ".claude" / "skills"):
+        if root.is_dir():
+            for d in sorted(root.iterdir()):
+                if (d / "evals" / "trigger-eval.json").exists():
+                    skill_dirs.setdefault(d.name, d)
+
+    try:
+        overrides = json.loads((Path.home() / ".claude" / "settings.json").read_text()).get("skillOverrides", {})
+    except (OSError, json.JSONDecodeError):
+        overrides = {}
 
     if args.all:
-        skill_names = []
-        for d in sorted(skills_dir.iterdir()):
-            if (d / "evals" / "trigger-eval.json").exists():
-                skill_names.append(d.name)
+        skill_names = list(skill_dirs)
     elif args.skill:
         skill_names = [args.skill]
     else:
@@ -239,12 +272,19 @@ def main():
     all_outputs = []
 
     for skill_name in skill_names:
-        eval_path = args.eval_set or str(skills_dir / skill_name / "evals" / "trigger-eval.json")
+        mode = overrides.get(skill_name)
+        if mode in ("user-invocable-only", "name-only", "off"):
+            print(f"Skipping {skill_name}: skillOverrides sets it to \"{mode}\", so it cannot auto-trigger", file=sys.stderr)
+            continue
+        default_dir = skill_dirs.get(skill_name, repo / "skills" / skill_name)
+        eval_path = args.eval_set or str(default_dir / "evals" / "trigger-eval.json")
         if not Path(eval_path).exists():
             print(f"No eval set found at {eval_path}", file=sys.stderr)
             continue
 
         eval_set = json.loads(Path(eval_path).read_text())
+        if isinstance(eval_set, dict):
+            eval_set = eval_set.get("cases", [])
 
         if args.verbose:
             print(f"\n{'='*60}", file=sys.stderr)
@@ -261,6 +301,10 @@ def main():
         )
 
         all_outputs.append(output)
+        if output["summary"]["total"] and output["summary"]["errors"] == output["summary"]["total"]:
+            print(f"\nAborting: every {skill_name} query returned no model output. "
+                  f"Check `claude -p ok` (auth, rate limit) before rerunning.", file=sys.stderr)
+            break
 
         if args.verbose:
             summary = output["summary"]
@@ -268,7 +312,7 @@ def main():
                   f"(positive: {summary['positive_rate']}, negative: {summary['negative_rate']})",
                   file=sys.stderr)
             for r in output["results"]:
-                status = "PASS" if r["pass"] else "FAIL"
+                status = "ERROR" if r.get("error") else ("PASS" if r["pass"] else "FAIL")
                 rate_str = f"{r['triggers']}/{r['runs']}"
                 skills = r.get("skills_seen", [[]])
                 skills_flat = set()

@@ -54,20 +54,21 @@ EVAL_CASES = [
         "repo_type": "jj-colocated",
         "description": "Complex jj operation in jj-colocated repo should auto-load using-jj",
     },
-    # === using-git: should load in git-only repos ===
+    # === git-only repos: history surgery must not pull in the jj skill ===
+    # (There is no using-git skill; these were retargeted from it on 2026-09-18.)
     {
         "name": "git-only-interactive-rebase",
         "query": "I need to squash the last 5 commits on this feature branch and reword them before opening a PR",
-        "expected_skill": "using-git",
+        "expected_not_skill": "using-jj",
         "repo_type": "git-only",
-        "description": "Complex git rebase in git-only repo should auto-load using-git",
+        "description": "Git history surgery in a git-only repo should not load using-jj",
     },
     {
         "name": "git-only-commit-prompt",
         "query": "squash the last 3 commits into one",
-        "expected_skill": "using-git",
+        "expected_not_skill": "using-jj",
         "repo_type": "git-only",
-        "description": "Git action in git-only repo should load using-git, not using-jj",
+        "description": "Git squash in a git-only repo should not load using-jj",
     },
     # === Negative cases: jj skill should NOT load in git-only repos ===
     {

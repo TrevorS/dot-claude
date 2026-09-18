@@ -1,6 +1,6 @@
 {
-  "claudeCodeVersion": "2.1.273",
-  "syncedDate": "2026-09-15",
+  "claudeCodeVersion": "2.1.276",
+  "syncedDate": "2026-09-18",
   "source": "https://api.github.com/repos/anthropics/claude-code/releases",
   "adopted": [
     {
@@ -479,6 +479,20 @@
       "introducedVersion": "2.1.85",
       "adoptedDate": "2026-09-15",
       "note": "Pre-baseline surface (2.1.85, 2026-03-26) that was never proposed; surfaced by the 2.1.273 docs scan of hooks.md, not by a release note in the window. branch_protection.sh now runs under Bash(git *) and Bash(jj *), jj_interactive_guard.sh under Bash(jj *), git_dangerous_flags.sh under Bash(git *) and Bash(gh *): five entries, two scripts doubled because `if` takes a single rule string. Measured over 30 days of transcripts: 10,904 Bash calls, 32,712 guard spawns -> 2,467 (branch_protection 1,074, jj_interactive_guard 574, git_dangerous_flags 819). Filter is fail-open per docs: the hook runs when the command cannot be analysed, and every && segment is checked. Verified against the 2.1.273 binary with claude -p --debug-file: echo skips all five, jj log and git status skip three and run two, gh --version skips four, `echo && jj log` still runs the jj entries, and `jj describe` without -m is still blocked by jj_interactive_guard through the gate. Debug signature to look for: 'Skipping hook due to if condition \"Bash(jj *)\" not matching'. hooks/*.test.sh suites unchanged and passing."
+    },
+    {
+      "feature": "step 7 instruction-drift pass against the 2.1.276 prompt (full run)",
+      "surface": "CLAUDE.md, .claude/CLAUDE.md, rules/*.md, references/status-marks.md, 13 skills (18 prose files) + ci-monitor.py text",
+      "introducedVersion": "2.1.276",
+      "adoptedDate": "2026-09-18",
+      "note": "Triggered by prompt-drift reporting a changed harness section; the change is a new template slot holding a pasted-text guard bullet behind tengu_virtual_pancake (gate off), rendered text identical, and the model was unchanged (Fable 5.1 on 09-14..16 and 09-18), so the full run was precautionary. Method: docs audited in-context, 13 skills fanned out to 5 general-purpose agents with the rubric path, each then applied its own line table. Measured: always-loaded unscoped set 7 files 1,561 -> 1,442 words; skill prose 13,859 -> 11,704 words (-15.5%). Fixed 2 CONFLICTs, system prompt won both: committing-changes when_to_use clause 'or after finishing a unit of work with a dirty tree' (vs Bash tool 'Commit or push only when the user asks'), and specifying-and-planning's Write-tool mandate + heredoc ban (vs auto mode's sed/heredoc preference), reduced to the --body-file substance. Fixed-bug DITCH: monitoring-ci lines 37-50 narrated the fork-wake bug fixed in 2.1.243 ('Fixed background subagents not waking when their last background Bash task completes'); rules/status-marks.md and references/status-marks.md 'Never' lists dropped task lists (rendered since 2.1.149, 2026-05-22) and ~~strikethrough~~ (2.1.186, 2026-06-22), both claims written 2026-05-14; revert if this terminal still shows them broken. Superseded facts in maintaining-claude-code: 33 hook events incl. PreModelSwitch/PostModelSwitch (2.1.251), duration_ms on PostToolUse/PostToolUseFailure only (2.1.119), TodoWrite gone on Claude 5 models (2.1.233), Haiku 4.5 effort clause dropped. 8 tool-fact defects fixed, verified against jj 0.45.1 and linear-cli --help: cleaning-commit-history Phase 5 squash/split/rebase lacked --ignore-immutable (Teej's immutable_heads() includes remote_bookmarks()); jj rebase -d is a hidden alias, -> -o/--onto everywhere; using-jj REFERENCE git-stash idiom (jj edit @-) stashed nothing, -> jj new @- -m; immutable disable/restore section superseded by the global --ignore-immutable flag; Recommended Config block disagreed with the stowed dotfile ('*' vs 'glob:*'), -> pointer to dotfiles/jj/.config/jj/config.toml; linear-cli update --force (skips confirmation prompt) added; executing-test-plans allowed-tools lost Bash(watch:*) (never exits); using-linear SKILL claimed REFERENCE holds flag docs (it defers to --help). Also: jj restore --to -> --into; .claude/CLAUDE.md no longer says committing-changes reads the direct-commits-allowed marker (only branch_protection.sh does). instruction-drift.md: header 2.1.276, REDUNDANT -> DITCH, cadence line notes the concise-style override, Artifacts 'favicons' -> 'icon', new Dormant bullet for the pasted-text guard. Hook fires measured over 30 days for context: jj_interactive_guard 27 blocks, branch_protection 10, git_dangerous_flags 0, StopFailure 28 sessions, background reaps 0. Verified with make validate and schema-completeness (clean, 29 SKILL.md)."
+    },
+    {
+      "feature": "schema-completeness.py walks .claude/skills/*/SKILL.md",
+      "surface": "skills/syncing-claude-config/schema-completeness.py",
+      "introducedVersion": "2.1.276",
+      "adoptedDate": "2026-09-18",
+      "note": "The skill glob covered skills/*/SKILL.md and teej-skills/**/SKILL.md only, so the two project-scoped skills (maintaining-claude-code, managing-dotfiles) never had their frontmatter checked against the binary. 27 -> 29 files, still clean. Found while confirming that synced account skills (skills/synced/<bucket>/<skill>/SKILL.md, two levels deeper) are NOT swept, which is correct: they are not Teej's to fix."
     }
   ],
   "declined": [
@@ -842,6 +856,33 @@
     {
       "feature": "statusMessage on hook handlers",
       "reason": "offered in the 2026-09-15 report (2.1.273 scan) as available, not taken up. Cosmetic: names the running guard in the spinner. 2.1.271 already shows hook name + elapsed time while a PreToolUse hook runs, so the default text is adequate"
+    },
+    {
+      "feature": "syncClaudeAiSkills: false / syncClaudeAiPlugins: false",
+      "introducedVersion": "2.1.275",
+      "reason": "declined 2026-09-18; sync stays on. Measured: 25 SKILL.md across 2 synced buckets (17 distinct names, ~14.7k description chars in the listing), 6 Skill-tool invocations in 30 days (xlsx 2, pdf 2, docs 2), all since the sync landed 09-16, against 376 sessions. The skills actually used came through the sync, so turning it off removes working tools to save listing budget that /skill-doctor has not shown to be truncating. syncClaudeAiPlugins is inert here: both plugins/synced buckets are empty directories. Only false is honored; user or local scope, never project settings. Revisit if /skill-doctor shows the listing truncating or the synced set goes unused. Related shape question for maintaining-claude-code, not this skill: anthropic-skills:skill-creator duplicates the local skill-creator@claude-plugins-official plugin."
+    },
+    {
+      "feature": "CLAUDE_CODE_MCP_STARTUP_WAIT_MS",
+      "introducedVersion": "2.1.274",
+      "reason": "declined 2026-09-18; measured in ~/.claude with all MCP servers configured: `claude -p` 4.29s default vs 4.55s at 0. No gain. It bounds only the first non-interactive turn's wait for connecting MCP servers, and the binary strips it from child environments."
+    },
+    {
+      "feature": "CLAUDE_CODE_DISABLE_BG_SHELL_PRESSURE_REAP=1",
+      "introducedVersion": "2.1.274",
+      "reason": "not adopted 2026-09-18; 0 reaps in 30 days of transcripts (the one grep hit was this session's own prose-diff output). 2.1.274 already narrowed the reap from 'mild memory pressure after 30 idle minutes' to 'critically low memory', which is the ci-monitor case that mattered. The binary's own message says it must be set in Claude Code's launch environment, not from a shell command; a settings.json env entry is applied at startup and should qualify, but that was not tested. Revisit only if a reap message appears."
+    },
+    {
+      "feature": "hook handler fields args (exec form), async, asyncRewake, once, shell",
+      "reason": "not adopted 2026-09-18; docs enumerator (hooks.md handler-fields table), never in the ledger. None fit the wired hooks: session-title.sh and project-context.sh return stdout the harness must read, stop-failure-notify.sh must emit terminalSequence synchronously, teammate-idle.sh gates on its exit code. Exec form would only save the sh -c spawn on the ~2,467 guard fires per 30 days that survive the if filters, and needs literal paths (no $HOME)."
+    },
+    {
+      "feature": "hook events Setup, InstructionsLoaded, UserPromptExpansion, PostToolBatch, SubagentStart, SubagentStop, TaskCreated, CwdChanged, DirectoryAdded, FileChanged, WorktreeRemove, PreCompact, Elicitation, ElicitationResult",
+      "reason": "not adopted 2026-09-18; docs enumerator (hooks.md event headers), zero ledger mentions, no intersection with anything wired or planned. Recorded so the enumerator stops resurfacing them; ConfigChange, PermissionDenied and MessageDisplay are in deferred instead."
+    },
+    {
+      "feature": "weekly digest cross-check for 2.1.274-276",
+      "reason": "skipped 2026-09-18; whats-new/2026-w38 is not published yet (latest is w37). Nothing to verify against."
     }
   ],
   "deferred": [
@@ -872,6 +913,27 @@
     {
       "feature": "permissions.deny on SendMessage / ListAgents",
       "reason": "not adopted 2026-08-10; this is the full opt-out from cross-session messaging (both take the bare tool name, no specifier). Declined because the feature is wanted -- and note denying SendMessage would ALSO remove messaging to subagents and agent-team teammates, which share the same tool, breaking the CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS + teammateMode:tmux setup"
+    },
+    {
+      "feature": "ConfigChange hook (source: skills)",
+      "status": "optional/future",
+      "note": "docs enumerator 2026-09-18. Fires when a skill file under .claude/skills/ changes; could run make validate or the trigger-eval on edit in the ~/.claude repo. Shape question for maintaining-claude-code."
+    },
+    {
+      "feature": "PermissionDenied hook",
+      "status": "optional/future",
+      "note": "docs enumerator 2026-09-18. Would log what the auto-mode classifier refuses, feeding the allowlist. Motivating data point: this session's cleanup hit 4 Self-Modification denials (a project .claude/settings.json edit via sed and via the Edit tool, a read of a Go test file in brigade, and prompt-drift.py --update writing the snapshot), all handed to Teej as ! commands."
+    },
+    {
+      "feature": "MessageDisplay hook",
+      "status": "optional/future",
+      "note": "docs enumerator 2026-09-18. Delivers completed assistant lines per render batch (turn_id, message_id, index, final, delta). Candidate transport for the rv read-only review TUI plan."
+    },
+    {
+      "feature": "Write(path) -> Edit(path) permission rules outside ~/.claude",
+      "introducedVersion": "2.1.275",
+      "status": "handed to Teej 2026-09-18",
+      "note": "2.1.275: 'Fixed /update-config writing Write(path) permission rules, which file permission checks don't match, instead of Edit(path) rules'. Binary: Write(path), NotebookEdit(path) and Glob(path) rules are not matched by file permission checks. Found 9 dead rules: ~/Projects/r-e-bot/.claude/settings.json has Write(tmp/*) with no Edit twin (the allow never applied; the Bash(cat > tmp/*) rule beside it looks like the workaround); ~/Projects/brigade/internal/station/settings.go lines 86, 88, 104 emit Write(...) beside Edit(...) twins into the gitignored station settings, and station_test.go lines 666-699 pin those strings, so the generator fix needs its tests updated too. The auto-mode classifier denied the edits in this session as Self-Modification."
     }
   ]
 }

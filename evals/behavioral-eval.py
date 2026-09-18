@@ -49,7 +49,9 @@ def run_single_query(
         )
         response = result.stdout.strip()
         elapsed = round(time.time() - start_time, 1)
-        return {"response": response, "elapsed": elapsed, "error": None}
+        # An empty reply means the run never reached the model; scoring it
+        # would pass every forbid-only case.
+        return {"response": response, "elapsed": elapsed, "error": None if response else "empty response"}
     except subprocess.TimeoutExpired:
         elapsed = round(time.time() - start_time, 1)
         return {"response": "", "elapsed": elapsed, "error": "timeout"}
@@ -148,6 +150,7 @@ def run_eval(
 
         pass_rate = sum(run_results) / len(run_results) if run_results else 0
         did_pass = pass_rate >= 0.5
+        errored = all(r["error"] for r in responses)
 
         # Use last response for detail reporting
         last_resp = responses[-1]
@@ -164,7 +167,8 @@ def run_eval(
                 "query": query,
                 "pass_rate": pass_rate,
                 "runs": len(run_results),
-                "pass": did_pass,
+                "pass": did_pass and not errored,
+                "error": responses[-1]["error"] if errored else None,
                 "matched_patterns": last_check["matched"],
                 "expected_patterns": len(case.get("expect_patterns", [])),
                 "violations": last_check["violations"],
@@ -175,6 +179,7 @@ def run_eval(
         )
 
     passed = sum(1 for r in results if r["pass"])
+    errors = sum(1 for r in results if r.get("error"))
     total = len(results)
 
     # Group by category
@@ -192,7 +197,8 @@ def run_eval(
         "summary": {
             "total": total,
             "passed": passed,
-            "failed": total - passed,
+            "failed": total - passed - errors,
+            "errors": errors,
             "pass_rate": f"{passed}/{total}",
             "by_category": categories,
         },
@@ -250,7 +256,7 @@ def main():
             print(f"  {cat}: {stats['passed']}/{stats['total']}", file=sys.stderr)
         print(file=sys.stderr)
         for r in output["results"]:
-            status = "PASS" if r["pass"] else "FAIL"
+            status = "ERROR" if r.get("error") else ("PASS" if r["pass"] else "FAIL")
             rate_str = f"{r['pass_rate']:.0%}"
             detail = ""
             if r["violations"]:
