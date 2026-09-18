@@ -35,27 +35,6 @@ flag that isn't in `SKILL.md`'s core usage block.
 
 ## Recommended patterns
 
-**Find past solutions:**
-
-```bash
-glhf search "problem description" --compact
-glhf search "specific keyword" --compact
-glhf session <id> --summary
-```
-
-**Recall commands:**
-
-```bash
-glhf search "git rebase" -t Bash --compact
-glhf search "cargo" -t Bash --since 1w --compact
-```
-
-**Find errors:**
-
-```bash
-glhf search "error" --errors --since 1d --compact
-```
-
 **Browse recent work:**
 
 ```bash
@@ -65,8 +44,6 @@ glhf recent -p myproject
 
 ## Notes
 
-- Use `-p .` to filter to the current project.
-- Use `--json` when piping to other tools or processing programmatically.
 - The index is incremental — `glhf index` only re-processes changed files. `--full`
   rebuilds; `--skip-embeddings` does text-only indexing.
 - Search prints staleness hints: if the index is behind, it reports how many files

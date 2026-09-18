@@ -6,8 +6,6 @@ when_to_use: "Typed as 'what is assigned to me', 'create a ticket', 'move ENG-12
 
 # Linear CLI
 
-Query, create, and update Linear issues without leaving the terminal.
-
 ## Quick Examples
 
 ```bash
@@ -21,7 +19,7 @@ linear-cli issue ENG-456
 linear-cli create --title "Production bug" --priority 1 --team ENG
 
 # Update status and add comment
-linear-cli update ENG-456 --status "Done"
+linear-cli update ENG-456 --status "Done" --force   # --force skips the confirmation prompt
 linear-cli comment ENG-456 "Shipped in v2.1.0"
 ```
 
@@ -34,9 +32,7 @@ linear-cli comment ENG-456 "Shipped in v2.1.0"
 - `--creator name` - Filter `issues` by who created them (`me` or a name substring)
 - `--description` - Add issue description
 
-## More Info
-
-See REFERENCE.md for complete flag documentation, advanced examples, and workflow patterns. Use `linear-cli --help` or `linear-cli <command> --help` for all options.
+Workflow examples in `REFERENCE.md`; flags via `linear-cli <command> --help`.
 
 ## Authentication
 

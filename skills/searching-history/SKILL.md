@@ -7,18 +7,16 @@ argument-hint: "<search-query>"
 
 # glhf — Conversation History Search
 
-Search Claude Code conversation history using hybrid search (text + semantic).
+Hybrid search (text + semantic), so natural-language queries work.
 
 Full command list, every flag, and per-task patterns: `REFERENCE.md`.
 
-## How to run it (read this first)
+## How to run it
 
-Figure out the search query yourself, then run `glhf search` — **never run it empty and never bounce the question back to the user.**
+Derive the search query yourself, then run `glhf search`.
 
 - **Explicit `/searching-history <query>`** → use `$ARGUMENTS` as the query: `glhf search "$ARGUMENTS" --compact`
-- **Auto-triggered from the conversation** → `$ARGUMENTS` is empty. Derive concise search terms from what the user is trying to recall (the topic, error text, command, or project they referenced) and run the search with those. Do not ask them to restate it.
-
-Example: user says *"what was that cargo alias I set up?"* → run `glhf search "cargo alias" -t Bash --compact`. Then read the hits and answer; chain into `glhf session <id> --summary` if you need fuller context.
+- **Auto-triggered from the conversation** → `$ARGUMENTS` is empty. Derive concise search terms from what the user is trying to recall (the topic, error text, command, or project they referenced) and run the search with those.
 
 ## Core usage
 

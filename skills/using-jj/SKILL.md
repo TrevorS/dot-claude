@@ -6,24 +6,17 @@ when_to_use: "Typed as 'how do I X in jj', or any question about squash, rebase,
 
 # jj Workflow
 
-For daily-command tables, git equivalents, troubleshooting, parallel-experiment patterns, immutable-heads disable/restore commands, recommended config, and the full revset cheatsheet, see `REFERENCE.md`.
+Tables, git equivalents, troubleshooting, and the revset cheatsheet: `REFERENCE.md`.
 
 ## House style
 
 1. **Descriptions are mandatory.** Never leave the working copy as "(no description set)".
-2. **Change IDs are your handle on work.** Commit hashes change on rewrite; change IDs don't.
-3. **Bookmarks exist for GitHub, not for you.** Work with anonymous changes; add bookmarks only when pushing.
-4. **Use `absorb` over manual squash routing.** Let jj distribute hunks to the right ancestor.
+2. **Bookmarks exist for GitHub, not for you.** Work with anonymous changes; add bookmarks only when pushing.
+3. **Use `absorb` over manual squash routing.** Let jj distribute hunks to the right ancestor.
 
-## Editor-opening commands
+## Non-interactive split
 
-Always pass `-m`; never pass `-i`/`--interactive`/`--tool`; never reach for `jj diffedit`
-or `jj resolve` without `--tool` (`rules/version-control.md`; the hooks block the rest
-and print the fix).
-
-`jj split` has a non-interactive form (verified against jj 0.44) that needs **both**
-paths and `-m`; without filesets `-i` is the default, without `-m` the description
-editor opens, and `--editor` forces one even with `-m`:
+`jj split` needs **both** filesets and `-m`:
 
 ```bash
 jj split -r <rev> -m "first part" path/a path/b   # rest stays in the child commit
@@ -31,7 +24,7 @@ jj split -r <rev> -m "first part" path/a path/b   # rest stays in the child comm
 
 ## Evolog addressing
 
-Previous versions: `<change-id>/0` (latest), `/1` (previous). `jj restore --from xyz/1 --to xyz` reverts to a prior state.
+Previous versions: `<change-id>/0` (latest), `/1` (previous). `jj restore --from xyz/1 --into xyz` reverts to a prior state.
 
 ## Workflows
 
@@ -44,12 +37,6 @@ jj new -m "wip"
 jj squash -m "feat: done"
 ```
 
-### Commit (simpler)
-
-```bash
-jj commit -m "feat: what I did"   # = describe + new
-```
-
 ### Edit (mid-stack fix)
 
 ```bash
@@ -60,7 +47,7 @@ jj new -m "back to work"   # descendants auto-rebased
 
 ## Absorb
 
-From `@`, `jj absorb` routes each hunk to the ancestor where those lines were last modified. Use instead of manual squash routing when fixing across a stack.
+From `@`, `jj absorb` routes each hunk to the ancestor where those lines were last modified.
 
 ## Bookmarks & pushing
 
@@ -73,13 +60,9 @@ jj bookmark set <name> -r @     # after `jj describe -m` alone: @ IS the work
 jj git push
 ```
 
-Getting this wrong is silent: pushing `@-` when `@` holds the work publishes the
-previous commit, and CI then reports a green result for code you never pushed.
-Check with `jj log -r @` before setting the bookmark if you're unsure.
+Getting this wrong is silent: pushing `@-` when `@` holds the work publishes the previous commit.
 
 ## Don't rewrite reviewed PR history
-
-Governed by `rules/pr-safety.md`: review activity on the PR means new commits on top, not a rewrite, until Teej confirms.
 
 Default (safe — preserves comment anchors):
 
@@ -107,16 +90,11 @@ gh pr create --head feature-x --title "..." --body "..."
 
 ## Recovery
 
-```bash
-jj op log
-jj undo
-jj op restore <id>
-jj evolog [-r <change-id>]
-```
+`jj op log`, then `jj op restore <id>`; `jj evolog -r <change-id>` shows one change's history. Full block in `REFERENCE.md`.
 
 ## Immutable commits
 
-Pushed commits are protected by `immutable_heads()`. `jj squash --into <id> --ignore-immutable` is the approved way to fold a fix into a pushed commit; `rules/pr-safety.md` decides when to ask first (any review activity on the PR). See `REFERENCE.md` for the disable/restore commands.
+Pushed commits are protected by `immutable_heads()`. `jj squash --into <id> --ignore-immutable` is the approved way to fold a fix into a pushed commit.
 
 ## Revsets
 
@@ -125,5 +103,3 @@ jj log -r 'trunk()..@'              # everything between main and here
 jj log -r '::@ & ~::trunk()'         # my branch only
 jj log -r 'author("trevor")'         # my commits
 ```
-
-Full cheatsheet in `REFERENCE.md`.
