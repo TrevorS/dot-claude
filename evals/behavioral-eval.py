@@ -11,11 +11,14 @@ Usage:
 """
 
 import argparse
+import atexit
 import json
 import os
 import re
+import shutil
 import subprocess
 import sys
+import tempfile
 import time
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from pathlib import Path
@@ -205,6 +208,23 @@ def run_eval(
     }
 
 
+def make_sandbox() -> str:
+    """A throwaway jj-colocated repo with no remote for the sessions to run in.
+
+    The cases are questions, but the model answers some of them by trying
+    commands first (a scratch jj repo, a config change). Running them in the
+    user's own repo gives those commands his real permissions and remotes.
+    The hook context stays realistic (vcs=jj-colocated), and user-level
+    CLAUDE.md, rules, and skills load from ~/.claude regardless of cwd.
+    """
+    d = tempfile.mkdtemp(prefix="behavioral-eval-")
+    subprocess.run(["git", "init", "-q"], cwd=d, check=True)
+    subprocess.run(["jj", "git", "init", "--colocate"], cwd=d, check=True, capture_output=True)
+    Path(d, "main.py").write_text("def main():\n    print(\"hello\")\n")
+    subprocess.run(["jj", "describe", "-m", "init"], cwd=d, check=True, capture_output=True)
+    return d
+
+
 def main():
     parser = argparse.ArgumentParser(
         description="Evaluate behavioral rules from config"
@@ -220,9 +240,14 @@ def main():
     parser.add_argument("--runs", type=int, default=1, help="Runs per query")
     parser.add_argument("--verbose", action="store_true")
     parser.add_argument(
-        "--cwd", default=os.getcwd(), help="Working directory for claude -p"
+        "--cwd",
+        default=None,
+        help="Working directory for claude -p (default: a throwaway jj repo with no remote)",
     )
     args = parser.parse_args()
+    if args.cwd is None:
+        args.cwd = make_sandbox()
+        atexit.register(shutil.rmtree, args.cwd, ignore_errors=True)
 
     if not Path(args.eval_set).exists():
         print(f"No eval set found at {args.eval_set}", file=sys.stderr)

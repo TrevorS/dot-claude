@@ -26,6 +26,20 @@ def find_project_root() -> Path:
     return current
 
 
+# Tools that cannot change anything. A session may call these while deciding
+# whether to load a skill; any other tool call ends the run before it executes.
+READ_ONLY_TOOLS = {"Skill", "Read", "Grep", "Glob", "ToolSearch"}
+
+
+def kill_session(process: subprocess.Popen) -> None:
+    """SIGKILL the claude process and every child it spawned (Bash, hooks)."""
+    try:
+        os.killpg(process.pid, signal.SIGKILL)
+    except (ProcessLookupError, PermissionError):
+        pass
+    process.wait()
+
+
 def run_single_query(
     query: str,
     skill_name: str,
@@ -39,6 +53,13 @@ def run_single_query(
 
     Detects triggering by looking for Skill tool calls matching the skill name.
 
+    Each session is stopped at its first tool call outside READ_ONLY_TOOLS, at
+    content_block_start, before the tool's input exists, and as soon as any
+    Skill call resolves. Without that cutoff every query ran to completion with
+    the user's real permissions: on 2026-09-18 a sweep in ~/.claude pushed a
+    branch to origin, squashed local commits, and was mid-way through
+    `linear-cli create` queries when it was killed.
+
     This function must NOT touch SKILL.md. The description swap happens once in
     the parent (see `swapped_description`) before any worker starts. It used to
     happen here, per worker, and that was a data-loss bug: `write_text` truncates
@@ -47,48 +68,54 @@ def run_single_query(
     zero bytes at the end. It emptied skills/committing-changes/SKILL.md on
     2026-08-10.
     """
+    cmd = [
+        "claude",
+        "-p", query,
+        "--output-format", "stream-json",
+        "--verbose",
+        "--include-partial-messages",
+    ]
+    if model:
+        cmd.extend(["--model", model])
+
+    env = {k: v for k, v in os.environ.items() if k != "CLAUDECODE"}
+
+    process = subprocess.Popen(
+        cmd,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.DEVNULL,
+        cwd=project_root,
+        env=env,
+        start_new_session=True,
+    )
+
+    skills_invoked: set[str] = set()
+    got_output = False
+    stopped_by = None
+    exited = False
+    start_time = time.time()
+    buffer = ""
+    pending_skill = False
+    accumulated_json = ""
+
     try:
-        cmd = [
-            "claude",
-            "-p", query,
-            "--output-format", "stream-json",
-            "--verbose",
-        ]
-        if model:
-            cmd.extend(["--model", model])
-
-        env = {k: v for k, v in os.environ.items() if k != "CLAUDECODE"}
-
-        process = subprocess.Popen(
-            cmd,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.DEVNULL,
-            cwd=project_root,
-            env=env,
-        )
-
-        start_time = time.time()
-        buffer = ""
-
-        try:
-            while time.time() - start_time < timeout:
-                if process.poll() is not None:
-                    remaining = process.stdout.read()
-                    if remaining:
-                        buffer += remaining.decode("utf-8", errors="replace")
-                    break
-
+        while time.time() - start_time < timeout and stopped_by is None and not exited:
+            if process.poll() is not None:
+                remaining = process.stdout.read()
+                if remaining:
+                    buffer += remaining.decode("utf-8", errors="replace")
+                exited = True
+            else:
                 ready, _, _ = select.select([process.stdout], [], [], 1.0)
                 if not ready:
                     continue
-
                 chunk = os.read(process.stdout.fileno(), 8192)
                 if not chunk:
-                    break
+                    exited = True
                 buffer += chunk.decode("utf-8", errors="replace")
 
-            # Parse all lines looking for Skill tool calls
-            for line in buffer.splitlines():
+            while "\n" in buffer and stopped_by is None:
+                line, buffer = buffer.split("\n", 1)
                 line = line.strip()
                 if not line:
                     continue
@@ -97,27 +124,48 @@ def run_single_query(
                 except json.JSONDecodeError:
                     continue
 
-                if event.get("type") == "assistant":
-                    message = event.get("message", {})
-                    for block in message.get("content", []):
-                        if block.get("type") != "tool_use":
-                            continue
-                        tool_name = block.get("name", "")
-                        tool_input = block.get("input", {})
-                        if tool_name == "Skill" and skill_name in str(tool_input):
-                            return True
-
-                elif event.get("type") == "result":
-                    return False
-
-        finally:
-            if process.poll() is None:
-                process.kill()
-                process.wait()
-
-        return False
+                etype = event.get("type")
+                if etype == "stream_event":
+                    got_output = True
+                    se = event.get("event", {})
+                    se_type = se.get("type", "")
+                    if se_type == "content_block_start":
+                        cb = se.get("content_block", {})
+                        if cb.get("type") == "tool_use":
+                            name = cb.get("name", "")
+                            if name == "Skill":
+                                pending_skill = True
+                                accumulated_json = ""
+                            elif name not in READ_ONLY_TOOLS:
+                                # Input not streamed yet, so the tool cannot run.
+                                stopped_by = name
+                    elif se_type == "content_block_delta" and pending_skill:
+                        delta = se.get("delta", {})
+                        if delta.get("type") == "input_json_delta":
+                            accumulated_json += delta.get("partial_json", "")
+                    elif se_type == "content_block_stop" and pending_skill:
+                        try:
+                            skills_invoked.add(json.loads(accumulated_json).get("skill", ""))
+                        except json.JSONDecodeError:
+                            pass
+                        pending_skill = False
+                        stopped_by = "Skill"
+                elif etype == "assistant":
+                    got_output = True
+                    for item in event.get("message", {}).get("content", []):
+                        if item.get("type") == "tool_use" and item.get("name") == "Skill":
+                            skills_invoked.add(item.get("input", {}).get("skill", ""))
+                elif etype == "result":
+                    got_output = True
+                    stopped_by = "result"
     finally:
-        pass
+        kill_session(process)
+
+    if not got_output:
+        # Never reached the model (logged out, rate limited, crashed): fail loudly
+        # instead of scoring a silent False that passes every negative case.
+        raise RuntimeError("no model output")
+    return any(skill_name in s for s in skills_invoked)
 
 
 @contextmanager
@@ -297,12 +345,15 @@ def main():
                     query_triggers[q].append(future.result())
                 except Exception as e:
                     print(f"Warning: {e}", file=sys.stderr)
-                    query_triggers[q].append(False)
 
     for q, triggers in query_triggers.items():
         item = query_items[q]
-        rate = sum(triggers) / len(triggers)
         should = item["should_trigger"]
+        if not triggers:
+            results.append({"query": q, "should_trigger": should, "trigger_rate": None,
+                            "triggers": 0, "runs": 0, "pass": False, "error": True})
+            continue
+        rate = sum(triggers) / len(triggers)
         passed = rate >= args.trigger_threshold if should else rate < args.trigger_threshold
         results.append({
             "query": q,
@@ -320,7 +371,8 @@ def main():
         "summary": {
             "total": len(results),
             "passed": sum(1 for r in results if r["pass"]),
-            "failed": sum(1 for r in results if not r["pass"]),
+            "failed": sum(1 for r in results if not r["pass"] and not r.get("error")),
+            "errors": sum(1 for r in results if r.get("error")),
         },
     }
 
@@ -328,7 +380,7 @@ def main():
         s = output["summary"]
         print(f"Results: {s['passed']}/{s['total']} passed", file=sys.stderr)
         for r in output["results"]:
-            status = "PASS" if r["pass"] else "FAIL"
+            status = "ERROR" if r.get("error") else ("PASS" if r["pass"] else "FAIL")
             print(f"  [{status}] rate={r['triggers']}/{r['runs']} expected={r['should_trigger']}: {r['query'][:70]}", file=sys.stderr)
 
     print(json.dumps(output, indent=2))

@@ -14,11 +14,25 @@ import argparse
 import json
 import os
 import select
+import signal
 import subprocess
 import sys
 import time
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from pathlib import Path
+
+# Tools that cannot change anything. A session may call these while deciding
+# whether to load a skill; any other tool call ends the run before it executes.
+READ_ONLY_TOOLS = {"Skill", "Read", "Grep", "Glob", "ToolSearch"}
+
+
+def kill_session(process: subprocess.Popen) -> None:
+    """SIGKILL the claude process and every child it spawned (Bash, hooks)."""
+    try:
+        os.killpg(process.pid, signal.SIGKILL)
+    except (ProcessLookupError, PermissionError):
+        pass
+    process.wait()
 
 
 def run_single_query(
@@ -27,7 +41,15 @@ def run_single_query(
     timeout: int,
     cwd: str,
 ) -> dict:
-    """Run a single query via claude -p and check if the target skill was invoked."""
+    """Run a query via claude -p and report which skills it invoked.
+
+    Each session is stopped at its first tool call outside READ_ONLY_TOOLS, at
+    content_block_start, before the tool's input exists, and as soon as any
+    Skill call resolves. Without that cutoff every query ran to completion with
+    the user's real permissions: on 2026-09-18 a sweep in ~/.claude pushed a
+    branch to origin, squashed local commits, and was mid-way through
+    `linear-cli create` queries when it was killed.
+    """
     cmd = [
         "claude", "-p", query,
         "--output-format", "stream-json",
@@ -43,84 +65,80 @@ def run_single_query(
         stderr=subprocess.DEVNULL,
         cwd=cwd,
         env=env,
+        start_new_session=True,
     )
 
-    skills_invoked = set()
+    skills_invoked: set[str] = set()
     got_output = False
+    stopped_by = None
+    exited = False
     start_time = time.time()
     buffer = ""
-    pending_tool_name = None
+    pending_skill = False
     accumulated_json = ""
 
     try:
-        while time.time() - start_time < timeout:
+        while time.time() - start_time < timeout and stopped_by is None and not exited:
             if process.poll() is not None:
                 remaining = process.stdout.read()
                 if remaining:
                     buffer += remaining.decode("utf-8", errors="replace")
-                break
+                exited = True
+            else:
+                ready, _, _ = select.select([process.stdout], [], [], 1.0)
+                if not ready:
+                    continue
+                chunk = os.read(process.stdout.fileno(), 8192)
+                if not chunk:
+                    exited = True
+                buffer += chunk.decode("utf-8", errors="replace")
 
-            ready, _, _ = select.select([process.stdout], [], [], 1.0)
-            if not ready:
-                continue
-
-            chunk = os.read(process.stdout.fileno(), 8192)
-            if not chunk:
-                break
-            buffer += chunk.decode("utf-8", errors="replace")
-
-            while "\n" in buffer:
+            while "\n" in buffer and stopped_by is None:
                 line, buffer = buffer.split("\n", 1)
                 line = line.strip()
                 if not line:
                     continue
-
                 try:
                     event = json.loads(line)
                 except json.JSONDecodeError:
                     continue
 
-                # Check stream events for Skill tool calls
-                if event.get("type") == "stream_event":
+                etype = event.get("type")
+                if etype == "stream_event":
+                    got_output = True
                     se = event.get("event", {})
                     se_type = se.get("type", "")
-
                     if se_type == "content_block_start":
                         cb = se.get("content_block", {})
-                        if cb.get("type") == "tool_use" and cb.get("name") == "Skill":
-                            pending_tool_name = "Skill"
-                            accumulated_json = ""
-
-                    elif se_type == "content_block_delta" and pending_tool_name == "Skill":
+                        if cb.get("type") == "tool_use":
+                            name = cb.get("name", "")
+                            if name == "Skill":
+                                pending_skill = True
+                                accumulated_json = ""
+                            elif name not in READ_ONLY_TOOLS:
+                                # Input not streamed yet, so the tool cannot run.
+                                stopped_by = name
+                    elif se_type == "content_block_delta" and pending_skill:
                         delta = se.get("delta", {})
                         if delta.get("type") == "input_json_delta":
                             accumulated_json += delta.get("partial_json", "")
-
-                    elif se_type == "content_block_stop" and pending_tool_name == "Skill":
+                    elif se_type == "content_block_stop" and pending_skill:
                         try:
-                            skill_input = json.loads(accumulated_json)
-                            skills_invoked.add(skill_input.get("skill", ""))
+                            skills_invoked.add(json.loads(accumulated_json).get("skill", ""))
                         except json.JSONDecodeError:
                             pass
-                        pending_tool_name = None
-                        accumulated_json = ""
-
-                # Also check full assistant messages
-                elif event.get("type") == "assistant":
+                        pending_skill = False
+                        stopped_by = "Skill"
+                elif etype == "assistant":
                     got_output = True
-                    message = event.get("message", {})
-                    for item in message.get("content", []):
+                    for item in event.get("message", {}).get("content", []):
                         if item.get("type") == "tool_use" and item.get("name") == "Skill":
                             skills_invoked.add(item.get("input", {}).get("skill", ""))
-
-                # Early exit once we see the result
-                elif event.get("type") == "result":
+                elif etype == "result":
                     got_output = True
-                    break
+                    stopped_by = "result"
     finally:
-        if process.poll() is None:
-            process.kill()
-            process.wait()
+        kill_session(process)
 
     triggered = target_skill in skills_invoked
     elapsed = round(time.time() - start_time, 1)
@@ -128,10 +146,11 @@ def run_single_query(
     return {
         "triggered": triggered,
         "skills_invoked": list(skills_invoked),
+        "stopped_by": stopped_by,
         "elapsed": elapsed,
-        # No assistant or result event means the run never reached the model
-        # (logged out, rate limited, crashed). Scoring it as "not triggered"
-        # would silently pass every negative case.
+        # No stream, assistant, or result event means the run never reached
+        # the model (logged out, rate limited, crashed). Scoring it as "not
+        # triggered" would silently pass every negative case.
         "error": None if got_output else "no model output",
     }
 
@@ -163,6 +182,7 @@ def run_eval(
         # Aggregate by query
         query_triggers: dict[str, list[bool]] = {}
         query_errors: dict[str, int] = {}
+        query_stops: dict[str, list[str]] = {}
         query_skills: dict[str, list[list[str]]] = {}
         query_items: dict[str, dict] = {}
 
@@ -173,6 +193,7 @@ def run_eval(
             if query not in query_triggers:
                 query_triggers[query] = []
                 query_errors[query] = 0
+                query_stops[query] = []
                 query_skills[query] = []
             try:
                 result = future.result()
@@ -180,6 +201,7 @@ def run_eval(
                     query_errors[query] += 1
                     continue
                 query_triggers[query].append(result["triggered"])
+                query_stops[query].append(result.get("stopped_by") or "timeout")
                 query_skills[query].append(result["skills_invoked"])
             except Exception as e:
                 print(f"Warning: query failed: {e}", file=sys.stderr)
@@ -215,6 +237,7 @@ def run_eval(
             "runs": len(triggers),
             "pass": did_pass,
             "skills_seen": query_skills[query],
+            "stopped_by": query_stops[query],
         })
 
     passed = sum(1 for r in results if r["pass"])
@@ -319,8 +342,9 @@ def main():
                 for s in skills:
                     skills_flat.update(s)
                 skills_str = f" skills={skills_flat}" if skills_flat else ""
+                stop_str = f" stopped_by={r.get('stopped_by')}" if status == "FAIL" else ""
                 print(f"  [{status}] rate={rate_str} expected={r['should_trigger']}: "
-                      f"{r['query'][:60]}{skills_str}", file=sys.stderr)
+                      f"{r['query'][:60]}{skills_str}{stop_str}", file=sys.stderr)
 
         if not args.summary:
             print(json.dumps(output, indent=2))
