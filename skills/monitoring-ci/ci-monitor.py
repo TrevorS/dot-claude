@@ -3,7 +3,7 @@
 CI/CD monitor — watches the latest GitHub Actions run for a branch.
 
 Usage:
-    ci-monitor.py [--branch BRANCH] [--timeout SECONDS]
+    ci-monitor.py [--branch BRANCH] [--sha SHA] [--timeout SECONDS] [--watch-timeout SECONDS]
 
 Detects repo root via jj or git, finds the latest CI run for the branch,
 and polls until completion. Exits 0 on success, 1 on failure, 2 when the
@@ -213,8 +213,7 @@ def main() -> int:
         help=(
             "Max seconds to watch a found run (default: 1800). Callers that run "
             "this in a tool-call foreground must set this BELOW their own tool "
-            "timeout, so the script exits with a real verdict instead of being "
-            "backgrounded mid-watch and losing it."
+            "timeout, so the script exits with a real verdict."
         ),
     )
     args = parser.parse_args()
