@@ -12,7 +12,7 @@ A kit is the material behind a document, handed over instead of the document. A 
 ## Building a kit
 
 1. Get the target, audience, destination (Notion and Google Docs want one line per paragraph), and length. Ask once at most; unknowns become blanks in the kit.
-2. Build the fact ledger from every source the doc could draw on. Each fact carries where to check it (file and section, query and window, call and timestamp). A fact you cannot source is not in the ledger. A number and its caveat stay on one line, because the person will lift the line.
+2. Build the fact ledger from every source the doc could draw on. Each fact carries where to check it (file and section, query and window, call and timestamp). A fact you cannot source is not in the ledger. A number and its caveat stay on one line, because the person will lift the line. That holds wherever the fact reappears: a fragment, a call, or a risk line repeats the source and the caveat.
 3. Write the full doc as a discovery draft. Not optional, not the deliverable: you only find out which facts are load-bearing and where the gaps are by building the whole argument. While writing, log every choice you make (which pain leads, plain or technical names, whether the competitor is named, how many numbers, which quote opens). Those are the forks, and they are invisible in a finished draft. If a draft already exists, mine it for forks instead.
 4. Decompose into the format below. Then flatten the voice: plain declarative sentences everywhere except the labelled fragments, and there give three options, not one. Phrasing leaks into the person's doc.
 5. Deliver one file, `<DOC>-KIT.md` beside the sources unless told otherwise. Keep the draft as a sibling whose first line is "One way it could read. Not the deliverable." The handoff message names the file, the section count, and the two or three forks most worth a look.
@@ -46,7 +46,7 @@ Facts:
 - <number, its caveat, same line> (<source>)
 Fragments that fit, strongest first:
 - "<verbatim quote>" <Name, Company, link or timestamp>
-- <one-liner> / <one-liner> / <one-liner>
+- <one-liner> / <one-liner> / <one-liner> (<source>; a number keeps its caveat)
 Your calls:
 - <What the draft did.> <The alternative.> <When the alternative is better.>
 

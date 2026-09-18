@@ -1,7 +1,7 @@
 ---
 name: maintaining-claude-code
 description: Audit and improve Claude Code hooks, rules, and settings.json. Use when adding/debugging a hook, organizing rules, auditing settings.json (permissions, env vars, stale flags), or deciding between hook vs skill vs rule vs CLAUDE.md. For SKILL.md authoring use the skill-creator plugin; for CLAUDE.md audits use the claude-md-improver plugin.
-when_to_use: "Typed as 'my hook is not firing', 'audit settings.json', 'should this be a hook or a skill', 'why does this keep prompting', or when adding a hook event, permission rule, or rules/ file."
+when_to_use: "Typed as 'my hook is not firing', 'audit settings.json', 'audit my Claude Code setup', 'my CLAUDE.md is too long, what should move to rules or skills', 'should this be a hook or a skill', 'why does this keep prompting', or when adding a hook event, permission rule, or rules/ file."
 ---
 
 # Maintaining Claude Code
