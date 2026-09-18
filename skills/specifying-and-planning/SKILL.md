@@ -34,7 +34,7 @@ Convert requirements into implementable `tasks.md`:
 - **Test requirements** -- what tests to write/update
 - **Dependencies** -- prerequisite tasks, interdependent tasks
 
-Focus on functional decomposition. No timeline or phases -- clean technical breakdown.
+Functional decomposition. No timeline or phases.
 
 ### tasks-to-issues
 
@@ -42,8 +42,7 @@ Focus on functional decomposition. No timeline or phases -- clean technical brea
 
 Create GitHub issues from task breakdown:
 
-Write the body with the Write tool, then pass it by path — no heredocs (they break on
-nested quotes and are painful to edit):
+Pass the body via `--body-file <scratchpad>/issue-body.md`, not inline:
 
 ```bash
 gh issue create --title "Clear title" --body-file <scratchpad>/issue-body.md
@@ -65,9 +64,6 @@ Technical strategy
 ## Dependencies
 - Requires #<issue>
 ```
-
-Keep the `- [ ]` task-list syntax here — it renders as real checkboxes in the GitHub
-UI (see `rules/status-marks.md`).
 
 Apply labels: component (frontend, backend), type (feature, refactor), complexity (small, medium, large).
 
@@ -91,7 +87,7 @@ Design agent team configuration from tasks:
 
 Target 3-5 teammates, 5-6 tasks per teammate. Prefer fewer focused teammates over many scattered ones.
 
-**Model selection per teammate.** Agent teams run ~7x tokens vs a single session, so the temptation is to downgrade aggressively. Resist it. A teammate that fails still burned input + output tokens, and a failed parallel branch blocks its dependents — the real cost of a bad model choice is retries + debugging + lost time, not the initial API spend. When in doubt, go one tier up.
+**Model selection per teammate.** Agent teams run ~7x tokens vs a single session. Do not downgrade aggressively: a failed teammate still burned its tokens, and a failed parallel branch blocks its dependents. When in doubt, go one tier up.
 
 Guidance, not a rule:
 
@@ -100,8 +96,8 @@ Guidance, not a rule:
 - `claude-sonnet-5` — default for implementation work: writing code, refactoring, integration; reliable enough for parallel execution.
 - `claude-sonnet-5` + `effort: low` — the cheap tier for roles where the failure mode is obvious: shell-command runners, file movers, status reporters. Lower effort, not a lower model.
 
-Set `model:` explicitly in each teammate's frontmatter — unset inherits the lead's model silently (Fable here). If a role sits on a tier boundary, pick the higher one. Scale cost with `effort` rather than by dropping below Sonnet 5.
+Set `model:` explicitly in each teammate's frontmatter. Scale cost with `effort` rather than by dropping below Sonnet 5.
 
-**Context discipline**: instruct each teammate to return a **≤1500-token summary** to the root agent, not raw tool output. The root agent's context is the scarce resource; teammates that dump full output defeat the parallelism benefit.
+**Context discipline**: instruct each teammate to return a **≤1500-token summary** to the root agent, not raw tool output.
 
 Use a TDD approach in task descriptions.
