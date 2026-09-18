@@ -2,7 +2,7 @@
 
 direct-commits-allowed: true
 
-This repo is the user's Claude Code configuration: skills, hooks, rules, and dotfiles. The marker above is read by `hooks/branch_protection.sh` and `committing-changes`; it is the documented exception to "branch first on the default branch".
+This repo is the user's Claude Code configuration: skills, hooks, rules, and dotfiles. The marker above is read by `hooks/branch_protection.sh`; it is the documented exception to "branch first on the default branch".
 
 ## Development Commands
 
@@ -11,7 +11,7 @@ Run `make help` for the target list. CI mirrors `make validate` on push/PR to ma
 ## Repository Architecture
 
 - **`teej-skills/`** -- Local plugin, disabled by default. See `teej-skills/CLAUDE.md` for its linking behavior.
-- **`teams/`** -- Agent team configurations. Gitignored and machine-local; per-session dirs accumulate here and are safe to prune.
+- **`teams/`** -- Agent team configurations, gitignored; per-session dirs accumulate here and are safe to prune.
 - `dotfiles/<pkg>/<path-relative-to-home>` gets symlinked into `~` by stow.
 - Machine-local overrides are untracked files reached through each tool's include mechanism:
   - **git**: `[include] path = ~/.config/git/local`

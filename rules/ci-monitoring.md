@@ -1,6 +1,6 @@
 # CI Monitoring: Watch the Build Without Being Asked
 
-After a push lands, launching the CI monitor is the default action, not a question. Launch it when the push succeeded, the repo uses GitHub Actions (`ci=github-actions` in the prompt context, or `.github/workflows/` exists), and `gh` is authenticated. `ci-monitor.py` drives `gh`, so GitLab and CircleCI are not monitorable; say so and move on.
+After a push lands, launch the CI monitor when the push succeeded, the repo uses GitHub Actions (`ci=github-actions` in the prompt context, or `.github/workflows/` exists), and `gh` is authenticated. `ci-monitor.py` drives `gh`, so GitLab and CircleCI are not monitorable; say so and move on.
 
 From the main conversation, one Bash call with `run_in_background: true`:
 

@@ -92,7 +92,7 @@ mark with sub-results — not for any multi-item list.
 
 ## Don't
 
-`**bold**`, `~~strikethrough~~`, task lists `- [x]`, HTML tags, ANSI escapes,
+`**bold**`, HTML tags, ANSI escapes,
 mid-content headers below H3, wrapping link text in code (`` [`text`](url) ``),
 italic inside a code span, italic on the `⏱` stopwatch glyph specifically (it
 doesn't slant — use the code wrap alone), and list-item continuation indent

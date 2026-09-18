@@ -13,8 +13,6 @@ Layout galleries, worked examples, linked-label rules, continuation-tree syntax,
 Always wrap the inner flag in inline code; keep the parenthesis ornaments (`❨` U+2768 / `❩` U+2769) plain. Never use emoji checkmarks (`✅`, `❌`, `✔️`) — they render inconsistently and violate the no-emoji default.
 
 ❨`✓`❩ Validate — *9/9 passed*
-❨`~`❩ Cooldown — *active until 00:35*
-❨`✗`❩ Push — *blocked by hook*
 
 ## Indicators
 
@@ -34,7 +32,7 @@ Glyphs need a space before the number (`` `↑` `` 213, not `` `↑` ``213). Dif
 
 ## Never (silently broken in this terminal)
 
-`**bold**`, `~~strikethrough~~`, task lists `- [x]`/`- [ ]`, mid-content headers below H3, HTML tags (`<u>`, `<kbd>`, `<mark>`), ANSI escape codes, italic on the `⏱` stopwatch glyph, italic inside an inline code span (`` `*x*` ``), link text wrapped in code (`` [`text`](url) ``), and list-item continuation indent (bullets collapse continuation lines flush-left regardless of source indent).
+`**bold**`, mid-content headers below H3, HTML tags (`<u>`, `<kbd>`, `<mark>`), ANSI escape codes, italic on the `⏱` stopwatch glyph, italic inside an inline code span (`` `*x*` ``), link text wrapped in code (`` [`text`](url) ``), and list-item continuation indent (bullets collapse continuation lines flush-left regardless of source indent).
 
 ## When this applies
 

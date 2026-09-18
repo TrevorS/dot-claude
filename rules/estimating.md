@@ -28,14 +28,6 @@ Applies anywhere "effort", "cost", "lift", "difficulty", or a time word would ot
 > - Verification: existing suite + 1 new integration test
 > - Risk: public API no · data migration no · cross-module no · reversible yes · external blocker no
 
-## Example
-
-> **Port scope**
-> - Files: `ds4_cuda.cu` (+580/-0)
-> - Named units: 5 kernels (`moe_gate_up_mid_expert_tile8_rowspan_kernel<512|1024|2048>`, `moe_down_expert_tile16_row2048_kernel`, `moe_build_expert_tile_offsets_kernel`, `moe_build_expert_tiles_kernel`) + host driver pipeline
-> - Verification: existing MoE prefill regression suite + H100 perf run
-> - Risk: public API no · data migration no · cross-module no (self-contained) · reversible yes · external blocker no
-
 ## Human-time estimates
 
 Only if the user explicitly asks "how long for a human?", and only paired with the scope template above so the structural reality is visible alongside the guess.
