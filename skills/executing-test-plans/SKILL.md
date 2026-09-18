@@ -9,35 +9,25 @@ allowed-tools:
   - "Bash(mysql:*)"
   - "Bash(jq:*)"
   - "Bash(grep:*)"
-  - "Bash(watch:*)"
 ---
 
 # Executing Test Plans
 
-Execute test plans end-to-end with strict state control and concise reporting.
-
-**Note on `allowed-tools`:** the frontmatter list is pre-approval, not a restriction.
-`mysql`, `aws sqs`, and `docker` run unprompted here on purpose (unattended QA runs).
+`allowed-tools`: `mysql`, `aws sqs`, and `docker` run unprompted here on purpose (unattended QA runs).
 
 ## Policy (per section, in order)
 
-1. **Sense-check** section; if incoherent, propose minimal fix -> `suggested_adjustments`
+1. **Sense-check** section; if incoherent, propose minimal fix -> `suggested_adjustments` (a tiny recorded adjustment beats a skip or reorder)
 2. **State prep**: verify prerequisites; run minimal corrective actions. If impossible, mark `BLOCKED` with reason
 3. **Execute** exactly; record precise **inputs** and raw **outputs**
 4. **Verify** vs expected; set `status` = `PASS` | `FAIL` | `BLOCKED`
-5. **Notes**: timings, IDs, logs, env diffs (terse)
+5. **Notes**: timings, IDs, logs, env diffs
 6. **Keep adjustments** (don't lose edits or ordering changes)
 
 ## Pre-flight
 
 - Check env profile from arguments
-- Docker services: `docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}" | head -20`
-- Service health checks as applicable
-
-## Execution Rules
-
-- Follow plan sections strictly; prefer tiny recorded adjustments over skips or reordering
-- Continue after failures unless they hard-block subsequent steps
+- Docker services: confirm the required containers are up
 
 ## Output
 

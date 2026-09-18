@@ -8,29 +8,21 @@ model: sonnet
 
 # Cleaning Commit History
 
-Detect the VCS with `jj root`; prefer jj (the oplog is the safety net).
+The oplog is the safety net.
 
 ## Operating Procedure
 
 ### Phase 0: Safety
 
-Run the PR-safety check first (`rules/pr-safety.md`): if the branch has an open PR with review activity, ask before rewriting anything.
-
-**Git**: Create backup branch before any surgery:
-
-```bash
-git branch ${CURRENT_BRANCH}-backup
-```
-
-**jj**: Not needed -- oplog provides safety. Note the current operation ID with `jj op log -n 1`.
+Note the current operation ID with `jj op log -n 1`.
 
 ### Phase 1: Inventory
 
-Determine the base branch, inventory feature-only changes with `git log --oneline $BASE..$FEATURE_BRANCH`, and note large files, generated paths, vendored code, and migrations.
+Determine the base branch, inventory feature-only changes with `jj log -r 'trunk()..@'`, and note large files, generated paths, vendored code, and migrations.
 
 ### Phase 2: Sea of Changes
 
-Compute the net diff from BASE to FEATURE_BRANCH (not commit-by-commit). This represents all changes that need reorganization.
+Compute the net diff from BASE to FEATURE_BRANCH (not commit-by-commit).
 
 ### Phase 3: Classify & Cluster
 
@@ -62,23 +54,20 @@ Every intermediate state must build and pass tests.
 
 ### Phase 5: Rebuild Commits
 
-**Git**: `git reset --mixed $BASE`, then stage specific files per planned commit with `git add <files>`.
-
 **jj workflow**:
+
+Pushed commits are immutable under the `remote_bookmarks()` config, hence `--ignore-immutable`; `rules/pr-safety.md` still gates whether the rewrite may happen at all.
 
 ```bash
 # Squash related changes
-jj squash --from <change1> --into <change2> -m "combined message"
+jj squash --from <change1> --into <change2> --ignore-immutable -m "combined message"
 
 # Split one change into several — non-interactive, needs BOTH paths and -m.
 # The named paths go to the split-out commit; the rest stays in the child.
-jj split -r <change> -m "first part" path/a path/b
+jj split -r <change> --ignore-immutable -m "first part" path/a path/b
 
 # Reorder
-jj rebase -r <change> -d <new-parent>
-
-# Clean up messages
-jj describe -m "feat(scope): message"
+jj rebase -r <change> -o <new-parent> --ignore-immutable
 
 # If anything goes wrong
 jj op restore <before-surgery>
@@ -87,7 +76,6 @@ jj op restore <before-surgery>
 ### Phase 6: Validation
 
 - `git diff $BASE..HEAD` equals the original sea (no loss of intent)
-- Every commit builds and tests successfully
 
 ## Commit Message Style
 
