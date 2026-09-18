@@ -1,10 +1,10 @@
 [
   {
-    "query": "break down this product spec into implementation tasks with estimates",
+    "query": "break down this product spec into implementation tasks with estimates:\n\nReports page CSV export. Users pick a date range and which columns to include. Exports over 10,000 rows run as a background job and email a download link that expires after 24 hours. Org admins can turn export off for their org.",
     "should_trigger": true
   },
   {
-    "query": "extract the requirements from this PRD and create GitHub issues for each",
+    "query": "extract the requirements from this PRD and create GitHub issues for each:\n\nPRD: Team invites. An admin invites people by email with a role (viewer, editor, admin). Invites expire after 7 days and can be resent or revoked. Accepting an invite from a new email creates the account. The members page lists pending invites separately from active members.",
     "should_trigger": true
   },
   {
@@ -20,11 +20,11 @@
     "should_trigger": true
   },
   {
-    "query": "create a project plan from these requirements with dependencies between tasks",
+    "query": "create a project plan from these requirements with dependencies between tasks:\n\n1. Move file uploads from the app server to direct-to-S3 presigned uploads.\n2. Virus-scan every upload before it becomes visible.\n3. Backfill existing files into the new bucket layout.\n4. Delete the old upload endpoint once no client calls it.",
     "should_trigger": true
   },
   {
-    "query": "take this feature description and break it down into implementable work items",
+    "query": "take this feature description and break it down into implementable work items:\n\nSaved searches. A user can save the current inbox filters under a name, pin up to five saved searches to the sidebar, and get a daily email digest when new items match a saved search.",
     "should_trigger": true
   },
   {
@@ -36,7 +36,7 @@
     "should_trigger": true
   },
   {
-    "query": "extract tasks from this design doc and organize them by priority",
+    "query": "extract tasks from this design doc and organize them by priority:\n\nDesign: rate limiting for the public API. Token bucket per API key, stored in Redis. Limits configurable per plan. Responses carry X-RateLimit-Remaining and Retry-After. A dashboard chart shows each key's 429s per hour. Phase 2 adds per-endpoint limits.",
     "should_trigger": true
   },
   {

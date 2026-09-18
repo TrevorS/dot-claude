@@ -16,7 +16,9 @@ repos:
     hooks:
       - id: markdownlint
         args: ["--config", ".markdownlint.yaml"]
-        exclude: ^cache/
+        # Eval inputs are fixtures captured verbatim from skill runs; linting would
+        # mean editing them, and the eval grades against their exact text.
+        exclude: ^(cache/|skills/[^/]+/evals/inputs/)
 
   # codespell, not aspell: aspell asks "is this in a dictionary", which on a repo
   # full of identifiers is all false positives. codespell flags only KNOWN

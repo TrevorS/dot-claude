@@ -1,7 +1,7 @@
 [
   {
     "query": "I want to create a new skill for working with terraform, help me write the SKILL.md",
-    "should_trigger": true
+    "should_trigger": false
   },
   {
     "query": "audit my claude code setup and tell me if there are any issues with my skill descriptions",
@@ -21,7 +21,7 @@
   },
   {
     "query": "help me improve the description on my code-review skill so it triggers more reliably",
-    "should_trigger": true
+    "should_trigger": false
   },
   {
     "query": "I want to add a PostToolUse hook that logs every file edit to a journal, how do I set that up?",
@@ -33,7 +33,7 @@
   },
   {
     "query": "I'm building a new skill for database migrations, should I use context: fork or keep it inline?",
-    "should_trigger": true
+    "should_trigger": false
   },
   {
     "query": "review my settings.json and tell me if the hook configuration looks correct",
@@ -77,6 +77,14 @@
   },
   {
     "query": "I need to write a CLAUDE.md for my new project, what should I put in it?",
+    "should_trigger": false
+  },
+  {
+    "query": "claude keeps asking permission every time it runs make validate, why does this keep prompting?",
+    "should_trigger": true
+  },
+  {
+    "query": "should this be a hook or a rule: I never want claude to run npm in a bun project",
     "should_trigger": true
   }
 ]

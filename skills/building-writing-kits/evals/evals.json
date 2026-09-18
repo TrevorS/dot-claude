@@ -44,17 +44,21 @@
         "Flags the Allexis Licciardi quote as altered from the verbatim source",
         "Flags the Cailie Ryan quote as misattributed to Numeral instead of Snorkl",
         "Flags 'three enterprise customers have already signed up for the pilot' as having no source",
-        "Flags 'Decided: notifications ship in the first milestone' as not decided in the written sources (docs place notifications in M2; the call only discussed moving it)",
+        "Flags 'Decided: notifications ship in the first milestone' as overstated: only the notification email is planned for Milestone 1 and its timing is marked Needs alignment (MILESTONE-1-TIP.md), Slack notifications are out of Milestone 1, and KICKOFF.md and README.md still say Milestone 2",
         "Flags 'five times the price' for Opus as wrong (sources say fifty times)",
         "Flags the opt-out count of four organisations as wrong (sources say six)",
-        "Names at least one Track 2 'when it is wrong' fact the doc dropped relative to the kit (undesigned feedback UI, liability position, the AI-can-make-mistakes disclaimer) or states outright that the section is thin",
+        "Names at least one Track 2 'when it is wrong' fact the doc dropped relative to the kit (corrections stick, admins can correct in Milestone 1, the correction control is still open) or states outright that the section is thin",
         "Does not rewrite the doc: the output is a list of findings, not a revised draft",
         "Makes no comments on style, voice, or sentence quality",
         "Reports no false positives: does not flag a number, quote, or claim that actually matches the sources",
         "Each flagged number, quote, or claim names the source file it was checked against",
         "Flags the doc's internal inconsistency: 'five groups' announced, six quotes listed"
       ],
-      "files": []
+      "files": [
+        "evals/inputs/GTM-FAQ-TREVOR.md",
+        "evals/inputs/GTM-FAQ-KIT.md"
+      ],
+      "setup": "Fixture rebuilt 2026-09-18: the kit is a building-writing-kits run against ai-mailroom-docs at 5e3d384; the draft seeds exactly the ten errors the assertions name. Run against that commit (a scratch clone, never the working repo). The grader's key is evals/answer-keys/check-written-doc.md; do not give it to the subject."
     },
     {
       "id": 3,
@@ -73,7 +77,8 @@
         "The docs repo was not modified",
         "Every call quote is attributed to the right speaker and every docs citation points at the item that actually contains the claim (spot-check five)"
       ],
-      "files": []
+      "files": [],
+      "setup": "Run against ai-mailroom-docs at 95d4645 (the commit that added taylor-convo.md, before f7cf6ed refreshed BRIEF-KIT.md with the call), in a scratch clone, never the working repo. Against a later commit the prompt's premise is false: the kit already cites the call and later docs overturn some of its decisions."
     }
   ]
 }

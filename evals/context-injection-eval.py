@@ -41,11 +41,11 @@ EVAL_CASES = [
         "description": "Complex jj conflict resolution + absorb in jj-colocated repo should auto-load using-jj",
     },
     {
-        "name": "jj-colocated-describe-change",
-        "query": "describe my current change as 'fix: update config'",
+        "name": "jj-colocated-split-change",
+        "query": "split my current change so the README edit goes in its own commit",
         "expected_skill": "using-jj",
         "repo_type": "jj-colocated",
-        "description": "jj-specific action in jj-colocated repo",
+        "description": "jj operation past the basics (non-interactive split) in a jj-colocated repo; a plain describe is below the skill's scope",
     },
     {
         "name": "jj-colocated-rebase-stack",
