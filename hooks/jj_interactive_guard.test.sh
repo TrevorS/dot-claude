@@ -133,6 +133,10 @@ run BLOCK 'JJ_EDITOR="$(jq -r .env.JJ_EDITOR ~/.claude/settings.json)" timeout 1
 run PASS  'X="$(a b)" jj describe -m "msg"'
 run PASS  'X="jj describe" echo hi'                        # jj only inside the value
 
+# --- heredoc bodies are data: an apostrophe in one must not hide later commands ---
+run BLOCK $'cat > /tmp/m <<EOF\ndon\'t\nEOF\njj describe'
+run PASS  $'cat > /tmp/m <<EOF\ndon\'t\nEOF\njj describe -m "msg"'
+
 echo
 if [ "$fails" -eq 0 ]; then
   echo "jj_interactive_guard: all cases passed"

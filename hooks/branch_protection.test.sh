@@ -63,6 +63,15 @@ run PASS  master no 'echo hi'             'unrelated command on master'
 # jj commands in a plain git repo: jj fails, the hook must exit 0, not crash (was exit 1).
 run PASS  master no 'jj describe -m x'    'jj command in a non-jj repo'
 
+# --- a branch created earlier in the same command is where the commit lands ---
+run PASS  master no 'git checkout -b feat && git commit -m "x"'           'checkout -b then commit, on master'
+run PASS  master no 'git switch -c feat && git add . && git commit -m "x"' 'switch -c then add + commit, on master'
+run PASS  master no 'git switch feat && git commit -m "x"'                'switch to feature then commit, on master'
+run BLOCK feature no 'git switch main && git commit -m "x"'               'switch to protected then commit'
+run BLOCK master no 'git checkout src/x.c && git commit -m "x"'           'plain checkout may be a path: still blocks'
+# --- heredoc bodies are data: an apostrophe must not hide a later commit ---
+run BLOCK master no $'cat > /tmp/m <<EOF\ndon\'t\nEOF\ngit commit -F /tmp/m' 'heredoc with apostrophe, then commit on master'
+
 # ---------------------------------------------------------------------------
 # jj: colocated repo with a remote. master@origin = init commit; @ = empty
 # child of master. Setup snippets then shape the working copy per case.
@@ -139,6 +148,7 @@ run_jj PASS  "$OFF_MASTER_AHEAD" no 'jj bookmark set feat -r @'          'jj boo
 run_jj PASS  "$FEATURE"          no 'jj bookmark move feat --to @'       'jj bookmark move feat'
 run_jj PASS  "$OFF_MASTER_AHEAD" no 'jj bookmark list'                   'jj bookmark list'
 run_jj PASS  "$OFF_MASTER_AHEAD" no 'jj new master'                      'jj new master (start work off master)'
+run_jj PASS  "$OFF_MASTER_AHEAD" no 'git checkout -b feat && git commit -m x' 'checkout -b then git commit, colocated'
 
 echo
 if [ "$fails" -eq 0 ]; then echo "branch_protection: all cases passed"; else echo "$fails failing"; fi

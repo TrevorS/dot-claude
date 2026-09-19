@@ -1,7 +1,9 @@
 {
   "$schema": "https://json.schemastore.org/claude-code-settings.json",
   "env": {
+    "CLAUDE_CODE_DISABLE_FEEDBACK_SURVEY": "1",
     "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1",
+    "CLAUDE_CODE_FORCE_STRIKETHROUGH": "1",
     "CLAUDE_CODE_NEW_INIT": "1",
     "CLAUDE_CODE_RETRY_WATCHDOG": "1",
     "CLAUDE_CODE_TMUX_TRUECOLOR": "1",
@@ -17,7 +19,6 @@
   },
   "permissions": {
     "allow": [
-      "Bash(brew install:*)",
       "Bash(brew list:*)",
       "Bash(bun test:*)",
       "Bash(command -V:*)",
@@ -27,12 +28,10 @@
       "Bash(gh:*)",
       "Bash(git:*)",
       "Bash(glhf:*)",
-      "Bash(gsed:*)",
       "Bash(host:*)",
       "Bash(jj:*)",
       "Bash(kill:*)",
       "Bash(linear-cli:*)",
-      "Bash(llm:*)",
       "Bash(make:*)",
       "Bash(mkdir:*)",
       "Bash(networksetup:*)",
@@ -43,9 +42,7 @@
       "Bash(osascript:*)",
       "Bash(ping6:*)",
       "Bash(ping:*)",
-      "Bash(pnpm add:*)",
       "Bash(pnpm list:*)",
-      "Bash(stow:*)",
       "Bash(sw_vers:*)",
       "Bash(system_profiler SPDisplaysDataType:*)",
       "Bash(system_profiler SPFontsDataType:*)",
@@ -59,7 +56,6 @@
       "Read(//usr/local/**)",
       "Read(~/.config/**)",
       "Read(~/.local/**)",
-      "Read(~/.rbt2/**)",
       "Read(~/Downloads/**)",
       "Read(~/Library/**)",
       "Skill(searching-history)",
@@ -95,6 +91,11 @@
       "Read(~/.gitconfig)",
       "Read(~/.netrc)",
       "Read(~/.gnupg/**)",
+      "Read(~/.config/gh/**)",
+      "Read(~/.config/github-copilot/**)",
+      "Read(~/.config/linear-cli/**)",
+      "Read(~/.config/op/**)",
+      "Read(~/.docker/config.json)",
       "Read(~/.npmrc)",
       "Read(~/.secrets.zsh)",
       "Read(//**/.env)",
@@ -220,8 +221,6 @@
   },
   "enabledPlugins": {
     "clangd-lsp@claude-plugins-official": true,
-    "claude-md-management@claude-plugins-official": false,
-    "code-simplifier@claude-plugins-official": false,
     "gopls-lsp@claude-plugins-official": true,
     "rust-analyzer-lsp@claude-plugins-official": true,
     "swift-lsp@claude-plugins-official": true,
@@ -289,7 +288,6 @@
         }
       ]
     },
-    "allowAppleEvents": true,
     "excludedCommands": [
       "docker *",
       "brew *"
@@ -304,6 +302,13 @@
   "fastModePerSessionOptIn": true,
   "emojiCompletionEnabled": false,
   "askUserQuestionTimeout": "5m",
+  "pluginConfigs": {
+    "agents-md@builtin": {
+      "options": {
+        "instructionFiles": "claude-md-and-agents-md"
+      }
+    }
+  },
   "tui": "fullscreen",
   "voice": {
     "enabled": true

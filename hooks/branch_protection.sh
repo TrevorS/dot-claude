@@ -26,7 +26,7 @@ set -euo pipefail
 
 PROTECTED='^(main|master|dev)$'
 
-sub=""; argstart=0
+sub=""; argstart=0; switched=""
 toks=(); segments=(); stripped=""; peeled=""
 
 input=$(cat)
@@ -50,15 +50,16 @@ MSG
 }
 
 # ---------------------------------------------------------------------------
-# Command-line parsing. segment_command, tokenize, peel_assignment and
-# strip_wrappers are verbatim copies of git_dangerous_flags.sh; keep them in sync.
+# Command-line parsing. segment_command, heredoc_word, tokenize,
+# peel_assignment and strip_wrappers are verbatim copies of
+# git_dangerous_flags.sh; keep them in sync.
 # Never eval/word-split untrusted command text.
 # ---------------------------------------------------------------------------
 
 # Split a command line into segments on unquoted && || ; and newline.
 segment_command() {
-  local s="$1" c nxt q="" cur="" i
-  segments=()
+  local s="$1" c nxt q="" cur="" i d line cmp tab=$'\t' docs
+  segments=(); docs=()
   for (( i = 0; i < ${#s}; i++ )); do
     c="${s:i:1}"
     if [ -n "$q" ]; then
@@ -72,13 +73,66 @@ segment_command() {
         if [ "$nxt" = $'\n' ]; then i=$((i+1)); else cur+="$c$nxt"; i=$((i+1)); fi
         ;;
       '"' | "'") q="$c"; cur+="$c" ;;
-      $'\n' | ';') segments+=("$cur"); cur="" ;;
+      '<')
+        if [ "${s:i:3}" = '<<<' ]; then
+          cur+='<<<'; i=$((i+2))
+        elif [ "${s:i+1:1}" = '<' ]; then
+          heredoc_word "$s" "$i"
+          cur+="${s:i:hd_end-i+1}"; i=$hd_end
+          [ -n "$hd_delim" ] && docs+=("$hd_dash$hd_delim")
+        else
+          cur+="$c"
+        fi ;;
+      $'\n' | ';')
+        segments+=("$cur"); cur=""
+        # The newline ends the line that opened any heredocs; their bodies come
+        # next. Each body line is its own segment with quote tracking off, so a
+        # `bash <<EOF` body is still checked line by line.
+        if [ "$c" = $'\n' ] && (( ${#docs[@]} )); then
+          for d in "${docs[@]}"; do
+            while (( i + 1 < ${#s} )); do
+              line="${s:i+1}"; line="${line%%$'\n'*}"
+              i=$(( i + 1 + ${#line} ))
+              cmp="$line"; [ "${d:0:1}" = 1 ] && cmp="${cmp#"${cmp%%[!$tab]*}"}"
+              [ "$cmp" = "${d:1}" ] && break
+              segments+=("$line")
+            done
+          done
+          docs=()
+        fi ;;
       '&') if [ "${s:i+1:1}" = '&' ]; then segments+=("$cur"); cur=""; i=$((i+1)); else cur+="$c"; fi ;;
       '|') if [ "${s:i+1:1}" = '|' ]; then segments+=("$cur"); cur=""; i=$((i+1)); else cur+="$c"; fi ;;
       *) cur+="$c" ;;
     esac
   done
   segments+=("$cur")
+}
+
+# Heredoc bodies are data, not shell. Tracked as quoted text, an apostrophe in
+# `don't` opened a quote that never closed and swallowed every later command:
+# 4 direct commits to master slipped past all three guards that way (found
+# 2026-09-18). Parses the delimiter after the `<<` or `<<-` at index $2 of $1.
+# Sets hd_delim (quotes removed), hd_dash (1 for <<-), and hd_end (index of the
+# delimiter's last character).
+heredoc_word() {
+  local s="$1" j=$(( $2 + 2 )) c q=""
+  hd_delim=""; hd_dash=0
+  if [ "${s:j:1}" = "-" ]; then hd_dash=1; j=$((j+1)); fi
+  while [ "${s:j:1}" = " " ] || [ "${s:j:1}" = $'\t' ]; do j=$((j+1)); done
+  for (( ; j < ${#s}; j++ )); do
+    c="${s:j:1}"
+    if [ -n "$q" ]; then
+      if [ "$c" = "$q" ]; then q=""; else hd_delim+="$c"; fi
+      continue
+    fi
+    case "$c" in
+      "'" | '"') q="$c" ;;
+      '\') j=$((j+1)); hd_delim+="${s:j:1}" ;;
+      ' ' | $'\t' | $'\n' | ';' | '&' | '|' | '<' | '>' | '(' | ')') break ;;
+      *) hd_delim+="$c" ;;
+    esac
+  done
+  hd_end=$((j-1))
 }
 
 # Tokenize one segment, quote-aware, into the global `toks` array.
@@ -327,8 +381,30 @@ Fix: work on a feature bookmark and open a PR; $name advances on \`jj git fetch\
     esac
   else
     resolve_subcommand '-C|-c|--git-dir|--work-tree|--namespace|--exec-path|--config-env' || continue
-    case "$sub" in commit | add) ;; *) continue ;; esac
-    if in_jj_repo; then
+    case "$sub" in
+      checkout | switch)
+        # A branch created or switched to earlier in this same command is where
+        # a later commit lands, but the repo queries below run before any of it
+        # and still see the old HEAD. `git checkout -b x && git commit` on
+        # master was blocked 3 times in 30 days, twice as the fix for a block.
+        # Plain `git checkout <name>` is skipped: it may name a path.
+        if [ "$sub" = checkout ]; then
+          nb=$(opt_value '-b|-B|--orphan')
+        else
+          nb=$(opt_value '-c|-C|--create|--force-create|--orphan')
+          if [ -z "$nb" ]; then
+            nb=$(positionals '-c|-C|--create|--force-create|--orphan')
+            nb="${nb%%$'\n'*}"
+          fi
+        fi
+        [ -n "$nb" ] && switched="$nb"
+        continue ;;
+      commit | add) ;;
+      *) continue ;;
+    esac
+    if [ -n "$switched" ]; then
+      [[ "$switched" =~ $PROTECTED ]] && name="$switched"
+    elif in_jj_repo; then
       # git commit in a colocated repo lands on @; check @ and then @-.
       name=$(protected_on '@')
       [ -z "$name" ] && name=$(protected_on '@-')

@@ -297,7 +297,14 @@ def skill_frontmatter_keys(strings: str) -> set[str]:
     anchor = strings.find('"disable-model-invocation":')
     if anchor < 0:
         return set()
-    start = strings.rfind("c({", 0, anchor)
+    # The wrapper is a minified call (`c({` through 2.1.276, `u({` in 2.1.278), so
+    # take the nearest `<ident>({` before the anchor instead of a fixed name. The
+    # shape is ~1.5KB; a start further back means the anchor missed and the span
+    # would swallow unrelated objects (telemetry fields like errno/pid/etag).
+    opens = list(re.finditer(r"[A-Za-z_$][\w$]*\(\{", strings[max(0, anchor - 8000) : anchor]))
+    if not opens:
+        return set()
+    start = max(0, anchor - 8000) + opens[-1].start()
     base_end = strings.find("}))", anchor)
     ext = strings.find(".extend({", base_end, base_end + 200)
     end = strings.find("}))", ext) if ext > 0 else base_end
@@ -311,7 +318,7 @@ def skill_frontmatter_keys(strings: str) -> set[str]:
     }
     # Sanity: both a base key and an extend-only key must be present, otherwise the
     # anchors landed somewhere else in the binary and the set is garbage.
-    if not {"name", "when_to_use"} <= keys:
+    if not {"name", "when_to_use"} <= keys or end - start > 8000:
         return set()
     return keys
 

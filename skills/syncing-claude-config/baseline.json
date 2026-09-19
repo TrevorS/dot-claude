@@ -1,5 +1,5 @@
 {
-  "claudeCodeVersion": "2.1.276",
+  "claudeCodeVersion": "2.1.278",
   "syncedDate": "2026-09-18",
   "source": "https://api.github.com/repos/anthropics/claude-code/releases",
   "adopted": [
@@ -27,7 +27,7 @@
       "surface": "settings.json key",
       "introducedVersion": "2.1.181",
       "adoptedDate": "2026-06-26",
-      "status": "one-week trial",
+      "status": "rolled back (enabled:false at user scope); allowAppleEvents removed 2026-09-18",
       "note": "Seatbelt sandbox; docker+brew excluded, creds hardened, allowAppleEvents:true for notify hooks (weakens isolation). Rollback: enabled:false"
     },
     {
@@ -322,7 +322,7 @@
       "surface": "env var",
       "introducedVersion": "n/a (all three are still read by the 2.1.260 binary; they are inert in THIS setup, not removed from the product)",
       "adoptedDate": "2026-09-03",
-      "note": "MCP_CONNECTION_NONBLOCKING: tri-state parser, sole read site is !== false, non-blocking is the default. CLAUDE_CODE_WORKFLOWS: without it defaultOn is subscriptionType !== 'pro'; this account is claude_max so it was already on -- re-add if the plan ever drops to Pro. CLAUDE_CODE_DISABLE_FEEDBACK_SURVEY: read only under the claude-vscode entrypoint behind a default-false flag; re-add if the VS Code extension is ever used. DISABLE_COST_WARNINGS was judged probably-inert (fires only for API-key/console scopes or org admin/billing roles) but left in place as harmless."
+      "note": "MCP_CONNECTION_NONBLOCKING: tri-state parser, sole read site is !== false, non-blocking is the default. CLAUDE_CODE_WORKFLOWS: without it defaultOn is subscriptionType !== 'pro'; this account is claude_max so it was already on -- re-add if the plan ever drops to Pro. CLAUDE_CODE_DISABLE_FEEDBACK_SURVEY: read only under the claude-vscode entrypoint behind a default-false flag; re-add if the VS Code extension is ever used. DISABLE_COST_WARNINGS was judged probably-inert (fires only for API-key/console scopes or org admin/billing roles) but left in place as harmless. [2026-09-18 correction: the CLAUDE_CODE_DISABLE_FEEDBACK_SURVEY premise is false in 2.1.278, which reads it in 8 CLI survey paths; re-added, see the 2026-09-18 entry]"
     },
     {
       "feature": "worktree.baseRef removed (was 'fresh')",
@@ -493,6 +493,116 @@
       "introducedVersion": "2.1.276",
       "adoptedDate": "2026-09-18",
       "note": "The skill glob covered skills/*/SKILL.md and teej-skills/**/SKILL.md only, so the two project-scoped skills (maintaining-claude-code, managing-dotfiles) never had their frontmatter checked against the binary. 27 -> 29 files, still clean. Found while confirming that synced account skills (skills/synced/<bucket>/<skill>/SKILL.md, two levels deeper) are NOT swept, which is correct: they are not Teej's to fix."
+    },
+    {
+      "feature": "pluginConfigs[\"agents-md@builtin\"].options.instructionFiles",
+      "surface": "settings.json nested key (built-in plugin userConfig)",
+      "introducedVersion": "2.1.277",
+      "adoptedDate": "2026-09-18",
+      "value": "claude-md-and-agents-md",
+      "note": "default claude-md-or-agents-md yields to any project CLAUDE.md, so AGENTS.md never loaded in the four repos that have one: bg-ex CLAUDE.md:124 says to follow AGENTS.md, llama.cpp CLAUDE.md is a one-line markdown link to it (link, not import), oskol has a Phoenix-generated AGENTS.md, deepseek-harness CLAUDE.md is a symlink to AGENTS.md (deduped) plus 18 subdir AGENTS.md with no sibling CLAUDE.md, ~58KB / ~14.6k tok (packages/client alone 26.5KB; 4 are one-line test fixtures under snapshots/session/*/workspace), loaded nested only when Claude works in that subdir. Root-level cost ~11.6k tok across bg-ex, oskol, llama.cpp, paid only in those repos. User/managed scope only; project and local pluginConfigs are ignored. Verified with claude -p in bg-ex: AGENTS.md listed in context, debug log shows agents-md@builtin admitted. Enum: claude-md|claude-md-or-agents-md|claude-md-and-agents-md|managed-only; legacy projectInstructions key still read. Probed 2026-09-18 in llama.cpp, oskol, deepseek-harness root and website/: each loaded exactly the expected set, no double loads"
+    },
+    {
+      "feature": "Read deny rules for token stores under ~/.config and ~/.docker",
+      "surface": "permissions.deny",
+      "introducedVersion": "n/a (deep-dive audit 2026-09-18, not a release feature)",
+      "adoptedDate": "2026-09-18",
+      "value": [
+        "Read(~/.config/gh/**)",
+        "Read(~/.config/github-copilot/**)",
+        "Read(~/.config/linear-cli/**)",
+        "Read(~/.config/op/**)",
+        "Read(~/.docker/config.json)"
+      ],
+      "note": "Read(~/.config/**) is allowed and reads skip the auto-mode classifier, so a deny rule is the only guard. All five paths exist on this Mac. 30-day transcripts show the Read deny rules also stop Bash grep of the same paths (3 denials)"
+    },
+    {
+      "feature": "CLAUDE_CODE_DISABLE_FEEDBACK_SURVEY re-added",
+      "surface": "env var",
+      "introducedVersion": "n/a (deep-dive audit 2026-09-18, not a release feature)",
+      "adoptedDate": "2026-09-18",
+      "value": "1",
+      "note": "Reverses the 2026-09-03 env cleanup, whose premise (read only under the claude-vscode entrypoint) is false in 2.1.278: 8 CLI read sites gate the session-quality, memory, plugin-rating, session-memory and token-threshold surveys. Broader than feedbackSurveyRate=0, which only scales the session-quality survey probability"
+    },
+    {
+      "feature": "CLAUDE_CODE_FORCE_STRIKETHROUGH",
+      "surface": "env var",
+      "introducedVersion": "n/a (deep-dive audit 2026-09-18, not a release feature)",
+      "adoptedDate": "2026-09-18",
+      "value": "1",
+      "note": "Strikethrough detection (U0t) checks TERM_PROGRAM against a list without tmux and isGhostty() only matches TERM=xterm-ghostty / TERM_PROGRAM=ghostty, so tmux panes (teammateMode tmux, TERM=tmux-256color) lost strikethrough. tmux.conf already forwards the strikethrough feature for xterm-ghostty*, so forcing it is safe"
+    },
+    {
+      "feature": "allow rules removed: Bash(gsed:*), Read(~/.rbt2/**), Bash(brew install:*), Bash(llm:*), Bash(stow:*), Bash(pnpm add:*)",
+      "surface": "permissions.allow",
+      "introducedVersion": "n/a (deep-dive audit 2026-09-18, not a release feature)",
+      "adoptedDate": "2026-09-18",
+      "value": null,
+      "note": "0 uses in 66 transcripts / 30 days. ~/.rbt2 does not exist; sed is aliased to gsed so gsed by name never appears (sed: 933 calls). The other four execute code or send data out, so under auto mode the classifier should see them. 41 other zero-use rules were left: read-only Bash helpers and WebFetch domains that only matter when the classifier is unavailable (3 times in 30 days)"
+    },
+    {
+      "feature": "sandbox.allowAppleEvents removed",
+      "surface": "settings.json nested key",
+      "introducedVersion": "n/a (deep-dive audit 2026-09-18, not a release feature)",
+      "adoptedDate": "2026-09-18",
+      "value": null,
+      "note": "Its only consumer was claude-notify.sh, retired in favour of preferredNotifChannel. No hook, skill or rule uses osascript or AppleEvents. Live only where a project enables the sandbox (gs4-sdk here; r-e-bot on the other machine)"
+    },
+    {
+      "feature": "plugin cleanup: 6 uninstalled + trevor-plugins marketplace removed",
+      "introducedVersion": "n/a (deep-dive audit 2026-09-18, not a release feature)",
+      "adoptedDate": "2026-09-18",
+      "value": null,
+      "note": "Uninstalled ralph-loop, telegram-enhanced, house, dev, code-simplifier, claude-md-management (installed at user scope, none enabled; the earlier ralph-loop uninstall happened on the other machine). Removed the trevor-plugins marketplace once nothing from it was installed; re-add with `claude plugin marketplace add TrevorS/claude-code-plugins`. The house plugin's .mcp.json carried plaintext secrets; 2026-09-18 Teej chose deletion over rotation: plugins/house/.mcp.json staged for removal in claude-code-plugins and the orphaned cache copy deleted. The values remain in 5 commits of that private repo's history"
+    },
+    {
+      "feature": "typescript-language-server installed for typescript-lsp",
+      "introducedVersion": "n/a (deep-dive audit 2026-09-18, not a release feature)",
+      "adoptedDate": "2026-09-18",
+      "value": "bun add -g typescript-language-server typescript (6.0.0, ~/.bun/bin)",
+      "note": "typescript-lsp@claude-plugins-official was enabled with its server missing from PATH; 18 TS projects under ~/Projects. bun chosen over npm because fnm puts npm globals behind a per-shell multishell path"
+    },
+    {
+      "feature": "guard parser: heredoc bodies",
+      "introducedVersion": "n/a (deep-dive audit 2026-09-18, not a release feature)",
+      "adoptedDate": "2026-09-18",
+      "value": null,
+      "note": "segment_command in branch_protection.sh, git_dangerous_flags.sh and jj_interactive_guard.sh treated an unquoted heredoc body as shell, so an apostrophe (don't) opened a quote that swallowed every later command. 4 direct commits to master slipped past in 30 days. New heredoc_word helper parses <<, <<-, quoted and escaped delimiters; body lines become their own segments with quote tracking off, so `bash <<EOF` bodies are still checked. Regression cases added to all three test suites"
+    },
+    {
+      "feature": "branch_protection: branch created earlier in the same command",
+      "introducedVersion": "n/a (deep-dive audit 2026-09-18, not a release feature)",
+      "adoptedDate": "2026-09-18",
+      "value": null,
+      "note": "`git checkout -b x && git commit` on master was blocked 3 times in 30 days (twice as the fix for an earlier block): the repo queries run before the command and see the old HEAD. checkout -b/-B/--orphan and switch -c/-C/--create/--force-create/--orphan/<name> now set the branch later commit/add segments are judged against. Plain `git checkout <name>` is ignored because it may name a path"
+    },
+    {
+      "feature": "git_dangerous_flags: + refspec push blocked",
+      "introducedVersion": "n/a (deep-dive audit 2026-09-18, not a release feature)",
+      "adoptedDate": "2026-09-18",
+      "value": null,
+      "note": "`git push origin +master` force-pushes one ref and passed every check. jj --ignore-immutable deliberately NOT blocked: cleaning-commit-history uses it on purpose, and pr-safety.md gates it by asking"
+    },
+    {
+      "feature": "teammate-idle falls back to `make check`",
+      "introducedVersion": "n/a (deep-dive audit 2026-09-18, not a release feature)",
+      "adoptedDate": "2026-09-18",
+      "value": null,
+      "note": "Gated 0 of 14 teammates across 3 teams in 30 days: none of their repos has a validate target (glaes-go spells it check). validate still wins when both exist"
+    },
+    {
+      "feature": "~/.claude/.claude/settings.local.json pruned 179 -> 10",
+      "introducedVersion": "n/a (deep-dive audit 2026-09-18, not a release feature)",
+      "adoptedDate": "2026-09-18",
+      "value": null,
+      "note": "Kept only read-only helpers (ls, grep, head, wc, cat, du -sh, defaults read, log show) and Read of /tmp and /private/tmp. Dropped python:*, rm:*, chmod:*, cp:*, pip3/cargo/luarocks install, nvim:*, time:* and the OPENAI_API_KEY timeout wrapper (each runs arbitrary code with no classifier review in the repo that holds settings and hooks), `source ~/.secrets.zsh`, Tailscale up, sudo pmset, a /tmp script, 13 duplicates, rules covered by user scope, and one-off literals. File is gitignored, so git is not the undo layer here"
+    },
+    {
+      "feature": "schema-completeness.py skill frontmatter extractor anchor",
+      "introducedVersion": "n/a (deep-dive audit 2026-09-18, not a release feature)",
+      "adoptedDate": "2026-09-18",
+      "value": null,
+      "note": "2.1.278 renamed the minified wrapper around the SKILL.md frontmatter shape (c({ -> u({), so rfind('c({') landed 123KB early and the accepted set grew to 121 keys including telemetry fields (errno, pid, etag); the name/when_to_use sanity check still passed. Now takes the nearest <ident>({ within 8KB before the anchor and rejects spans over 8KB. Returns the real 42 keys on 2.1.275 and 2.1.278; the skills audit stays clean"
     }
   ],
   "declined": [
@@ -575,7 +685,7 @@
     },
     {
       "feature": "sandbox.network.strictAllowlist / filesystem.disabled / deniedDomains / failIfUnavailable",
-      "reason": "all gated on sandbox.enabled, which is false — the June 2026 trial was rolled back. Revisit together if the sandbox is re-enabled [2026-09-01: no longer true for every scope; r-e-bot's settings.local.json enables the sandbox, see the 2.1.257 sandbox-fixes entry]"
+      "reason": "all gated on sandbox.enabled, which is false — the June 2026 trial was rolled back. Revisit together if the sandbox is re-enabled [2026-09-01: no longer true for every scope; r-e-bot's settings.local.json enables the sandbox, see the 2.1.257 sandbox-fixes entry] [host note 2026-09-18: r-e-bot and brigade are not on Mac.localdomain; these paths are on the other machine]"
     },
     {
       "feature": "subagentStatusLine",
@@ -811,12 +921,13 @@
     {
       "feature": "2.1.257 sandbox fixes (deniedDomains trailing dot, /doctor stale mask files)",
       "introducedVersion": "2.1.257",
-      "reason": "no-op 2026-09-01, with a ledger correction: the earlier 'sandbox.enabled is false everywhere' notes are stale. ~/Projects/r-e-bot/.claude/settings.local.json sets sandbox.enabled: true (+ autoAllowBashIfSandboxed), so user-scope sandbox.* rules ARE live in that project. Neither fix bites: user scope uses allowedDomains not deniedDomains, and macOS never writes mask files (credential masking falls back to deny)."
+      "reason": "no-op 2026-09-01, with a ledger correction: the earlier 'sandbox.enabled is false everywhere' notes are stale. ~/Projects/r-e-bot/.claude/settings.local.json sets sandbox.enabled: true (+ autoAllowBashIfSandboxed), so user-scope sandbox.* rules ARE live in that project. Neither fix bites: user scope uses allowedDomains not deniedDomains, and macOS never writes mask files (credential masking falls back to deny). [host note 2026-09-18: r-e-bot and brigade are not on Mac.localdomain; these paths are on the other machine]"
     },
     {
       "feature": "taskOutputMaxChars",
       "introducedVersion": "2.1.261",
-      "reason": "left unset 2026-09-07: CLAUDE.md already routes background-task output through Read on the <output-file> path rather than TaskOutput, so the TaskOutput inline window rarely matters. Revisit if TaskOutput truncation ever bites"
+      "reason": "left unset 2026-09-07: CLAUDE.md already routes background-task output through Read on the <output-file> path rather than TaskOutput, so the TaskOutput inline window rarely matters. Revisit if TaskOutput truncation ever bites. MOOT as of 2.1.277: TaskOutput tool removed; taskOutputMaxChars and TASK_MAX_OUTPUT_LENGTH no longer have any effect",
+      "status": "moot"
     },
     {
       "feature": "prompt_cache.last_miss_cause / miss_causes statusLine fields",
@@ -883,6 +994,22 @@
     {
       "feature": "weekly digest cross-check for 2.1.274-276",
       "reason": "skipped 2026-09-18; whats-new/2026-w38 is not published yet (latest is w37). Nothing to verify against."
+    },
+    {
+      "feature": "advisorModel",
+      "reason": "declined 2026-09-18 (deep dive). Would bring Fable in at decision points now that model is opus[1m], but the advisor receives the full conversation (up to 1M here) on every call and can bill to usage credits. Try `/advisor fable` per session before any settings key"
+    },
+    {
+      "feature": "CLAUDE_CODE_GLOB_NO_IGNORE=false",
+      "reason": "declined 2026-09-18 (deep dive). In ~/.claude rg --no-ignore finds 1,492 files vs 169 tracked (884 under gitignored plugins/), but turning it off would also hide gitignored memory and plugin files Glob is sometimes asked to find"
+    },
+    {
+      "feature": "CLAUDE_CODE_MCP_ALLOWLIST_ENV",
+      "reason": "declined 2026-09-18 (deep dive). Would strip the shell env (including ~/.secrets.zsh exports) from stdio MCP servers that declare no env, but it sits next to CLAUDE_CODE_SUBPROCESS_ENV_SCRUB, which is declined with do-not-re-propose"
+    },
+    {
+      "feature": "git_dangerous_flags blocking jj --ignore-immutable",
+      "reason": "declined 2026-09-18 (deep dive). One real case in 30 days (jj squash --into main --ignore-immutable, 09-14), but cleaning-commit-history uses the flag on purpose and pr-safety.md already requires asking first"
     }
   ],
   "deferred": [
@@ -933,7 +1060,7 @@
       "feature": "Write(path) -> Edit(path) permission rules outside ~/.claude",
       "introducedVersion": "2.1.275",
       "status": "handed to Teej 2026-09-18",
-      "note": "2.1.275: 'Fixed /update-config writing Write(path) permission rules, which file permission checks don't match, instead of Edit(path) rules'. Binary: Write(path), NotebookEdit(path) and Glob(path) rules are not matched by file permission checks. Found 9 dead rules: ~/Projects/r-e-bot/.claude/settings.json has Write(tmp/*) with no Edit twin (the allow never applied; the Bash(cat > tmp/*) rule beside it looks like the workaround); ~/Projects/brigade/internal/station/settings.go lines 86, 88, 104 emit Write(...) beside Edit(...) twins into the gitignored station settings, and station_test.go lines 666-699 pin those strings, so the generator fix needs its tests updated too. The auto-mode classifier denied the edits in this session as Self-Modification."
+      "note": "2.1.275: 'Fixed /update-config writing Write(path) permission rules, which file permission checks don't match, instead of Edit(path) rules'. Binary: Write(path), NotebookEdit(path) and Glob(path) rules are not matched by file permission checks. Found 9 dead rules: ~/Projects/r-e-bot/.claude/settings.json has Write(tmp/*) with no Edit twin (the allow never applied; the Bash(cat > tmp/*) rule beside it looks like the workaround); ~/Projects/brigade/internal/station/settings.go lines 86, 88, 104 emit Write(...) beside Edit(...) twins into the gitignored station settings, and station_test.go lines 666-699 pin those strings, so the generator fix needs its tests updated too. The auto-mode classifier denied the edits in this session as Self-Modification. [host note 2026-09-18: r-e-bot and brigade are not on Mac.localdomain; these paths are on the other machine]"
     }
   ]
 }

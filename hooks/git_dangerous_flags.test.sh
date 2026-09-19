@@ -102,6 +102,20 @@ run BLOCK 'X="$(echo "a b")" git push --force'          # quotes nested inside $
 run PASS  'X="$(a b)" git push'
 run PASS  'X="git push --force" echo hi'                # git only inside the value
 
+# --- a leading + on a refspec force-pushes that ref ---
+run BLOCK 'git push origin +master'
+run BLOCK 'git push origin +HEAD:refs/heads/feat'
+run PASS  'git push origin HEAD:refs/heads/feat'
+# --- heredoc bodies are data: an apostrophe in one opened a quote that hid
+# every later command (4 commits to master slipped past, 2026-09-18) ---
+run BLOCK $'git commit -F - <<EOF\nfix: don\'t break\nEOF\ngit push --force'
+run BLOCK $'cat > /tmp/m <<\'EOF\'\nit\'s fine\nEOF\ngit commit --amend -F /tmp/m'
+run BLOCK $'cat <<-EOF > /tmp/m\n\tdon\'t\n\tEOF\ngit push -f'   # <<- strips leading tabs
+run BLOCK $'bash <<EOF\ngit push --force\nEOF'                    # body lines are still checked
+run BLOCK $'cat <<A <<B\nit\'s\nA\nwon\'t\nB\ngit push -f'        # two heredocs on one line
+run PASS  $'git commit -F - <<EOF\nfix: don\'t break\nEOF\ngit push'
+run PASS  'grep -c x <<< "a b" && git push'                       # here-string, not a heredoc
+
 echo
 if [ "$fails" -eq 0 ]; then echo "all pass"; else echo "$fails failing"; fi
 exit $(( fails > 0 ))
