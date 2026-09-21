@@ -15,7 +15,7 @@ Run `make help` for the target list. CI mirrors `make validate` on push/PR to ma
 - `dotfiles/<pkg>/<path-relative-to-home>` gets symlinked into `~` by stow.
 - Machine-local overrides are untracked files reached through each tool's include mechanism:
   - **git**: `[include] path = ~/.config/git/local`
-  - **ghostty**: `config-file = ~/local/ghostty-overrides`
+  - **ghostty**: `config-file = ?~/.local/ghostty-overrides`
   - **zsh**: `~/.local.zsh` (machine paths/tools), `~/.secrets.zsh` (API keys/tokens)
 
 ## Quick References

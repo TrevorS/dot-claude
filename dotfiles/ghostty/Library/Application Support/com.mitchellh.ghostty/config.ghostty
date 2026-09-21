@@ -1,5 +1,11 @@
 # Theme
 theme = Catppuccin Mocha
+# Scrollback search (cmd+f) highlights; the theme doesn't set these, so match
+# Catppuccin yellow/peach instead of Ghostty's default amber.
+search-background = #f9e2af
+search-foreground = #1e1e2e
+search-selected-background = #fab387
+search-selected-foreground = #1e1e2e
 
 # Font — use base font; Ghostty has built-in Nerd Font support
 font-family = Berkeley Mono
@@ -22,7 +28,20 @@ window-padding-balance = true
 
 # Behavior
 mouse-hide-while-typing = true
-scrollback-limit = 100000
+# 100k lines of history. The old `scrollback-limit` (now `scrollback-limit-bytes`)
+# counted bytes, so `100000` capped scrollback at ~100 KB. Bytes go unlimited so
+# the line cap governs; idle pages are compressed (scrollback-compression).
+scrollback-limit-lines = 100000
+scrollback-limit-bytes = unlimited
+# macOS notification when a command that ran 30s+ finishes in an unfocused
+# surface. Needs OSC 133 marks from shell integration; a Claude Code session
+# counts as one long command, so this won't fire per turn.
+notify-on-command-finish = unfocused
+notify-on-command-finish-action = no-bell,notify
+notify-on-command-finish-after = 30s
+# Moving between splits while one is zoomed zooms the new one instead of
+# unzooming the tree.
+split-preserve-zoom = navigation
 
 # Updates — track the tip (nightly) channel; installed via the ghostty@tip cask.
 # Tip builds fix rendering issues on the latest macOS before they reach stable.
