@@ -23,11 +23,23 @@ macos-titlebar-proxy-icon = hidden
 macos-option-as-alt = true
 
 # Display
-window-colorspace = display-p3
+# window-colorspace stays at the sRGB default: Catppuccin's hex values are sRGB,
+# and display-p3 rendered them oversaturated.
 window-padding-balance = true
+# Blend text in linear space with a weight correction, which drops the dark
+# fringes around colored text (red/green on dark bg) that `native` produces.
+alpha-blending = linear-corrected
+# Never draw text in (nearly) the background color, e.g. an app setting fg == bg.
+minimum-contrast = 1.1
 
 # Behavior
 mouse-hide-while-typing = true
+# Default word boundaries minus `:`, so double-click grabs `src/foo.py:123` and
+# URLs whole (same intent as tmux's word-separators).
+selection-word-chars = "\t '\"│`|;,()[]{}<>$"
+# Restore windows, tabs, splits, and cwds on relaunch. macOS "close windows when
+# quitting" is on, so `default` dropped everything on each tip update restart.
+window-save-state = always
 # 100k lines of history. The old `scrollback-limit` (now `scrollback-limit-bytes`)
 # counted bytes, so `100000` capped scrollback at ~100 KB. Bytes go unlimited so
 # the line cap governs; idle pages are compressed (scrollback-compression).
@@ -46,6 +58,8 @@ split-preserve-zoom = navigation
 # Updates — track the tip (nightly) channel; installed via the ghostty@tip cask.
 # Tip builds fix rendering issues on the latest macOS before they reach stable.
 auto-update-channel = tip
+# Download tip builds in the background; they install on the next quit.
+auto-update = download
 
 # Shell integration — keep Ghostty defaults but add SSH support so remote hosts
 # get the ghostty terminfo auto-installed (ssh-terminfo) and a sane TERM
