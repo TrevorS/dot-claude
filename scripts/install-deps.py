@@ -158,7 +158,7 @@ def install_cargo(upgrade: bool) -> None:
             print("cargo-update not found — run 'make deps' first to bootstrap it")
             return
         print(f"Upgrading cargo packages: {', '.join(packages)}")
-        subprocess.run(["cargo", "install-update", *packages])
+        subprocess.run(["cargo", "install-update", "--locked", *packages])
         return
 
     installed = cargo_installed()
@@ -166,7 +166,7 @@ def install_cargo(upgrade: bool) -> None:
     # Bootstrap cargo-binstall first so the rest can install via prebuilt binaries.
     if "cargo-binstall" in packages and "cargo-binstall" not in installed:
         print("Installing cargo package cargo-binstall...")
-        subprocess.run(["cargo", "install", "cargo-binstall"])
+        subprocess.run(["cargo", "install", "--locked", "cargo-binstall"])
 
     has_binstall = shutil.which("cargo-binstall") is not None
 
@@ -177,7 +177,7 @@ def install_cargo(upgrade: bool) -> None:
         if has_binstall:
             subprocess.run(["cargo", "binstall", "-y", pkg])
         else:
-            subprocess.run(["cargo", "install", pkg])
+            subprocess.run(["cargo", "install", "--locked", pkg])
 
 
 def uv_tool_installed() -> set[str]:
