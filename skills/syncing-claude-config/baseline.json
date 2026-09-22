@@ -1,6 +1,6 @@
 {
-  "claudeCodeVersion": "2.1.278",
-  "syncedDate": "2026-09-18",
+  "claudeCodeVersion": "2.1.280",
+  "syncedDate": "2026-09-22",
   "source": "https://api.github.com/repos/anthropics/claude-code/releases",
   "adopted": [
     {
@@ -603,6 +603,20 @@
       "adoptedDate": "2026-09-18",
       "value": null,
       "note": "2.1.278 renamed the minified wrapper around the SKILL.md frontmatter shape (c({ -> u({), so rfind('c({') landed 123KB early and the accepted set grew to 121 keys including telemetry fields (errno, pid, etag); the name/when_to_use sanity check still passed. Now takes the nearest <ident>({ within 8KB before the anchor and rejects spans over 8KB. Returns the real 42 keys on 2.1.275 and 2.1.278; the skills audit stays clean"
+    },
+    {
+      "feature": "modelSettings.claude-opus-5-5.effortLevel",
+      "introducedVersion": "2.1.280 (behavior change; modelSettings itself is 2.1.251)",
+      "adoptedDate": "2026-09-22",
+      "value": "xhigh",
+      "note": "2.1.280 stopped applying a pre-per-model top-level effortLevel to newly released models, so the top-level xhigh no longer reached Opus 5.5. Pinned per model to keep xhigh."
+    },
+    {
+      "feature": "prompt-drift.py prefers JS-source copy over constant-pool copy",
+      "introducedVersion": "n/a (tooling fix)",
+      "adoptedDate": "2026-09-22",
+      "value": null,
+      "note": "Pool entries can run into the next entry length prefix when that byte is printable ASCII (0x40 -> trailing @ in 2.1.280; 0x0f was baked into the 2.1.278 snapshot). Longest-wins picked the pool copy; source copies now win. Both 2.1.278 and 2.1.280 drifts were artifacts."
     }
   ],
   "declined": [

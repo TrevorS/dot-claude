@@ -51,6 +51,7 @@ sessions/
 skills/synced/
 shell-snapshots/
 stats-cache.json
+state/
 statsig/
 tasks/
 teams/

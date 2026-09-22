@@ -140,12 +140,14 @@ def extract(data: bytes) -> dict[str, str]:
 
     The prompt text appears more than once (JS source plus a compiled
     constant pool with NUL terminators), so every occurrence is tried and the
-    longest cleanly terminated one wins.
+    longest cleanly terminated one wins. A JS-source copy beats any pool copy:
+    a pool entry can run into the next entry's length prefix when that byte is
+    printable ASCII (0x40 left a trailing "@" in 2.1.280).
     """
     out: dict[str, str] = {}
     GATES.clear()
     for key, anchor in ANCHORS.items():
-        best = ""
+        best, best_src = "", False
         for m in re.finditer(re.escape(anchor), data):
             g = gate_state(data, m.start())
             if g != "ungated":
@@ -165,14 +167,16 @@ def extract(data: bytes) -> dict[str, str]:
             ]
             if not ends:
                 continue  # ran off the cap: not a real section boundary
-            raw = chunk[: min(ends)]
+            end = min(ends)
+            src = end != chunk.find(b"\x00", 1)
+            raw = chunk[:end]
             try:
                 raw.decode("utf-8")
             except UnicodeDecodeError as e:
                 raw = raw[: e.start]  # constant-pool copies run into the next entry's length prefix
             text = unescape(raw).strip()
-            if len(text) > len(best):
-                best = text
+            if (src, len(text)) > (best_src, len(best)):
+                best, best_src = text, src
         out[key] = best
     return out
 
