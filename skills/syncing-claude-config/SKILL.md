@@ -36,7 +36,9 @@ Four sources describe the same settings surface and they **routinely disagree**.
 3. **schemastore** — `https://www.schemastore.org/claude-code-settings.json`. Useful for spotting `"Legacy alias for …"` wording, but drifts both ahead of and behind the binary.
 4. **Release notes** — accurate about the *change*, often loose about the *identifier*.
 
-When they conflict, the binary wins. Two conflicts seen on 2026-08-24 alone: schemastore documented `voice.{enabled,mode,autoSubmit}` while the binary's feature-gate shape registered only `voiceEnabled` (both spellings are accepted — the main settings schema carries the nested object); and schemastore's `voiceEnabled` description linked to `settings#available-settings`, an anchor that no longer exists because the key reference moved to its own page.
+When they conflict, the binary wins.
+
+`gotchas.md` in this directory holds the failure modes past runs hit, grouped by step. Read its section for each step as you reach it.
 
 ## Workflow
 
@@ -127,11 +129,7 @@ It diffs each surface against the **installed binary** (source of truth #1) in b
 
 `<scratchpad>` is the literal session scratchpad path from the environment context; no env var holds it. Reuse a strings dump of the binary (source of truth #1) saved there via `--strings`, or drop the flag and the script re-extracts.
 
-**The `suspect` check.** Some palette keys are named like surfaces but are actually **accent foregrounds** — `background` is cyan in every built-in, not a fill. Assigning it a dark surface color yields valid, accepted, invisible text. The script tells the two apart without assuming a terminal background: **surfaces invert between the light and dark built-ins** (`userMessageBackground` 240→55), **accents keep their hue and brighten** (`background` 153→204). It then flags any accent sitting far from its own built-in value. This is what caught `background: #313244` at 6.3:1 off-target on 2026-08-26.
-
 Findings here are **reported, never auto-applied** — they flow into the step 8 proposal table like everything else. Note that a missing key is not automatically a defect: the fallback may be the value you want. Propose the catppuccin-correct value and let Teej choose.
-
-Two things the script deliberately does **not** flag: env vars without a Claude-owned prefix (`JJ_EDITOR` is a legitimate pass-through), and free-form maps whose keys are user data (`enabledPlugins`, `skillOverrides`, `extraKnownMarketplaces`). Free-form maps are *detected* — under half their children resolve to zod entries — rather than blacklisted, so new maps in future versions don't produce a wall of false positives.
 
 **Doc-index cross-check** (breadth, for `settings.json` only). The docs key index is a faster enumerator than the binary when you want the whole surface at once:
 
@@ -142,18 +140,16 @@ grep -oE '^#{3,4} `[^`]+`' "$S/settings-ref.md" | sed 's/^#* `//; s/`$//' | grep
 jq -r 'keys[]' ~/.claude/settings.json | grep -v '^\$' | sort | comm -23 - "$S/doc-keys.txt"
 ```
 
-The `grep -v '\.'` drops nested `parent.child` entries, leaving the ~156 top-level keys. Drop it to audit nested objects too — but note `comm` then reports third-level keys (`sandbox.network.tlsTerminate`) against a second-level list, so flatten both sides before comparing.
+Anything `comm` prints is **undocumented, not necessarily dead**. Confirm each against the binary before proposing removal.
 
-Anything `comm` prints is **undocumented, not necessarily dead** — see the `@internal` note below. Confirm each against the binary before proposing removal.
-
-**Half-wired config.** A key can be live, valid, and still inert because the switch that activates it lives at another scope. Check where a gate is actually set before calling its dependents dead:
+**Half-wired config.** A key can be live and still inert because its gate lives at another scope. Check where the gate is set before calling its dependents dead:
 
 ```bash
 grep -rl '"sandbox"' --include='settings*.json' ~/Projects ~/.claude 2>/dev/null \
   | while read f; do printf '%s\t%s\n' "$(jq -c 'if has("sandbox") and (.sandbox|has("enabled")) then .sandbox.enabled else "unset" end' "$f")" "$f"; done
 ```
 
-Use `if has(...) then ... else` — **not** `//`. jq's alternative operator treats `false` as empty, so `.sandbox.enabled // "unset"` reports a disabled sandbox as unset and inverts the finding.
+**Docs enumerator for pre-baseline surfaces.** Once per sync, diff the docs' hook handler fields, skill frontmatter table, and settings key index against what the config uses. Steps 2–5 cannot see a feature that shipped before the first sync.
 
 ### 7. Audit instruction drift against the system prompt
 
@@ -198,15 +194,6 @@ Update `~/.claude/skills/syncing-claude-config/baseline.json`: set `claudeCodeVe
 python3 ~/.claude/skills/syncing-claude-config/prompt-drift.py --update
 ```
 
-## Notes
+## Gotchas
 
-- **Tracked sections can be dormant.** The prompt string lives in the binary behind `function X(e){if(!G(e))return null;return"..."}`; `prompt-drift.py` resolves `G` and stores `off`/`on`/the flag or model prefix it tests beside the text. The "approval covers the task end to end" block sat at `off` through 2.1.269–2.1.272. Text-only diffing would report the day it lands as "unchanged". For prompt changes outside the tracked anchors, `prose-diff.py OLD NEW` (runs of 22+ words, set-differenced between two installed versions in `~/.local/share/claude/versions/`) is cheap: ~13 s, and on 2.1.269→2.1.272 it surfaced the Agent tool rewrite that no anchor covered; on 2.1.272→2.1.273 it surfaced the Artifact tool's publishing wording and the bundled commit skills' git refusal list, neither in the release notes.
-- **The release window cannot see surfaces older than the baseline.** Steps 2–5 only propose what a release note in the window names, so a feature that landed before the first sync and was never proposed stays invisible forever. The docs pages are the enumerator for that class: on 2026-09-15 the hooks reference surfaced the handler-level `if` filter (2.1.85, six months pre-baseline, never in the ledger), worth a 13× cut in guard spawns. Once per sync, diff the docs' hook handler fields, skill frontmatter table, and settings key index against what the config actually uses, not just against the binary.
-- **Verify a hook `if` filter against the binary, not by reading the docs.** `claude -p '<prompt forcing one Bash command>' --debug-file F` and grep F for `Skipping hook due to if condition "Bash(jj *)" not matching`: one line per skipped handler, none for the ones that ran. Six commands cover it: a non-VCS command (all skip), one per tool (others skip), a compound `echo && jj …` (segment match), and a command the guard must still block. `.claude/settings.local.json` is not written by these runs; the debug log's "Applying permission update … localSettings" lines are the load, not a write.
-- **Zero hook fires is a finding, not reassurance.** Measure per hook over 30 days of transcripts (`hook error: [$HOME/.claude/hooks/<name>.sh]` is the PreToolUse block signature), then probe the hook with harness-shaped payloads for the commands it should block. `branch_protection.sh` had 0 fires for months because jj renders an ahead-of-remote bookmark as `master*` and the hook matched the bare name; `git_dangerous_flags.sh` had 0 fires because the workflow is jj and never issues the git forms. Same number, opposite conclusions.
-- If the releases API is unreachable, fall back to `https://raw.githubusercontent.com/anthropics/claude-code/main/CHANGELOG.md` (same bullets, no dates).
-- Never propose `enforceAvailableModels`, `requiredMinimumVersion`, or other managed/enterprise keys for this single-user config unless Teej asks — they target shared/managed deployments.
-- **Undocumented ≠ stale.** Keys tagged `@internal` in their zod `.describe()` are deliberately excluded from the docs but fully live. `skipWorkflowUsageWarning` is one (*"@internal Whether the user has accepted the multi-agent workflow usage warning"*); `autoDreamEnabled` is undocumented without the tag. Never propose deleting a key on doc-absence alone.
-- **Pre-baseline drift.** A bullet can *expose* an older surface without introducing it — the 2.1.239 `voice.enabled` mention is the case in point, since the nested object was already in the 2.1.238 binary. Before recording an `adopted` entry, check whether the anchor predates the baseline, and say so in the note; the ledger is only useful if provenance is honest.
-- **Measure before proposing context-budget keys.** Anything that trades context for fidelity (`skillListingBudgetFraction`, `skillListingMaxDescChars`, `autoCompactWindow`) needs the actual corpus measured first, not estimated — the 2026-08-24 decline held up only because the numbers were counted. `/skill-doctor` (2.1.261+) is the direct instrument: it lists every loaded skill with its usage count and estimated resident context cost, so an unused-and-expensive entry is a number, not a hunch. `/doctor` covers the same ground under its "unused skills, MCP servers, and plugins" check, plus the ~1% listing budget beyond which entries truncate and skill routing degrades. Run one of them before touching any listing-budget key, and paste the totals into the proposal row.
-- **Cross-check completeness against the weekly digests.** `https://code.claude.com/docs/en/whats-new/2026-w<NN>.md` groups releases into themed summaries with an "Other wins" list. It is a *verification* source, not a primary one — it surfaced nothing the releases API had missed on 2026-08-24 — but it is a cheap way to confirm the ledger caught everything in a window. `https://code.claude.com/docs/llms.txt` indexes every docs page.
+Failure modes from past runs live in `gotchas.md`, grouped by step: sources disagreeing, dormant prompt sections, the schema audit's `suspect` and free-form-map rules, hook `if` filters and zero-fire counts, empty LSP plugins, synced skills per org, and which settings edits the auto-mode classifier blocks. Add a line there whenever a run hits something new.

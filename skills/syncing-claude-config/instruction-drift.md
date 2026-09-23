@@ -95,7 +95,8 @@ Patterns that compensated for older models and now cost quality. Source: Anthrop
 - Verification loops ("double-check", "verify your work", "re-verify before responding").
 - "Be conservative" / severity filters on reviews.
 - Exhaustiveness demands ("be thorough", "comprehensive").
-- Reasoning-exposure requests ("show your reasoning", "explain your thinking").
+- Reasoning-exposure requests ("show your reasoning", "explain your thinking"). On Opus 5.5 these can also trip the `[reasoning_extraction]` safeguard flag.
+- Thinking prompts ("think carefully", "think step by step", "think hard"). Opus 5.5 always thinks and sizes it itself; effort is the lever.
 - Narration prohibitions (product now gives cadence guidance instead).
 - Ask-before-acting blanket rules.
 - Absolute NEVER/ALWAYS bans where judgment now suffices (keep when it's a hard tool fact or an external gate).
