@@ -10,6 +10,6 @@ uv run ~/.claude/skills/monitoring-ci/ci-monitor.py --branch <branch-name>
 
 Do not pre-resolve the SHA; the script does it. The `monitoring-ci` skill holds the foreground/background rules for its own fork.
 
-Say one line at launch ("CI monitor running in background"), then report the real verdict when the completion notification arrives: `0` pass, `1` fail with the failing logs, `2` indeterminate, which is **not** a pass, so pass along the manual-check command.
+Say one line at launch ("CI monitor running in background"), then report the real verdict when the completion notification arrives: `0` pass (unless it printed "already active": another monitor owns this push, so wait for that one's verdict), `1` fail with the failing logs, `2` indeterminate, which is **not** a pass, so pass along the manual-check command.
 
-Ask first only when the push failed or was blocked, the task was explicitly local-only, or Teej already declined a monitor for this push. A standing "don't watch CI" holds for the rest of the session.
+Skip the monitor only when the push failed or was blocked, the task was explicitly local-only, or Teej already declined a monitor for this push. A standing "don't watch CI" holds for the rest of the session.

@@ -6,7 +6,7 @@ paths:
 
 # Python
 
-- Use `uv` for everything (`uv add`, `uv remove`, `uv run`, `uv sync`) -- NEVER `pip install`
+- Use `uv` for everything (`uv add`, `uv remove`, `uv run`, `uv sync`), not `pip install`
 - New projects: `uv init` (or `uv init --lib` for libraries)
 - HuggingFace downloads: `uv run --with huggingface_hub hf download <repo> --local-dir <path>`
 - One-off scripts with deps: `uvx --with pkg1 --with pkg2 python3 -c "..."`

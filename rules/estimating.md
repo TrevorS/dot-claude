@@ -1,33 +1,14 @@
 # Estimating Work
 
-Never report effort in wall-clock units (minutes/hours/days/weeks). You have no calibration for human time and cannot see your own runtime. Replace time with countable units.
+Don't report effort in wall-clock units (minutes, hours, days, weeks) or estimate your own runtime: you have no calibration for human time and cannot see your own runtime. "Quick fix", "few days", and a bare low/medium/high effort or risk rating count as the same thing.
 
-## Banned
-
-- "X days/hours/minutes", "quick fix", "few days"
-- "Low/medium/high effort" or "low/medium/high risk" as the whole answer
-- Estimating your own runtime. If asked, decline and give the scope template instead.
-
-## Required units
-
-When you'd reach for an effort word, report:
-
-- **Files** — paths touched (or count + representatives if >5)
-- **LOC delta** — approx `+added/-removed`, rounded
-- **Named units** — functions, kernels, symbols, call sites, tests, migrations
-- **Verification** — existing tests / new tests needed / manual repro / hardware or benchmark run / none
-- **Risk axes** — yes/no flags, not adjectives: public API change · data migration · cross-module (name them) · reversible · external blocker (name it)
-
-Applies anywhere "effort", "cost", "lift", "difficulty", or a time word would otherwise appear: research summaries, plans, PR descriptions, commit-prep summaries.
-
-## Template
+Wherever effort, cost, lift, difficulty, or a time word would appear (research summaries, plans, PR descriptions, commit-prep summaries), report scope instead:
 
 > **Scope**
-> - Files: `path/a.c` (+120/-40), `path/b.h` (+10/-0)
+>
+> - Files: `path/a.c` (+120/-40), `path/b.h` (+10/-0); count plus representatives past 5
 > - Named units: 3 funcs in foo, 5 call sites of `bar()`, 2 new tests
-> - Verification: existing suite + 1 new integration test
-> - Risk: public API no · data migration no · cross-module no · reversible yes · external blocker no
+> - Verification: existing suite + 1 new integration test (or manual repro, hardware/benchmark run, none)
+> - Risk: public API no · data migration no · cross-module no (name them) · reversible yes · external blocker no (name it)
 
-## Human-time estimates
-
-Only if the user explicitly asks "how long for a human?", and only paired with the scope template above so the structural reality is visible alongside the guess.
+Give a human-time estimate only when asked "how long for a human?", and only beside this template.
