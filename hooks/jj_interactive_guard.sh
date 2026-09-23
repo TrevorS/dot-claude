@@ -1,7 +1,8 @@
 #!/bin/bash
 # Hook: PreToolUse (Bash) — Block jj invocations that would open an interactive
 # editor (text, diff, or merge) and hang the agent, or use a renamed subcommand.
-# Command set verified against jj 0.44 CLI reference (docs.jj-vcs.dev).
+# Command set verified against jj 0.44 CLI reference (docs.jj-vcs.dev); global
+# options and the built-in desc/ci aliases re-checked against jj 0.45.1.
 #
 # `jj split` is allowed in exactly one shape — filesets + -m, with no
 # -i/--interactive/--tool/--editor. Three separate editors can open otherwise:
@@ -33,95 +34,16 @@ MSG
 # inside a -m message can't false-match). Pipe-separated alternatives.
 has() { [[ " $bare " =~ [[:space:]](${1})([[:space:]]|=|$) ]]; }
 
-# Split a command line into segments on unquoted && || ; and newline.
-#
-# Quote-aware for the same reason split_has_fileset is: a newline inside a -m
-# message is message text, not a command separator. The old sed split blindly
-# and broke both ways -- it severed trailing filesets from `jj split` (blocking
-# a legal command) and, worse, left a trailing -i in a segment that no longer
-# began with `jj`, so `jj commit -m "sub<newline>" -i` was never scanned and
-# hung the agent. Backslash-newline is honoured as a line continuation.
-# Never eval/word-split untrusted command text.
-segment_command() {
-  local s="$1" c nxt q="" cur="" i d line cmp tab=$'\t' docs
-  segments=(); docs=()
-  for (( i = 0; i < ${#s}; i++ )); do
-    c="${s:i:1}"
-    if [ -n "$q" ]; then
-      if [ "$c" = '\' ] && [ "$q" = '"' ]; then cur+="$c${s:i+1:1}"; i=$((i+1)); continue; fi
-      cur+="$c"
-      [ "$c" = "$q" ] && q=""
-      continue
-    fi
-    case "$c" in
-      '\')
-        nxt="${s:i+1:1}"
-        # Line continuation: backslash and newline both vanish. Any other
-        # escaped character is literal and cannot act as a separator.
-        if [ "$nxt" = $'\n' ]; then i=$((i+1)); else cur+="$c$nxt"; i=$((i+1)); fi
-        ;;
-      '"' | "'") q="$c"; cur+="$c" ;;
-      '<')
-        if [ "${s:i:3}" = '<<<' ]; then
-          cur+='<<<'; i=$((i+2))
-        elif [ "${s:i+1:1}" = '<' ]; then
-          heredoc_word "$s" "$i"
-          cur+="${s:i:hd_end-i+1}"; i=$hd_end
-          [ -n "$hd_delim" ] && docs+=("$hd_dash$hd_delim")
-        else
-          cur+="$c"
-        fi ;;
-      $'\n' | ';')
-        segments+=("$cur"); cur=""
-        # The newline ends the line that opened any heredocs; their bodies come
-        # next. Each body line is its own segment with quote tracking off, so a
-        # `bash <<EOF` body is still checked line by line.
-        if [ "$c" = $'\n' ] && (( ${#docs[@]} )); then
-          for d in "${docs[@]}"; do
-            while (( i + 1 < ${#s} )); do
-              line="${s:i+1}"; line="${line%%$'\n'*}"
-              i=$(( i + 1 + ${#line} ))
-              cmp="$line"; [ "${d:0:1}" = 1 ] && cmp="${cmp#"${cmp%%[!$tab]*}"}"
-              [ "$cmp" = "${d:1}" ] && break
-              segments+=("$line")
-            done
-          done
-          docs=()
-        fi ;;
-      '&') if [ "${s:i+1:1}" = '&' ]; then segments+=("$cur"); cur=""; i=$((i+1)); else cur+="$c"; fi ;;
-      '|') if [ "${s:i+1:1}" = '|' ]; then segments+=("$cur"); cur=""; i=$((i+1)); else cur+="$c"; fi ;;
-      *) cur+="$c" ;;
-    esac
-  done
-  segments+=("$cur")
-}
+# Shared parsing: segment_command, heredoc_word, tokenize, peel_assignment,
+# strip_wrappers, resolve_subcommand.
+# shellcheck source=SCRIPTDIR/lib/cmdline.sh
+. "${BASH_SOURCE[0]%/*}/lib/cmdline.sh"
 
-# Heredoc bodies are data, not shell. Tracked as quoted text, an apostrophe in
-# `don't` opened a quote that never closed and swallowed every later command:
-# 4 direct commits to master slipped past all three guards that way (found
-# 2026-09-18). Parses the delimiter after the `<<` or `<<-` at index $2 of $1.
-# Sets hd_delim (quotes removed), hd_dash (1 for <<-), and hd_end (index of the
-# delimiter's last character).
-heredoc_word() {
-  local s="$1" j=$(( $2 + 2 )) c q=""
-  hd_delim=""; hd_dash=0
-  if [ "${s:j:1}" = "-" ]; then hd_dash=1; j=$((j+1)); fi
-  while [ "${s:j:1}" = " " ] || [ "${s:j:1}" = $'\t' ]; do j=$((j+1)); done
-  for (( ; j < ${#s}; j++ )); do
-    c="${s:j:1}"
-    if [ -n "$q" ]; then
-      if [ "$c" = "$q" ]; then q=""; else hd_delim+="$c"; fi
-      continue
-    fi
-    case "$c" in
-      "'" | '"') q="$c" ;;
-      '\') j=$((j+1)); hd_delim+="${s:j:1}" ;;
-      ' ' | $'\t' | $'\n' | ';' | '&' | '|' | '<' | '>' | '(' | ')') break ;;
-      *) hd_delim+="$c" ;;
-    esac
-  done
-  hd_end=$((j-1))
-}
+# jj global options that take a SEPARATE value token (jj 0.45.1 `jj help`).
+# The valueless ones (--no-pager, --ignore-working-copy, --ignore-immutable,
+# --quiet, --debug, --no-integrate-operation) and attached forms
+# (--repository=., -R.) are skipped as single tokens by resolve_subcommand.
+JJ_VALUED_GLOBALS='-R|--repository|--at-operation|--at-op|--color|--config|--config-file'
 
 # Drop "double"- and 'single'-quoted substrings so flag scanning can't match text
 # inside a -m message. Must span lines: a line-wise sed leaves a multi-line
@@ -147,29 +69,11 @@ strip_quoted() {
 #
 # Parses the ORIGINAL segment rather than $bare: quote-stripping would turn
 # `-m "msg"` into a bare `-m`, and the following path would then be swallowed as
-# its value. Tokenizes quote-aware by hand — never eval/word-split untrusted
-# command text, which would execute any $(...) inside it. Only called on a
-# `jj split` segment, so the character loop costs nothing on other commands.
+# its value. Only called on a `jj split` segment whose global options were
+# already removed, so toks[1] is `split`.
 split_has_fileset() {
-  local s="$1" c q="" tok="" had_tok=0 skip_next=0 seen_ddash=0 i
-  local -a toks=()
-  for (( i = 0; i < ${#s}; i++ )); do
-    c="${s:i:1}"
-    if [ -n "$q" ]; then
-      if [ "$c" = '\' ] && [ "$q" = '"' ]; then tok+="${s:i+1:1}"; i=$((i+1)); had_tok=1; continue; fi
-      if [ "$c" = "$q" ]; then q=""; else tok+="$c"; fi
-      had_tok=1
-    elif [ "$c" = '"' ] || [ "$c" = "'" ]; then
-      q="$c"
-      had_tok=1
-    elif [ "$c" = " " ] || [ "$c" = $'\t' ]; then
-      if [ "$had_tok" -eq 1 ]; then toks+=("$tok"); tok=""; had_tok=0; fi
-    else
-      tok+="$c"
-      had_tok=1
-    fi
-  done
-  [ "$had_tok" -eq 1 ] && toks+=("$tok")
+  local tok skip_next=0 seen_ddash=0 i
+  tokenize "$1"
 
   # Skip toks[0]=jj and toks[1]=split.
   for (( i = 2; i < ${#toks[@]}; i++ )); do
@@ -190,100 +94,6 @@ split_has_fileset() {
   return 1
 }
 
-# Split chained commands (&& || ; newline) and inspect each jj segment.
-# Peel leading environment assignments and wrapper commands, so that
-# `timeout 5 git push --force` is inspected as `git push --force`. Without this
-# the anchored `^git`/`^jj` test below skips the segment entirely and the guard
-# silently passes -- verified evadable via `timeout`, `command`, and `env`.
-#
-# Assigns the global `stripped` rather than echoing, for the same reason
-# git_subcommand does: a $(...) call would fork a subshell per segment on a hook
-# that runs for every Bash tool call.
-#
-# Peeling only ever exposes MORE of the command line to the checks below, so an
-# over-eager strip risks a false block, never a missed one.
-#
-# NAME=value prefix, quote-aware. The value is one shell word, and a word may
-# carry whitespace inside quotes or $(...) -- `X="$(a b)" jj ...` is a single
-# assignment followed by a jj command. The old `[^[:space:]]*` regex stopped at
-# the first space, so the segment never began with `jj` and skipped every check
-# (found 2026-09-07 via `JJ_EDITOR="$(jq -r ...)" timeout 10 jj describe`).
-# Sets the global `peeled` to the text after the assignment, or "" when the
-# segment is not an assignment prefix (or is an assignment with nothing after).
-peel_assignment() {
-  local s="$1" c q="" stack="" i n
-  n=${#s}
-  peeled=""
-  [[ "$s" =~ ^[A-Za-z_][A-Za-z0-9_]*= ]] || return 0
-  for (( i = ${#BASH_REMATCH[0]}; i < n; i++ )); do
-    c="${s:i:1}"
-    if [ "$q" = "'" ]; then
-      if [ "$c" = "'" ]; then q=""; fi
-      continue
-    fi
-    if [ "$c" = '\' ]; then i=$((i+1)); continue; fi
-    if [ "$q" = '"' ]; then
-      case "$c" in
-        '"') q="" ;;
-        # $( ) opens a fresh unquoted context inside the string; remember to
-        # return to double-quote mode at the matching ).
-        '$') if [ "${s:i+1:1}" = '(' ]; then stack+='"'; q=""; i=$((i+1)); fi ;;
-      esac
-      continue
-    fi
-    case "$c" in
-      "'" | '"') q="$c" ;;
-      '(') stack+='-' ;;
-      ')')
-        if [ -n "$stack" ]; then
-          q="${stack: -1}"; if [ "$q" = '-' ]; then q=""; fi
-          stack="${stack%?}"
-        fi ;;
-      ' ' | $'\t')
-        if [ -z "$stack" ]; then
-          peeled="${s:i}"
-          peeled="${peeled#"${peeled%%[![:space:]]*}"}"
-          return 0
-        fi ;;
-    esac
-  done
-}
-
-strip_wrappers() {
-  local s="$1" prev="" rest
-  while [ "$s" != "$prev" ]; do
-    prev="$s"
-    # VAR=value prefix (also covers `env FOO=1 ...` on the next pass).
-    if [[ "$s" =~ ^[A-Za-z_][A-Za-z0-9_]*= ]]; then
-      peel_assignment "$s"
-      if [ -n "$peeled" ]; then s="$peeled"; continue; fi
-    fi
-    # Wrappers that take no options of their own.
-    if [[ "$s" =~ ^(command|builtin|exec|nohup|setsid|time)[[:space:]]+(.*)$ ]]; then
-      s="${BASH_REMATCH[2]}"; continue
-    fi
-    # timeout [-opts] DURATION cmd
-    if [[ "$s" =~ ^timeout[[:space:]]+(-[^[:space:]]+[[:space:]]+)*[0-9]+(\.[0-9]+)?[smhd]?[[:space:]]+(.*)$ ]]; then
-      s="${BASH_REMATCH[3]}"; continue
-    fi
-    # Wrappers that may carry their own flags, some taking a separate value.
-    if [[ "$s" =~ ^(env|stdbuf|nice|ionice|sudo)[[:space:]]+(.*)$ ]]; then
-      rest="${BASH_REMATCH[2]}"
-      while true; do
-        if [[ "$rest" =~ ^-[nucgpioeC][[:space:]]+[^[:space:]]+[[:space:]]+(.*)$ ]]; then
-          rest="${BASH_REMATCH[1]}"; continue
-        fi
-        if [[ "$rest" =~ ^-[^[:space:]]+[[:space:]]+(.*)$ ]]; then
-          rest="${BASH_REMATCH[1]}"; continue
-        fi
-        break
-      done
-      s="$rest"; continue
-    fi
-  done
-  stripped="$s"
-}
-
 segment_command "$command"
 for seg in "${segments[@]}"; do
   # Trim with parameter expansion, not sed: a segment can now legitimately
@@ -293,6 +103,15 @@ for seg in "${segments[@]}"; do
   strip_wrappers "$seg"
   seg="$stripped"
   [[ "$seg" =~ ^jj([[:space:]]|$) ]] || continue
+
+  # Drop jj's global options so the checks below, anchored on `^jj <sub>`, see
+  # the subcommand: `jj --no-pager describe` and `jj -R . describe` opened the
+  # editor unchecked. The segment is rebuilt from the subcommand's offset, so
+  # everything after it keeps its original quoting.
+  tokenize "$seg"
+  if resolve_subcommand "$JJ_VALUED_GLOBALS" && (( argstart > 2 )); then
+    seg="jj ${seg:${tokpos[argstart-1]}}"
+  fi
   bare="$(strip_quoted "$seg")"
 
   # --help / -h just prints usage; never opens an editor.
@@ -340,8 +159,9 @@ for seg in "${segments[@]}"; do
      \`jj file untrack <path>\`."
   fi
 
-  # 4. describe / commit open a description editor with no message.
-  if [[ "$bare" =~ ^jj[[:space:]]+(describe|commit)([[:space:]]|$) ]] && ! has '-m|--message|--stdin'; then
+  # 4. describe / commit (and the built-in desc / ci aliases) open a
+  #    description editor with no message.
+  if [[ "$bare" =~ ^jj[[:space:]]+(describe|desc|commit|ci)([[:space:]]|$) ]] && ! has '-m|--message|--stdin'; then
     block "  $seg
   -> opens a description editor with no -m. Add -m \"msg\" (or --stdin)."
   fi
@@ -356,7 +176,7 @@ for seg in "${segments[@]}"; do
 
   # 6. commit / squash hunk pickers open a diff editor even WITH -m.
   #    (--tool implies --interactive for these commands.)
-  if [[ "$bare" =~ ^jj[[:space:]]+(commit|squash)([[:space:]]|$) ]] && has '-i|--interactive|--tool'; then
+  if [[ "$bare" =~ ^jj[[:space:]]+(commit|ci|squash)([[:space:]]|$) ]] && has '-i|--interactive|--tool'; then
     block "  $seg
   -> -i/--interactive/--tool opens a diff editor to pick hunks and will hang.
      Drop the flag; stage by editing files, then \`jj squash -m\`."

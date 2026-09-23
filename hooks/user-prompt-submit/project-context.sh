@@ -41,18 +41,28 @@ ctx="vcs=$vcs"
 
 case $vcs in
 jj*)
-  trunk=$(jj log -r 'trunk()' --no-graph -T 'bookmarks.join(",")' 2>/dev/null)
-  [[ -n "$trunk" ]] && ctx+=" trunk=$trunk"
+  # Bookmark names come from b.name(): the rendered `bookmarks` list decorates
+  # them (`master@origin`, `feat*`, `feat??`), which is noise in a key=value.
+  # Every jj call but the next passes --ignore-working-copy.
 
-  # One jj call for the @ facts. Delimiter is ':' (illegal in git refnames), not
-  # a tab: tab is IFS whitespace, so `read` would collapse the empty bookmark
-  # column and shift `dirty` into its place.
+  # Snapshots on purpose: fileCheckpointingEnabled=false, so the per-prompt snapshot is the only restore point.
   at=$(jj log -r @ --no-graph \
-    -T 'change_id.short() ++ ":" ++ bookmarks.join(",") ++ ":" ++ if(empty, "no", "yes") ++ "\n"' \
+    -T 'change_id.short() ++ ":" ++ if(empty, "no", "yes") ++ "\n"' \
     2>/dev/null)
-  IFS=: read -r change bookmarks dirty <<< "$at"
+  IFS=: read -r change dirty <<< "$at"
+
+  trunk=$(jj log --ignore-working-copy -r 'trunk()' --no-graph \
+    -T 'bookmarks.map(|b| b.name()).join(",")' 2>/dev/null)
+  [[ -n "$trunk" ]] && ctx+=" trunk=$trunk"
   [[ -n "$change" ]] && ctx+=" change=$change"
-  [[ -n "$bookmarks" ]] && ctx+=" bookmark=$bookmarks"
+
+  # The feature bookmark: the nearest bookmarked ancestors of @ that are not
+  # already in trunk. A bookmark on @ itself is rare in jj (work usually sits
+  # in a child of the bookmarked change), so reading only @ missed it.
+  feature=$(jj log --ignore-working-copy -r 'heads((::@ & bookmarks()) ~ ::trunk())' \
+    --no-graph -T 'bookmarks.map(|b| b.name()).join(",") ++ "\n"' 2>/dev/null)
+  feature=${feature//$'\n'/,}
+  [[ -n "$feature" ]] && ctx+=" bookmark=$feature"
   [[ -n "$dirty" ]] && ctx+=" dirty=$dirty"
   ;;
 git)

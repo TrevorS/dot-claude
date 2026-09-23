@@ -41,7 +41,7 @@ run BLOCK 'git commit -n -m "x"'
 run BLOCK 'git commit --no-verify -m "x"'
 run BLOCK 'git push --no-verify'
 
-# --- reset --hard (from rules/version-control.md, not the 2.1.229 line) ---
+# --- reset --hard (listed in rules/pr-safety.md, not the 2.1.229 line) ---
 run BLOCK 'git reset --hard origin/main'
 run BLOCK 'git reset origin/main --hard'
 
@@ -76,8 +76,10 @@ run PASS  'git commit -m "revert the --force push"'
 run PASS  $'git commit -m "line one\n--amend in prose"'  # multi-line message
 
 # --- wrapper prefixes must not smuggle a dangerous command past the anchor ---
-# The segment gate is anchored on ^git/^gh, so `timeout 5 git push --force` used
-# to slip through entirely. strip_wrappers() peels these before the gate.
+# The segment gate is anchored on ^git/^gh, and strip_wrappers() peels these
+# before it. In the harness this only matters inside a compound command: the
+# `if: Bash(git *)` filter never runs the hook for a command that STARTS with a
+# wrapper, so the direct forms below are parser tests, not live paths.
 run BLOCK 'timeout 5 git push --force'
 run BLOCK 'timeout --preserve-status 10s git push -f'
 run BLOCK 'command git push --force'
@@ -115,6 +117,61 @@ run BLOCK $'bash <<EOF\ngit push --force\nEOF'                    # body lines a
 run BLOCK $'cat <<A <<B\nit\'s\nA\nwon\'t\nB\ngit push -f'        # two heredocs on one line
 run PASS  $'git commit -F - <<EOF\nfix: don\'t break\nEOF\ngit push'
 run PASS  'grep -c x <<< "a b" && git push'                       # here-string, not a heredoc
+
+# --- \" inside double quotes is a literal quote, not the end of the string ---
+# Read as a closing quote, it reopened a quote over the && and hid the push.
+run BLOCK 'git commit -m "say \"hi\"" && git push --force'
+run BLOCK 'git commit -m "a \\" && git push -f'                # \\ then a real closing quote
+run BLOCK 'git commit -m "x \" y" --amend'                      # --amend after the message
+run PASS  'git commit -m "say \"hi\" && git push --force"'     # all message text
+run PASS  'git commit -m "say \"hi\"" && git push'
+
+# --- every command boundary starts a segment: ( ) { } | & and backtick ---
+run BLOCK '(git push --force)'
+run BLOCK 'echo x | xargs git push -f'
+run BLOCK 'echo x | xargs -I {} git push -f {}'                  # xargs option with a value
+run BLOCK '{ git push --force; }'
+run BLOCK 'for r in a; do git push -f; done'
+run BLOCK 'echo $(git push -f)'
+run BLOCK 'echo `git push -f`'
+run BLOCK 'git fetch & git push -f'
+run BLOCK 'if git push -f; then :; fi'
+run BLOCK 'if true; then git status; else git push -f; fi'
+run BLOCK '! git commit --amend'
+run PASS  '(git push)'
+run PASS  'echo x | xargs git status'
+run PASS  'for r in a; do git push; done'
+run PASS  'git log $(git rev-parse HEAD) | head'
+run PASS  'git log 2>&1 | head'                                  # 2>&1 is a redirection, not &
+run PASS  'git status &>/dev/null && git push'
+run PASS  'git status >| /tmp/out'
+run PASS  'git log @{u}..HEAD'                                   # braces inside a word
+run PASS  'git log --format=x HEAD@{1} ${X}'
+
+# --- bundled short flags, and option values are never flags ---
+run BLOCK 'git push -uf'
+run BLOCK 'git push -fu origin feat'
+run BLOCK 'git push -vf'
+run BLOCK 'git commit -nm x'
+run BLOCK 'git commit -anm x'
+run BLOCK 'git commit -m "-h" --amend'                           # the message is not --help
+run PASS  'git push -uv origin feat'
+run PASS  'git push -o -f'                                       # -o takes "-f" as its value
+run PASS  'git commit -am x'
+run PASS  'git commit -mn'                                       # -m with the message "n"
+run PASS  'git commit -amn'
+run PASS  'git commit -am "-n"'
+run PASS  'git commit -m -n'
+run PASS  'git commit -m --amend'
+run PASS  'git commit -F -n'                                     # -F takes a file name
+run PASS  'git commit -m x -- -n'                                # a path after --
+
+# --- messages point at real remedies ---
+msg=$(printf '%s' '{"tool_input":{"command":"git commit -n -m x"}}' | "$GUARD" 2>&1 >/dev/null)
+case "$msg" in
+  *"make pre-commit"*) printf '  FAIL        --no-verify message names a ~/.claude-only make target\n'; fails=$((fails+1)) ;;
+  *) printf '  ok   PASS   --no-verify message is repo-neutral\n' ;;
+esac
 
 echo
 if [ "$fails" -eq 0 ]; then echo "all pass"; else echo "$fails failing"; fi

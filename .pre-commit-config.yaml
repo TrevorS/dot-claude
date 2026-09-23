@@ -48,7 +48,9 @@ repos:
     hooks:
       - id: shellcheck
         name: shellcheck (lint shell)
-        entry: shellcheck --severity=warning
+        # -x follows `source` into hooks/lib/cmdline.sh, which assigns the
+        # variables the guards read.
+        entry: shellcheck -x --severity=warning
         language: system
         types: [shell]
         # shellcheck has no zsh dialect, and lscolors.sh is a generated

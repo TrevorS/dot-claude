@@ -11,8 +11,9 @@
 #
 # Why a hook and not permissions.deny entries: deny patterns are prefix globs.
 # `Bash(git push --force*)` misses `git push origin foo --force` and
-# `git -C /path push --force`. This walks tokens instead, so flag position and
-# git's global options (-C, -c, --git-dir=...) don't matter.
+# `git -C /path push --force`. This walks tokens instead, so flag position,
+# bundled short flags (-uf) and git's global options (-C, -c, --git-dir=...)
+# don't matter.
 #
 # Escape hatch: this blocks the AGENT, not Teej. Run the command yourself with
 # the `!` prefix when you actually intend it (pr-safety.md: force-pushing is
@@ -21,8 +22,7 @@
 # Regression test: hooks/git_dangerous_flags.test.sh
 set -euo pipefail
 
-sub=""; argstart=0
-toks=(); segments=()
+opts=(); args=()
 
 input=$(cat)
 command=$(echo "$input" | jq -r '.tool_input.command // empty' 2>/dev/null || echo "")
@@ -36,237 +36,69 @@ MSG
   exit 2
 }
 
-# Split a command line into segments on unquoted && || ; and newline.
-# Quote-aware so a separator inside a -m message is message text, not a split
-# point. Backslash-newline is honoured as a line continuation.
-# Never eval/word-split untrusted command text.
-segment_command() {
-  local s="$1" c nxt q="" cur="" i d line cmp tab=$'\t' docs
-  segments=(); docs=()
-  for (( i = 0; i < ${#s}; i++ )); do
-    c="${s:i:1}"
-    if [ -n "$q" ]; then
-      cur+="$c"
-      [ "$c" = "$q" ] && q=""
-      continue
-    fi
-    case "$c" in
-      '\')
-        nxt="${s:i+1:1}"
-        if [ "$nxt" = $'\n' ]; then i=$((i+1)); else cur+="$c$nxt"; i=$((i+1)); fi
-        ;;
-      '"' | "'") q="$c"; cur+="$c" ;;
-      '<')
-        if [ "${s:i:3}" = '<<<' ]; then
-          cur+='<<<'; i=$((i+2))
-        elif [ "${s:i+1:1}" = '<' ]; then
-          heredoc_word "$s" "$i"
-          cur+="${s:i:hd_end-i+1}"; i=$hd_end
-          [ -n "$hd_delim" ] && docs+=("$hd_dash$hd_delim")
-        else
-          cur+="$c"
-        fi ;;
-      $'\n' | ';')
-        segments+=("$cur"); cur=""
-        # The newline ends the line that opened any heredocs; their bodies come
-        # next. Each body line is its own segment with quote tracking off, so a
-        # `bash <<EOF` body is still checked line by line.
-        if [ "$c" = $'\n' ] && (( ${#docs[@]} )); then
-          for d in "${docs[@]}"; do
-            while (( i + 1 < ${#s} )); do
-              line="${s:i+1}"; line="${line%%$'\n'*}"
-              i=$(( i + 1 + ${#line} ))
-              cmp="$line"; [ "${d:0:1}" = 1 ] && cmp="${cmp#"${cmp%%[!$tab]*}"}"
-              [ "$cmp" = "${d:1}" ] && break
-              segments+=("$line")
-            done
-          done
-          docs=()
-        fi ;;
-      '&') if [ "${s:i+1:1}" = '&' ]; then segments+=("$cur"); cur=""; i=$((i+1)); else cur+="$c"; fi ;;
-      '|') if [ "${s:i+1:1}" = '|' ]; then segments+=("$cur"); cur=""; i=$((i+1)); else cur+="$c"; fi ;;
-      *) cur+="$c" ;;
-    esac
-  done
-  segments+=("$cur")
-}
+# Shared parsing: segment_command, heredoc_word, tokenize, peel_assignment,
+# strip_wrappers, resolve_subcommand.
+# shellcheck source=SCRIPTDIR/lib/cmdline.sh
+. "${BASH_SOURCE[0]%/*}/lib/cmdline.sh"
 
-# Heredoc bodies are data, not shell. Tracked as quoted text, an apostrophe in
-# `don't` opened a quote that never closed and swallowed every later command:
-# 4 direct commits to master slipped past all three guards that way (found
-# 2026-09-18). Parses the delimiter after the `<<` or `<<-` at index $2 of $1.
-# Sets hd_delim (quotes removed), hd_dash (1 for <<-), and hd_end (index of the
-# delimiter's last character).
-heredoc_word() {
-  local s="$1" j=$(( $2 + 2 )) c q=""
-  hd_delim=""; hd_dash=0
-  if [ "${s:j:1}" = "-" ]; then hd_dash=1; j=$((j+1)); fi
-  while [ "${s:j:1}" = " " ] || [ "${s:j:1}" = $'\t' ]; do j=$((j+1)); done
-  for (( ; j < ${#s}; j++ )); do
-    c="${s:j:1}"
-    if [ -n "$q" ]; then
-      if [ "$c" = "$q" ]; then q=""; else hd_delim+="$c"; fi
-      continue
-    fi
-    case "$c" in
-      "'" | '"') q="$c" ;;
-      '\') j=$((j+1)); hd_delim+="${s:j:1}" ;;
-      ' ' | $'\t' | $'\n' | ';' | '&' | '|' | '<' | '>' | '(' | ')') break ;;
-      *) hd_delim+="$c" ;;
-    esac
-  done
-  hd_end=$((j-1))
-}
-
-# Tokenize one segment, quote-aware, into the global `toks` array. Quotes are
-# consumed (they delimit, they aren't content), so `-m "a b"` yields `-m` and
-# `a b` — a flag written inside a commit message can never look like a token.
-# Hand-rolled for the same reason as the jj guard: eval would execute any
-# $(...) embedded in the command text.
-tokenize() {
-  local s="$1" c q="" tok="" had=0 i
-  toks=()
-  for (( i = 0; i < ${#s}; i++ )); do
-    c="${s:i:1}"
-    if [ -n "$q" ]; then
-      if [ "$c" = "$q" ]; then q=""; else tok+="$c"; fi
-      had=1
-    elif [ "$c" = '"' ] || [ "$c" = "'" ]; then
-      q="$c"; had=1
-    elif [ "$c" = " " ] || [ "$c" = $'\t' ] || [ "$c" = $'\n' ]; then
-      if [ "$had" -eq 1 ]; then toks+=("$tok"); tok=""; had=0; fi
-    else
-      tok+="$c"; had=1
-    fi
-  done
-  [ "$had" -eq 1 ] && toks+=("$tok")
-}
-
-# Resolve the real subcommand, skipping git's global options. `git -C /path push`
-# and `git -c user.name=x commit` must resolve to push/commit, not to -C/-c.
-# Assigns the globals `sub` and `argstart` (index just past the subcommand)
-# rather than echoing: a $(...) call would run this in a subshell and the
-# argstart assignment would be lost, leaving has_arg scanning from nowhere.
-git_subcommand() {
-  local i=1 t
-  sub=""; argstart=0
-  while (( i < ${#toks[@]} )); do
-    t="${toks[i]}"
-    case "$t" in
-      # Global options taking a value as a SEPARATE token.
-      -C | -c | --git-dir | --work-tree | --namespace | --exec-path | --config-env)
-        i=$((i+2)); continue ;;
-      # Attached (--git-dir=x) and valueless (-P, --no-pager, --bare) globals.
-      -*) i=$((i+1)); continue ;;
-      *) sub="$t"; argstart=$((i+1)); return 0 ;;
-    esac
-  done
-  return 1
-}
-
-# True if any token AFTER the subcommand matches one of the pipe-separated
-# alternatives. Matches both `--flag` and the attached `--flag=value` form.
-has_arg() {
-  local pat="$1" i t
+# Sort the tokens after the subcommand into `opts` (one flag per entry) and
+# `args` (everything else), the way git's option parser reads them:
+#   * a short bundle is expanded, so `-uf` is -u -f and `-anm x` is -a -n -m;
+#   * an option's value is skipped, never read as a flag, so the message in
+#     `-m -n` or `-am "-n"` is not --no-verify. In a bundle, a value-taking
+#     letter takes the rest of the bundle (`-mn` is -m "n") or else the next
+#     token;
+#   * after `--` every token is an arg.
+# $1: short letters whose value may be the next token.
+# $2: short letters whose value is optional and only ever attached (-S<keyid>).
+# $3: pipe-separated long options whose value may be the next token.
+collect_opts() {
+  local vshort="$1" oshort="$2" vlong="$3" i j t c
+  opts=(); args=()
   for (( i = argstart; i < ${#toks[@]}; i++ )); do
     t="${toks[i]}"
+    case "$t" in
+      --)
+        for (( j = i + 1; j < ${#toks[@]}; j++ )); do args+=("${toks[j]}"); done
+        break ;;
+      --?*)
+        opts+=("$t")
+        if [ -n "$vlong" ] && [[ "$t" =~ ^(${vlong})$ ]]; then i=$((i+1)); fi ;;
+      -?*)
+        for (( j = 1; j < ${#t}; j++ )); do
+          c="${t:j:1}"
+          opts+=("-$c")
+          if [[ "$vshort" == *"$c"* ]]; then
+            (( j == ${#t} - 1 )) && i=$((i+1))
+            break
+          fi
+          [[ "$oshort" == *"$c"* ]] && break
+        done ;;
+      *) args+=("$t") ;;
+    esac
+  done
+  return 0
+}
+
+# True if any collected option matches one of the pipe-separated alternatives,
+# as `--flag` or in the attached `--flag=value` form.
+has_opt() {
+  local pat="$1" i t
+  for (( i = 0; i < ${#opts[@]}; i++ )); do
+    t="${opts[i]}"
     [[ "$t" =~ ^(${pat})$ ]] && return 0
     [[ "$t" =~ ^(${pat})= ]] && return 0
   done
   return 1
 }
 
-# Peel leading environment assignments and wrapper commands, so that
-# `timeout 5 git push --force` is inspected as `git push --force`. Without this
-# the anchored `^git`/`^jj` test below skips the segment entirely and the guard
-# silently passes -- verified evadable via `timeout`, `command`, and `env`.
-#
-# Assigns the global `stripped` rather than echoing, for the same reason
-# git_subcommand does: a $(...) call would fork a subshell per segment on a hook
-# that runs for every Bash tool call.
-#
-# Peeling only ever exposes MORE of the command line to the checks below, so an
-# over-eager strip risks a false block, never a missed one.
-#
-# NAME=value prefix, quote-aware. The value is one shell word, and a word may
-# carry whitespace inside quotes or $(...) -- `X="$(a b)" git ...` is a single
-# assignment followed by a git command. The old `[^[:space:]]*` regex stopped at
-# the first space, so the segment never began with `git` and skipped every check
-# (same gap as jj_interactive_guard.sh, found 2026-09-07).
-# Sets the global `peeled` to the text after the assignment, or "" when the
-# segment is not an assignment prefix (or is an assignment with nothing after).
-peel_assignment() {
-  local s="$1" c q="" stack="" i n
-  n=${#s}
-  peeled=""
-  [[ "$s" =~ ^[A-Za-z_][A-Za-z0-9_]*= ]] || return 0
-  for (( i = ${#BASH_REMATCH[0]}; i < n; i++ )); do
-    c="${s:i:1}"
-    if [ "$q" = "'" ]; then
-      if [ "$c" = "'" ]; then q=""; fi
-      continue
-    fi
-    if [ "$c" = '\' ]; then i=$((i+1)); continue; fi
-    if [ "$q" = '"' ]; then
-      case "$c" in
-        '"') q="" ;;
-        # $( ) opens a fresh unquoted context inside the string; remember to
-        # return to double-quote mode at the matching ).
-        '$') if [ "${s:i+1:1}" = '(' ]; then stack+='"'; q=""; i=$((i+1)); fi ;;
-      esac
-      continue
-    fi
-    case "$c" in
-      "'" | '"') q="$c" ;;
-      '(') stack+='-' ;;
-      ')')
-        if [ -n "$stack" ]; then
-          q="${stack: -1}"; if [ "$q" = '-' ]; then q=""; fi
-          stack="${stack%?}"
-        fi ;;
-      ' ' | $'\t')
-        if [ -z "$stack" ]; then
-          peeled="${s:i}"
-          peeled="${peeled#"${peeled%%[![:space:]]*}"}"
-          return 0
-        fi ;;
-    esac
+# True if any non-option argument matches the pattern.
+has_positional() {
+  local pat="$1" i
+  for (( i = 0; i < ${#args[@]}; i++ )); do
+    [[ "${args[i]}" =~ ^(${pat})$ ]] && return 0
   done
-}
-
-strip_wrappers() {
-  local s="$1" prev="" rest
-  while [ "$s" != "$prev" ]; do
-    prev="$s"
-    # VAR=value prefix (also covers `env FOO=1 ...` on the next pass).
-    if [[ "$s" =~ ^[A-Za-z_][A-Za-z0-9_]*= ]]; then
-      peel_assignment "$s"
-      if [ -n "$peeled" ]; then s="$peeled"; continue; fi
-    fi
-    # Wrappers that take no options of their own.
-    if [[ "$s" =~ ^(command|builtin|exec|nohup|setsid|time)[[:space:]]+(.*)$ ]]; then
-      s="${BASH_REMATCH[2]}"; continue
-    fi
-    # timeout [-opts] DURATION cmd
-    if [[ "$s" =~ ^timeout[[:space:]]+(-[^[:space:]]+[[:space:]]+)*[0-9]+(\.[0-9]+)?[smhd]?[[:space:]]+(.*)$ ]]; then
-      s="${BASH_REMATCH[3]}"; continue
-    fi
-    # Wrappers that may carry their own flags, some taking a separate value.
-    if [[ "$s" =~ ^(env|stdbuf|nice|ionice|sudo)[[:space:]]+(.*)$ ]]; then
-      rest="${BASH_REMATCH[2]}"
-      while true; do
-        if [[ "$rest" =~ ^-[nucgpioeC][[:space:]]+[^[:space:]]+[[:space:]]+(.*)$ ]]; then
-          rest="${BASH_REMATCH[1]}"; continue
-        fi
-        if [[ "$rest" =~ ^-[^[:space:]]+[[:space:]]+(.*)$ ]]; then
-          rest="${BASH_REMATCH[1]}"; continue
-        fi
-        break
-      done
-      s="$rest"; continue
-    fi
-  done
-  stripped="$s"
+  return 1
 }
 
 segment_command "$command"
@@ -279,10 +111,18 @@ for seg in "${segments[@]}"; do
 
   tokenize "$seg"
   (( ${#toks[@]} )) || continue
-  git_subcommand || continue
+  resolve_subcommand '-C|-c|--git-dir|--work-tree|--namespace|--exec-path|--config-env' || continue
+
+  # Value-taking options per subcommand, so their values are skipped.
+  case "${toks[0]} $sub" in
+    "git push") collect_opts o '' '--push-option|--repo|--receive-pack|--exec' ;;
+    "git commit")
+      collect_opts mFCct Su '--message|--file|--reuse-message|--reedit-message|--fixup|--squash|--author|--date|--template|--cleanup|--trailer|--pathspec-from-file' ;;
+    *) collect_opts '' '' '' ;;
+  esac
 
   # --help/-h only prints usage.
-  has_arg '-h|--help' && continue
+  has_opt '-h|--help' && continue
 
   if [ "${toks[0]}" = "git" ]; then
     case "$sub" in
@@ -290,7 +130,7 @@ for seg in "${segments[@]}"; do
         # -f/--force only mean "force" for push; `git clean -f`, `git branch -f`,
         # `git tag -f` and `git checkout -f` are local and stay allowed.
         # --force-with-lease is included deliberately: pr-safety.md names it.
-        if has_arg '-f|--force|--force-with-lease|--force-if-includes'; then
+        if has_opt '-f|--force|--force-with-lease|--force-if-includes'; then
           block "  $seg
   -> force-push rewrites already-published commits and detaches any PR review
      threads anchored to them. Default to adding a commit on top instead.
@@ -298,34 +138,33 @@ for seg in "${segments[@]}"; do
         fi
         # A leading + on a refspec force-pushes that one ref: `git push origin
         # +master` passed every check above.
-        if has_arg '\+.+'; then
+        if has_positional '\+.+'; then
           block "  $seg
   -> a leading + on a refspec force-pushes that ref, the same as --force.
      Push without the + and add a commit on top instead, or ask Teej."
         fi
         # `git push -n` is --dry-run (harmless), so only the long spelling here.
-        if has_arg '--no-verify'; then
+        if has_opt '--no-verify'; then
           block "  $seg
   -> --no-verify skips pre-push hooks. Fix what the hook reports instead."
         fi
         ;;
       commit)
-        if has_arg '--amend'; then
+        if has_opt '--amend'; then
           block "  $seg
   -> --amend rewrites the last commit. If it is already pushed, this detaches
      PR review threads. Add a new commit, or ask Teej before amending."
         fi
         # For commit (unlike push) -n IS --no-verify.
-        if has_arg '-n|--no-verify'; then
+        if has_opt '-n|--no-verify'; then
           block "  $seg
-  -> --no-verify skips pre-commit hooks, which this repo relies on for
-     formatting and lint. Run \`make pre-commit\` and fix the findings."
+  -> -n/--no-verify skips pre-commit hooks. Fix what the hook reports instead."
         fi
         ;;
       reset)
-        # Beyond the 2.1.229 changelog line: version-control.md classes
-        # \`reset --hard\` as destructive and wants a backup branch first.
-        if has_arg '--hard'; then
+        # Not from the 2.1.229 changelog line: pr-safety.md lists reset --hard
+        # among the forms this hook blocks, since it discards uncommitted work.
+        if has_opt '--hard'; then
           block "  $seg
   -> \`git reset --hard\` discards working-copy changes irreversibly.
      Make a backup first: \`git branch backup-\$(date +%s)\`."
@@ -334,7 +173,7 @@ for seg in "${segments[@]}"; do
     esac
   else
     # gh: --admin on a merge bypasses required reviews and branch protection.
-    if [ "$sub" = "pr" ] && has_arg '--admin'; then
+    if [ "$sub" = "pr" ] && has_opt '--admin'; then
       block "  $seg
   -> --admin bypasses required reviews and branch protection. Ask Teej."
     fi

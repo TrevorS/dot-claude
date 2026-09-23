@@ -7,9 +7,9 @@
 # header only holds while the line stays a line. The sed dialect flag, driven
 # entirely by PATH so every outcome is forced regardless of host: gsed present
 # -> gnu, GNU sed under its own name -> gnu, a sed that rejects --version ->
-# bsd. And the vcs branch, since the jj facts come from one templated call
-# whose field parsing can break silently (an empty bookmark column must not
-# shift `dirty` into its place).
+# bsd. And the vcs branch: the jj facts come from templated calls whose field
+# parsing can break silently (an empty bookmark must not shift `dirty` into its
+# place), bookmark names must be undecorated, and only one call may snapshot.
 #
 # Run: ./hooks/project-context.test.sh   (exit 0 = all pass)
 set -uo pipefail
@@ -181,6 +181,45 @@ if command -v jj >/dev/null 2>&1; then
   has "jj subdir -> vcs=jj-colocated" "$ctx" "vcs=jj-colocated"
   has "jj subdir -> root=<repo>" "$ctx" "root=$j"
   has "jj subdir -> bookmark=feature" "$ctx" "bookmark=feature"
+
+  # With a remote. Names must be bare: the rendered bookmark list says
+  # `master@origin` for trunk once local master moves, and `feat*` for a
+  # bookmark ahead of its remote. The feature bookmark is read from the
+  # ancestors of @, since work normally sits in a child of the bookmarked change.
+  r="$work/jjr"
+  (
+    git init -q -b master "$r" &&
+      git -C "$r" -c user.name=t -c user.email=t@t commit -q --allow-empty -m init &&
+      git init -q --bare -b master "$r.git" &&
+      git -C "$r" remote add origin "$r.git" &&
+      git -C "$r" push -q origin master &&
+      cd "$r" && jj git init --colocate
+  ) >/dev/null 2>&1
+  ctx=$(ctx_in "$r" "$bin_bsd")
+  has "jj with a remote -> trunk=master" "$ctx" "trunk=master"
+  lacks "only trunk below @ -> no bookmark=" "$ctx" "bookmark"
+  (cd "$r" && jj describe -m a && jj bookmark create feat -r @ && jj new -m b) >/dev/null 2>&1
+  has "feature bookmark on @- -> bookmark=feat" "$(ctx_in "$r" "$bin_bsd")" "bookmark=feat"
+  (cd "$r" && jj git push -b feat && jj describe -m b2 && jj bookmark set feat -r @ && jj new -m c) >/dev/null 2>&1
+  has "feat ahead of feat@origin -> bookmark=feat, not feat*" "$(ctx_in "$r" "$bin_bsd")" "bookmark=feat"
+  (cd "$r" && jj new master -m m1 && jj bookmark set master -r @ && jj new -m m2) >/dev/null 2>&1
+  has "master moved off origin -> trunk=master, not master@origin" "$(ctx_in "$r" "$bin_bsd")" "trunk=master"
+
+  # Exactly one jj call snapshots the working copy; the rest pass
+  # --ignore-working-copy. A logging stub stands in for jj.
+  jjlog="$work/jj.log"
+  real_jj=$(command -v jj)
+  bin_log=$(mkbin jjlog sed 'echo "sed: illegal option -- -" >&2; exit 1' \
+    jj "printf '%s\\n' \"\$*\" >> '$jjlog'; exec '$real_jj' \"\$@\"")
+  : >"$jjlog"
+  ctx_in "$r" "$bin_log" >/dev/null
+  calls=$(wc -l <"$jjlog" | tr -d ' ')
+  snaps=$(grep -vc -- '--ignore-working-copy' "$jjlog")
+  if [ "$calls" -ge 2 ] && [ "$snaps" = 1 ]; then
+    ok "exactly one of $calls jj calls snapshots"
+  else
+    bad "want exactly 1 snapshotting jj call, got $snaps of $calls: $(tr '\n' '|' <"$jjlog")"
+  fi
 else
   skip "jj not installed"
 fi

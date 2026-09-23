@@ -113,8 +113,10 @@ run PASS 'jj split -r @ \
   -m "msg" foo.txt'
 
 # --- wrapper prefixes must not smuggle an editor-opening command past the anchor ---
-# The segment gate is anchored on ^jj, so a wrapper prefix used to skip the
-# segment outright and let the command through to hang on an editor.
+# The segment gate is anchored on ^jj, and strip_wrappers() peels these before
+# it. In the harness this only matters inside a compound command: the
+# `if: Bash(jj *)` filter never runs the hook for a command that STARTS with a
+# wrapper, so the direct forms below are parser tests, not live paths.
 run BLOCK 'timeout 5 jj describe'
 run BLOCK 'command jj squash'
 run BLOCK 'env jj commit'
@@ -136,6 +138,38 @@ run PASS  'X="jj describe" echo hi'                        # jj only inside the 
 # --- heredoc bodies are data: an apostrophe in one must not hide later commands ---
 run BLOCK $'cat > /tmp/m <<EOF\ndon\'t\nEOF\njj describe'
 run PASS  $'cat > /tmp/m <<EOF\ndon\'t\nEOF\njj describe -m "msg"'
+
+# --- subshells and command substitution start a segment ---
+run BLOCK '(jj describe)'
+run BLOCK 'x=$(jj describe)'
+run BLOCK 'echo `jj commit`'
+run BLOCK 'true | xargs jj describe'
+run BLOCK 'jj split -m "msg" | tail'                  # the pipe is not a fileset
+run PASS  '(jj describe -m "msg")'
+run PASS  'x=$(jj log -r @ --no-graph -T change_id)'
+run PASS  'jj split -m "msg" foo.txt | tail'
+
+# --- global options before the subcommand, and the built-in aliases ---
+run BLOCK 'jj --no-pager describe'
+run BLOCK 'jj -R . describe'
+run BLOCK 'jj --repository=. describe'
+run BLOCK 'jj --repository . commit'
+run BLOCK 'jj -R "dir with spaces" describe'
+run BLOCK 'jj --at-op @ --color never --ignore-working-copy squash'
+run BLOCK 'jj --config ui.pager=less split -m "msg"'  # still no fileset
+run BLOCK 'jj desc'
+run BLOCK 'jj ci'
+run BLOCK 'jj ci -m "msg" -i'
+run BLOCK 'jj --no-pager desc'
+run PASS  'jj --no-pager describe -m "msg"'
+run PASS  'jj -R . describe -m "msg"'
+run PASS  'jj --repository=. describe -m "msg"'
+run PASS  'jj -R "dir with spaces" describe -m "msg"'
+run PASS  'jj --color never split -m "msg" foo.txt'
+run PASS  'jj --no-pager log -r @'
+run PASS  'jj desc -m "msg"'
+run PASS  'jj ci -m "msg"'
+run PASS  'jj --ignore-working-copy desc -m "msg"'
 
 echo
 if [ "$fails" -eq 0 ]; then

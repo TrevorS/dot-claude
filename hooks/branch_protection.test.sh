@@ -71,6 +71,17 @@ run BLOCK feature no 'git switch main && git commit -m "x"'               'switc
 run BLOCK master no 'git checkout src/x.c && git commit -m "x"'           'plain checkout may be a path: still blocks'
 # --- heredoc bodies are data: an apostrophe must not hide a later commit ---
 run BLOCK master no $'cat > /tmp/m <<EOF\ndon\'t\nEOF\ngit commit -F /tmp/m' 'heredoc with apostrophe, then commit on master'
+# --- \" inside double quotes must not reopen a quote over what follows ---
+run BLOCK master no 'echo "say \"hi\"" && git commit -m x'   'escaped quote, then commit on master'
+run PASS  master no 'echo "say \"hi\" && git commit -m x"'   'commit only inside the string'
+# --- ( ) { } | & start new commands ---
+run BLOCK master no '(git commit -m x)'                      'subshell commit on master'
+run BLOCK master no '{ git add .; }'                         'brace group add on master'
+run BLOCK master no 'echo f | xargs git add'                 'xargs git add on master'
+run BLOCK master no 'git fetch & git commit -m x'            'background job, then commit on master'
+run BLOCK master no 'for f in a; do git add "$f"; done'      'loop body add on master'
+run PASS  feature no '(git commit -m x) | cat'               'subshell commit on feature branch'
+run PASS  master no 'git log 2>&1 | head'                    'redirect + pipe on master'
 
 # ---------------------------------------------------------------------------
 # jj: colocated repo with a remote. master@origin = init commit; @ = empty
@@ -119,6 +130,10 @@ run_jj BLOCK "$MULTI"     no 'jj describe -m x'      'jj describe on @ = feat* m
 run_jj BLOCK "$OFF_MASTER_AHEAD" no 'jj describe -r @- -m x'  'jj describe -r <master change>'
 run_jj BLOCK "$OFF_MASTER_AHEAD" no 'jj describe master -m x' 'jj describe <master> (positional)'
 run_jj BLOCK "$ON_MASTER" no 'JJ_EDITOR="$(jq -r .x)" timeout 10 jj describe -m x' 'wrapped jj describe on master*'
+run_jj BLOCK "$ON_MASTER" no '(jj describe -m x)'    'subshell jj describe on master*'
+run_jj BLOCK "$ON_MASTER" no 'x=$(jj describe -m x)' 'command substitution jj describe on master*'
+# The pipe used to stay in the segment, and `|` was read as the revision.
+run_jj BLOCK "$ON_MASTER" no 'jj describe -m x | tail -3' 'jj describe piped, on master*'
 run_jj PASS  "$ON_MASTER" yes 'jj describe -m x'     'master* + direct-commits-allowed override'
 run_jj PASS  "$ON_MASTER" no 'jj new'                'jj new on master* (creates a child, moves nothing)'
 run_jj PASS  "$ON_MASTER" no 'jj log'                'jj log on master*'
