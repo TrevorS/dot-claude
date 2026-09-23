@@ -1,6 +1,6 @@
 {
-  "claudeCodeVersion": "2.1.280",
-  "syncedDate": "2026-09-22",
+  "claudeCodeVersion": "2.1.281",
+  "syncedDate": "2026-09-23",
   "source": "https://api.github.com/repos/anthropics/claude-code/releases",
   "adopted": [
     {
@@ -617,6 +617,124 @@
       "adoptedDate": "2026-09-22",
       "value": null,
       "note": "Pool entries can run into the next entry length prefix when that byte is printable ASCII (0x40 -> trailing @ in 2.1.280; 0x0f was baked into the 2.1.278 snapshot). Longest-wins picked the pool copy; source copies now win. Both 2.1.278 and 2.1.280 drifts were artifacts."
+    },
+    {
+      "feature": "DISABLE_FEEDBACK_COMMAND (renamed from DISABLE_BUG_COMMAND)",
+      "introducedVersion": "pre-baseline (docs env-vars: 'The older name DISABLE_BUG_COMMAND is also accepted')",
+      "adoptedDate": "2026-09-23",
+      "value": "1",
+      "note": "Pure rename to the current name; the 2.1.281 binary still reads both and prints a distinct 'disabled via DISABLE_BUG_COMMAND' message for the old one. Found by the 2026-09-23 deep audit, not a release note."
+    },
+    {
+      "feature": "alwaysThinkingEnabled and editorMode removed (both at default)",
+      "introducedVersion": "n/a (default-value cleanup, 2026-09-23 deep audit)",
+      "adoptedDate": "2026-09-23",
+      "value": null,
+      "note": "Binary describe: 'When absent or true, thinking is enabled automatically for supported models', so true == absent, including for the sonnet fallback hops. Opus 5.5 rejects disabled thinking regardless (docs model-config). editorMode default is 'normal' in the binary's global defaults. Re-add alwaysThinkingEnabled only to set false."
+    },
+    {
+      "feature": "permissions.allow tightened: curl, osascript, tmux, open, networksetup, openssl s_client removed; make narrowed; tailscale narrowed",
+      "introducedVersion": "n/a (2026-09-23 deep audit)",
+      "adoptedDate": "2026-09-23",
+      "value": [
+        "Bash(make check|help|hook-tests|lint|test|typecheck|validate *)",
+        "Bash(tailscale status *)"
+      ],
+      "note": "In auto mode a matching allow rule resolves before the classifier runs; the binary strips only interpreter-shaped rules (python, node, bash, env, xargs, ...). These ran code or sent data unreviewed: osascript -e, tmux send-keys/run-shell, open -a, networksetup -setdnsservers, openssl s_client, curl -F/-d (108 of 438 curl calls in 30 days carried upload flags), make db/reset and docker/exec (about 190 of 395 make calls now go to the classifier). The 09-18 pass kept zero-use rules as read-only helpers; none of these is read-only."
+    },
+    {
+      "feature": "permissions.deny: gh token paths and 5 local token stores",
+      "introducedVersion": "n/a (2026-09-23 deep audit)",
+      "adoptedDate": "2026-09-23",
+      "value": [
+        "Bash(gh auth token *)",
+        "Bash(gh auth status *-t*)",
+        "Bash(gh gist create *)",
+        "Read(~/.config/stripe/**)",
+        "Read(~/.config/configstore/firebase-tools.json)",
+        "Read(~/.local/share/opencode/auth.json)",
+        "Read(~/.local/share/atuin/key)",
+        "Read(~/.local/share/crush/**)"
+      ],
+      "note": "Bash(gh:*) let gh auth token print what Read(~/.config/gh/**) protects. The token files sit under the allowed Read(~/.config/**) and Read(~/.local/**) trees on this host (the 09-18 inventory ran on the other host). 0 uses of any of these in 30 days."
+    },
+    {
+      "feature": "fallbackModel [sonnet, claude-opus-4-8]",
+      "introducedVersion": "n/a (2026-09-23 deep audit)",
+      "adoptedDate": "2026-09-23",
+      "value": [
+        "sonnet",
+        "claude-opus-4-8"
+      ],
+      "note": "sonnet[1m] and claude-sonnet-5 were the same model: docs model-config says sonnet[1m] has no effect once sonnet resolves to Sonnet 5, which is always 1M on the Anthropic API. Opus 4.8 is a distinct second hop with native 1M context. Supersedes the 2026-06-26 fallbackModel entry."
+    },
+    {
+      "feature": "skillOverrides for unused claude.ai-synced skills",
+      "introducedVersion": "n/a (2026-09-23 deep audit)",
+      "adoptedDate": "2026-09-23",
+      "value": {
+        "anthropic-skills:skill-creator": "off",
+        "anthropic-skills:import-memory": "off",
+        "anthropic-skills:morning": "name-only",
+        "anthropic-skills:docx": "name-only",
+        "anthropic-skills:pptx": "name-only"
+      },
+      "note": "/skill-doctor: 6 synced skills loaded but never invoked. Verified with --settings that skillOverrides applies to synced skills by full name. skill-creator duplicates the skill-creator plugin. Revisits the syncClaudeAiSkills decline per-skill, since its revisit condition (synced set unused) was met. About 900 tokens per turn on the be695230 org; names are org-agnostic."
+    },
+    {
+      "feature": "LSP plugins: 4 disabled, 3 reinstalled",
+      "introducedVersion": "n/a (2026-09-23 deep audit)",
+      "adoptedDate": "2026-09-23",
+      "value": {
+        "disabled": [
+          "clangd-lsp",
+          "gopls-lsp",
+          "rust-analyzer-lsp",
+          "lua-lsp"
+        ],
+        "reinstalled": [
+          "typescript-lsp",
+          "pyright-lsp",
+          "swift-lsp"
+        ]
+      },
+      "note": "Debug logs showed 'Total LSP servers loaded: 0' since at least 2026-08-28: the cached artifacts predate the move of lspServers into marketplace.json (anthropics/claude-code#78604, #93474, both open; plugin update reports them current). uninstall + install fixed it: 'Total LSP servers loaded: 3'. The 4 disabled languages had 2-8 sessions each in 30 days. Any future re-enable needs uninstall + install, not just enable. LSP still does not reach subagents (#84125, open)."
+    },
+    {
+      "feature": "skillOverrides off for 8 unused Stable-org synced skills",
+      "introducedVersion": "n/a (/doctor 2026-09-23)",
+      "adoptedDate": "2026-09-23",
+      "value": [
+        "ai-office-hours-prep",
+        "cx-playbook",
+        "daily-sales-call-prep",
+        "new-day",
+        "prep-for-data-extraction-call",
+        "release-digest",
+        "stable-data-routing",
+        "team-plan-metrics"
+      ],
+      "note": "Synced from the ac071cb5 claude.ai org; 0 Skill calls in 1,009 transcripts over 30 days and no skillUsage entries. About 5,270 listing chars (~1.3k est. tokens) per session on that org. stable-data-routing duplicates the StableMCP-Redshift server instructions (Metabase first for business metrics). Keys use the anthropic-skills: prefix; only affects this Claude Code, not claude.ai."
+    },
+    {
+      "feature": "permissions.deny: irreversible gh forms",
+      "introducedVersion": "n/a (2026-09-23 final review)",
+      "adoptedDate": "2026-09-23",
+      "value": [
+        "Bash(gh repo delete *)",
+        "Bash(gh repo archive *)",
+        "Bash(gh repo edit *--visibility*)",
+        "Bash(gh release delete *)",
+        "Bash(gh api *DELETE*)"
+      ],
+      "note": "Bash(gh:*) auto-approves these without the classifier, and git_dangerous_flags.sh only covers gh pr merge --admin. 0 real uses in 1,009 transcripts over 30 days (the only matches were the audit's own greps). Teej runs them himself with ! when intended."
+    },
+    {
+      "feature": "teej-skills: cuda-kernels, profiling-qwen3-tts, testing-whisper deleted; building-swiftui moved to skills/",
+      "introducedVersion": "n/a (2026-09-23 deep audit)",
+      "adoptedDate": "2026-09-23",
+      "value": null,
+      "note": "The three targeted qwen3-tts-rs (not in ~/Projects) or an uninstalled whisper, with 0-1 lifetime uses; git history keeps them. building-swiftui kept its paths: **/*.swift, so as a user skill it loads only when a Swift file is touched. teej-skills plugin.json 0.4.1 -> 0.5.0. Supersedes the building-swiftui/testing-whisper mentions in the 2026-09-09 teej-skills entry."
     }
   ],
   "declined": [
@@ -1024,6 +1142,56 @@
     {
       "feature": "git_dangerous_flags blocking jj --ignore-immutable",
       "reason": "declined 2026-09-18 (deep dive). One real case in 30 days (jj squash --into main --ignore-immutable, 09-14), but cleaning-commit-history uses the flag on purpose and pr-safety.md already requires asking first"
+    },
+    {
+      "feature": "attribution: false shorthand",
+      "introducedVersion": "2.1.281",
+      "reason": "declined 2026-09-23. Binary transform maps false to exactly {commit:'',pr:'',sessionUrl:false}, which is the current object value, and its describe says older versions reject true/false. settings.json is shared across machines via the repo, so the shorthand is churn with a skip-the-whole-file risk on an older CLI."
+    },
+    {
+      "feature": "CLAUDE_CODE_DISABLE_DANGEROUS_RM_TIMEOUT",
+      "introducedVersion": "2.1.281",
+      "reason": "declined 2026-09-23. New default (dangerous rm prompt in auto mode waits 2m then denies with a rewrite hint) is the unattended posture this config already wants (RETRY_WATCHDOG=1, askUserQuestionTimeout 5m). Setting it would make unattended sessions hang on the prompt."
+    },
+    {
+      "feature": "CLAUDE_CODE_DISABLE_SUBSTITUTION_RM_PROMPT",
+      "introducedVersion": "2.1.281",
+      "reason": "declined 2026-09-23. Opt-out of the new prompt for rm -rf \"$(pwd)\"-style targets; keep the safety prompt."
+    },
+    {
+      "feature": "autoDreamEnabled removal",
+      "introducedVersion": "n/a (2026-09-23 deep audit)",
+      "reason": "kept 2026-09-23. Binary OFe(): if the tengu_onyx_plover flag is neither enabled nor available, dream is off whatever the setting says; ~/.claude.json caches it as enabled:false today and the 6 .consolidate-lock files date from 2026-04-07/08. But when the flag is available:true and enabled:false (opt-in stage), only an explicit true turns dream on, so the key is a forward opt-in, not dead config. Revisit if the flag disappears from the binary."
+    },
+    {
+      "feature": "themes/catppuccin-mocha.json diff tokens and effortUltra",
+      "introducedVersion": "n/a (2026-09-23 deep audit)",
+      "reason": "no change 2026-09-23. 6 diff override keys are ignored by the syntax-highlighted diff renderer (anthropics/claude-code#85660, open, maintainer-reproduced) and effortUltra is ignored (#70398, open). Keys are valid and schema-complete; leave them so they apply once fixed. Do not 'fix' them in a palette audit."
+    },
+    {
+      "feature": "Read(~/.env) / Read(~/.env.*) deny rules",
+      "introducedVersion": "n/a (2026-09-23 deep audit)",
+      "reason": "pending Teej 2026-09-23. Redundant with Read(//**/.env) and Read(//**/.env.*); removal was blocked for the agent by the auto-mode classifier [Self-Modification]. Read(~/.gitconfig) is NOT redundant: the deny follows the symlink and blocks reads of dotfiles/git/.gitconfig, though that file is public in TrevorS/dot-claude."
+    },
+    {
+      "feature": "autoCompactWindow",
+      "introducedVersion": "n/a (2026-09-23 deep audit)",
+      "reason": "deferred to a trial 2026-09-23. 30 days: 34.1% of input tokens processed were above 400K context (13.3% of calls, 28 sessions); docs say quality degrades as the window fills but nobody measured it here, and devmoment.dev calls 500K folklore. Teej to try /autocompact 500k in long sessions before any settings.json value."
+    },
+    {
+      "feature": "switchModelsOnFlag removal (return to default true)",
+      "introducedVersion": "n/a (2026-09-23 deep audit)",
+      "reason": "approved by Teej 2026-09-23, blocked for the agent by the auto-mode classifier [Self-Modification]; Teej to remove the key. false pauses on a safeguard flag with no timeout (fired twice in 30 days); true keeps going but moves the whole session to Opus 4.8 until /model (#87938, open). Set to false by /config on 2026-07-06 (commit 622a96d)."
+    },
+    {
+      "feature": "skillOverrides pins moved to frontmatter",
+      "introducedVersion": "n/a (2026-09-23 deep audit)",
+      "reason": "declined 2026-09-23. Equivalent per the docs table; the evals now read both skillOverrides and frontmatter, so either works. Not worth the churn."
+    },
+    {
+      "feature": "jj snapshot on every Edit/Write (PreToolUse)",
+      "introducedVersion": "n/a (2026-09-23 deep audit)",
+      "reason": "declined 2026-09-23. project-context.sh keeps one snapshotting jj call per prompt on purpose as the restore point (fileCheckpointingEnabled=false). Per-tool snapshots would race between tmux teammates sharing a checkout."
     }
   ],
   "deferred": [
@@ -1075,6 +1243,16 @@
       "introducedVersion": "2.1.275",
       "status": "handed to Teej 2026-09-18",
       "note": "2.1.275: 'Fixed /update-config writing Write(path) permission rules, which file permission checks don't match, instead of Edit(path) rules'. Binary: Write(path), NotebookEdit(path) and Glob(path) rules are not matched by file permission checks. Found 9 dead rules: ~/Projects/r-e-bot/.claude/settings.json has Write(tmp/*) with no Edit twin (the allow never applied; the Bash(cat > tmp/*) rule beside it looks like the workaround); ~/Projects/brigade/internal/station/settings.go lines 86, 88, 104 emit Write(...) beside Edit(...) twins into the gitignored station settings, and station_test.go lines 666-699 pin those strings, so the generator fix needs its tests updated too. The auto-mode classifier denied the edits in this session as Self-Modification. [host note 2026-09-18: r-e-bot and brigade are not on Mac.localdomain; these paths are on the other machine]"
+    },
+    {
+      "feature": "CLAUDE_CODE_AUTO_MODE_SERVER",
+      "status": "deferred under the 2026-07-29 auto-mode defer",
+      "note": "2026-09-23: 2.1.281 made it apply on direct Anthropic API connections too; this config logs in with claudeai, so no immediate effect."
+    },
+    {
+      "feature": "hooks: jj-push review guard (H2), branch_protection target-repo (H3), TeammateIdle skip-if-unchanged, PermissionDenied log hook",
+      "status": "approved by Teej 2026-09-23; blocked for the agent by the auto-mode classifier [Self-Modification]",
+      "note": "Teej to implement or allow. Evidence: 114 jj git push in 30 days, 8 sessions pushed rewritten commits, 0 guard fires (pr-safety unenforced); 34 of 93 cd-prefixed writes checked the wrong repo; #82665 fires TeammateIdle for child agents; 6+ silent denials on 09-18. Known remaining guard bypasses after the 2026-09-23 parser fix, none approved: \"$(git push -f)\" inside double quotes; unquoted redirections read as arguments (jj split -m x 2>&1 counts 2>&1 as a fileset); abbreviated long options (--no-verif, --amen); bash -c \"git push -f\"; sudo -n git ... inside a compound."
     }
   ]
 }

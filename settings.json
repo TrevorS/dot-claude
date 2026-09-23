@@ -7,9 +7,9 @@
     "CLAUDE_CODE_NEW_INIT": "1",
     "CLAUDE_CODE_RETRY_WATCHDOG": "1",
     "CLAUDE_CODE_TMUX_TRUECOLOR": "1",
-    "DISABLE_BUG_COMMAND": "1",
     "DISABLE_COST_WARNINGS": "1",
     "DISABLE_ERROR_REPORTING": "1",
+    "DISABLE_FEEDBACK_COMMAND": "1",
     "JJ_EDITOR": "sh -c 'exec \"$HOME/.claude/hooks/jj-reject-editor.sh\"'"
   },
   "attribution": {
@@ -23,7 +23,7 @@
       "Bash(bun test:*)",
       "Bash(command -V:*)",
       "Bash(command -v:*)",
-      "Bash(curl:*)",
+      "Bash(defaults read *)",
       "Bash(dig:*)",
       "Bash(gh:*)",
       "Bash(git:*)",
@@ -32,22 +32,24 @@
       "Bash(jj:*)",
       "Bash(kill:*)",
       "Bash(linear-cli:*)",
-      "Bash(make:*)",
+      "Bash(make check *)",
+      "Bash(make help *)",
+      "Bash(make hook-tests *)",
+      "Bash(make lint *)",
+      "Bash(make test *)",
+      "Bash(make typecheck *)",
+      "Bash(make validate *)",
       "Bash(mkdir:*)",
-      "Bash(networksetup:*)",
       "Bash(nslookup:*)",
-      "Bash(open:*)",
-      "Bash(openssl s_client:*)",
       "Bash(openssl x509:*)",
-      "Bash(osascript:*)",
       "Bash(ping6:*)",
       "Bash(ping:*)",
       "Bash(pnpm list:*)",
       "Bash(sw_vers:*)",
+      "Bash(sysctl -n *)",
       "Bash(system_profiler SPDisplaysDataType:*)",
       "Bash(system_profiler SPFontsDataType:*)",
-      "Bash(tailscale:*)",
-      "Bash(tmux:*)",
+      "Bash(tailscale status *)",
       "Bash(touch:*)",
       "Bash(traceroute:*)",
       "Bash(uv run ~/.claude/skills/monitoring-ci/ci-monitor.py:*)",
@@ -84,11 +86,22 @@
       "WebSearch"
     ],
     "deny": [
-      "Read(~/.env)",
-      "Read(~/.env.*)",
       "Read(~/.aws/**)",
       "Read(~/.ssh/**)",
       "Read(~/.gitconfig)",
+      "Read(~/.config/stripe/**)",
+      "Read(~/.config/configstore/firebase-tools.json)",
+      "Read(~/.local/share/opencode/auth.json)",
+      "Read(~/.local/share/atuin/key)",
+      "Read(~/.local/share/crush/**)",
+      "Bash(gh auth token *)",
+      "Bash(gh auth status *-t*)",
+      "Bash(gh gist create *)",
+      "Bash(gh repo delete *)",
+      "Bash(gh repo archive *)",
+      "Bash(gh repo edit *--visibility*)",
+      "Bash(gh release delete *)",
+      "Bash(gh api *DELETE*)",
       "Read(~/.netrc)",
       "Read(~/.gnupg/**)",
       "Read(~/.config/gh/**)",
@@ -128,13 +141,26 @@
   },
   "model": "opus[1m]",
   "fallbackModel": [
-    "sonnet[1m]",
-    "claude-sonnet-5"
+    "sonnet",
+    "claude-opus-4-8"
   ],
   "skillOverrides": {
     "syncing-claude-config": "user-invocable-only",
     "cleaning-commit-history": "user-invocable-only",
-    "executing-test-plans": "user-invocable-only"
+    "executing-test-plans": "user-invocable-only",
+    "anthropic-skills:skill-creator": "off",
+    "anthropic-skills:import-memory": "off",
+    "anthropic-skills:morning": "name-only",
+    "anthropic-skills:docx": "name-only",
+    "anthropic-skills:pptx": "name-only",
+    "anthropic-skills:ai-office-hours-prep": "off",
+    "anthropic-skills:cx-playbook": "off",
+    "anthropic-skills:daily-sales-call-prep": "off",
+    "anthropic-skills:new-day": "off",
+    "anthropic-skills:prep-for-data-extraction-call": "off",
+    "anthropic-skills:release-digest": "off",
+    "anthropic-skills:stable-data-routing": "off",
+    "anthropic-skills:team-plan-metrics": "off"
   },
   "hooks": {
     "PreToolUse": [
@@ -220,15 +246,15 @@
     "refreshInterval": 60
   },
   "enabledPlugins": {
-    "clangd-lsp@claude-plugins-official": true,
-    "gopls-lsp@claude-plugins-official": true,
-    "rust-analyzer-lsp@claude-plugins-official": true,
-    "swift-lsp@claude-plugins-official": true,
-    "typescript-lsp@claude-plugins-official": true,
+    "clangd-lsp@claude-plugins-official": false,
+    "gopls-lsp@claude-plugins-official": false,
+    "rust-analyzer-lsp@claude-plugins-official": false,
     "skill-creator@claude-plugins-official": true,
+    "lua-lsp@claude-plugins-official": false,
+    "teej-skills@teej-skills": false,
+    "typescript-lsp@claude-plugins-official": true,
     "pyright-lsp@claude-plugins-official": true,
-    "lua-lsp@claude-plugins-official": true,
-    "teej-skills@teej-skills": false
+    "swift-lsp@claude-plugins-official": true
   },
   "extraKnownMarketplaces": {
     "teej-skills": {
@@ -297,8 +323,12 @@
     "enabled": true,
     "color": "#eba0ac"
   },
-  "alwaysThinkingEnabled": true,
   "effortLevel": "xhigh",
+  "modelSettings": {
+    "claude-opus-5-5": {
+      "effortLevel": "xhigh"
+    }
+  },
   "fastModePerSessionOptIn": true,
   "emojiCompletionEnabled": false,
   "askUserQuestionTimeout": "5m",
@@ -318,18 +348,11 @@
   "skipDangerousModePermissionPrompt": true,
   "skipWorkflowUsageWarning": true,
   "theme": "custom:catppuccin-mocha",
-  "editorMode": "normal",
   "preferredNotifChannel": "ghostty",
-  "switchModelsOnFlag": false,
   "fileCheckpointingEnabled": false,
   "teammateMode": "tmux",
   "remoteControlAtStartup": false,
   "inputNeededNotifEnabled": true,
   "agentPushNotifEnabled": true,
-  "skipAutoPermissionPrompt": true,
-  "modelSettings": {
-    "claude-opus-5-5": {
-      "effortLevel": "xhigh"
-    }
-  }
+  "skipAutoPermissionPrompt": true
 }
