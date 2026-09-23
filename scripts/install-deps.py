@@ -95,7 +95,12 @@ def install_apt(upgrade: bool) -> None:
         return
 
     print(f"Installing apt packages: {', '.join(missing)}")
-    subprocess.run(["sudo", "apt", "install", "-y", *missing])
+    # A stale index names superseded .debs the mirror has already dropped, so
+    # the fetch 404s and the whole install aborts (seen on GitHub runners).
+    subprocess.run(["sudo", "apt-get", "update"])
+    proc = subprocess.run(["sudo", "apt", "install", "-y", *missing])
+    if proc.returncode != 0:
+        print("Warning: some apt packages may have failed to install", file=sys.stderr)
 
 
 def luarocks_flags() -> list[str]:

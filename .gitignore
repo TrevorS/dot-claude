@@ -94,3 +94,46 @@ channels/telegram/access.json
 channels/
 daemon.*
 daemon-*
+
+# Config-dir entries from the 2.1.281 binary's own list of what it writes under
+# ~/.claude, not covered above. Anchored to the repo root so `local`, `logs`,
+# `remote`, etc. can't match nested repo paths; no trailing slash, so each
+# matches whether the binary creates a file or a directory. Lock files are
+# named individually because `*.lock` would also ignore uv.lock.
+/.claude.json
+/.claude.json.backup
+/.session_ingress_token
+/active-time.json
+/agent-memory
+/agent-memory-local
+/agent-memory-project
+/antproto.json
+/api-dumps
+/bridge-spawn
+/ccr
+/computer-use.lock
+/cowork_plugins
+/dump-prompts
+/feedback
+/feedback-bundles
+/file-transfers
+/hfi-auth.json
+/local
+/local-settings
+/logs
+/loop.md
+/mcp-discovery-cache
+/mcp-skill-archives
+/project-settings
+/remote
+/scratch
+/seed-admin
+/server-sessions.json
+/server.lock
+/shares
+/startup-perf
+/storage-v2
+/systemd
+/traces
+/uploads
+/usage-data

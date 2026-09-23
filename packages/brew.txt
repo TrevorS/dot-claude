@@ -16,6 +16,7 @@ emacs-app@nightly  # Emacs nightly master builds (cask)
 fd
 fzf
 gh
+gifsicle  # GIF optimization; run `gifsicle -I` on a file before optimizing it
 git
 glow
 gnu-sed
