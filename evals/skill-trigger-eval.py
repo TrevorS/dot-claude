@@ -67,6 +67,7 @@ def run_single_query(
         env=env,
         start_new_session=True,
     )
+    assert process.stdout is not None  # stdout=PIPE
 
     skills_invoked: set[str] = set()
     got_output = False
@@ -258,6 +259,23 @@ def run_eval(
     }
 
 
+def frontmatter_blocks_trigger(skill_file: Path) -> str | None:
+    """Return a reason when SKILL.md frontmatter keeps the model from auto-invoking it."""
+    try:
+        text = skill_file.read_text()
+    except OSError:
+        return None
+    if not text.startswith("---"):
+        return None
+    for line in text[3:text.find("---", 3)].splitlines():
+        key, _, value = line.partition(":")
+        if key == "disable-model-invocation" and value.strip() == "true":
+            return "its frontmatter sets disable-model-invocation: true"
+        if key == "paths":
+            return "its frontmatter sets paths:, so it only loads when a matching file is touched"
+    return None
+
+
 def main():
     parser = argparse.ArgumentParser(description="Evaluate skill triggering for installed skills")
     parser.add_argument("--skill", help="Skill name to evaluate")
@@ -300,6 +318,10 @@ def main():
             print(f"Skipping {skill_name}: skillOverrides sets it to \"{mode}\", so it cannot auto-trigger", file=sys.stderr)
             continue
         default_dir = skill_dirs.get(skill_name, repo / "skills" / skill_name)
+        blocked = frontmatter_blocks_trigger(default_dir / "SKILL.md")
+        if blocked:
+            print(f"Skipping {skill_name}: {blocked}, so it cannot auto-trigger", file=sys.stderr)
+            continue
         eval_path = args.eval_set or str(default_dir / "evals" / "trigger-eval.json")
         if not Path(eval_path).exists():
             print(f"No eval set found at {eval_path}", file=sys.stderr)

@@ -149,6 +149,7 @@ def run_test_case(
         cwd=repo_dir,
         env=env,
     )
+    assert process.stdout is not None  # stdout=PIPE
 
     skill_loads = set()
     start_time = time.time()

@@ -88,6 +88,7 @@ def run_single_query(
         env=env,
         start_new_session=True,
     )
+    assert process.stdout is not None  # stdout=PIPE
 
     skills_invoked: set[str] = set()
     got_output = False
@@ -229,18 +230,41 @@ def parse_skill_md(skill_path: Path) -> tuple[str, str, str]:
     return name, description, content
 
 
+def frontmatter_blocks_trigger(skill_file: Path) -> str | None:
+    """Return a reason when SKILL.md frontmatter keeps the model from auto-invoking it."""
+    try:
+        text = skill_file.read_text()
+    except OSError:
+        return None
+    if not text.startswith("---"):
+        return None
+    for line in text[3:text.find("---", 3)].splitlines():
+        key, _, value = line.partition(":")
+        if key == "disable-model-invocation" and value.strip() == "true":
+            return "its frontmatter sets disable-model-invocation: true"
+        if key == "paths":
+            return "its frontmatter sets paths:, so it only loads when a matching file is touched"
+    return None
+
+
 def auto_trigger_disabled(skill_name: str, skill_path: Path) -> str | None:
     """Return a reason string when this skill cannot auto-trigger at all.
 
     Two independent causes, both of which produce a uniform 0.0 trigger rate that
     reads as a broken description rather than a disabled skill:
 
-    1. `skillOverrides` set to user-invocable-only / name-only / off.
+    1. `skillOverrides` set to user-invocable-only / name-only / off, or the
+       frontmatter sets `disable-model-invocation: true` or `paths:` (a `claude -p`
+       eval never touches a matching file, so a path-scoped skill never loads).
     2. The skill belongs to a plugin that is disabled in `enabledPlugins`.
 
     Guarding both is the difference between "your description needs work" and
     "this measurement was never capable of passing".
     """
+    frontmatter_reason = frontmatter_blocks_trigger(skill_path / "SKILL.md")
+    if frontmatter_reason:
+        return frontmatter_reason
+
     settings = Path.home() / ".claude" / "settings.json"
     if not settings.exists():
         return None
@@ -313,7 +337,7 @@ def main():
     if args.verbose:
         print(f"Evaluating: {description}", file=sys.stderr)
 
-    results = []
+    results: list[dict] = []
     query_triggers: dict[str, list[bool]] = {}
     query_items: dict[str, dict] = {}
 
