@@ -17,6 +17,10 @@ GUARD="$(cd "$(dirname "$0")" && pwd)/branch_protection.sh"
 
 tmp=$(mktemp -d)
 trap 'rm -rf "$tmp"' EXIT
+# Ignore the user's jj config (auto-track-bookmarks and friends) so a local run
+# matches CI, where no jj config exists.
+export JJ_CONFIG="$tmp/jj-config.toml"
+printf '[user]\nname = "t"\nemail = "t@t"\n' >"$JJ_CONFIG"
 
 fails=0
 verdict() { # <want> <rc> <label>  -- exit 2 is BLOCK, 0 is PASS, anything else is a hook bug

@@ -27,7 +27,7 @@ ref=""
 # --ignore-working-copy: naming the session is no reason to snapshot.
 if [[ -d .jj ]]; then
   ref=$(jj log --ignore-working-copy -r 'heads((::@ & bookmarks()) ~ ::trunk())' \
-    --no-graph -T 'bookmarks.map(|b| b.name()).join(",") ++ "\n"' 2>/dev/null)
+    --no-graph -T 'local_bookmarks.map(|b| b.name()).join(",") ++ "\n"' 2>/dev/null)
   ref=${ref//$'\n'/,}
 elif [[ -d .git ]]; then
   ref=$(git branch --show-current 2>/dev/null)

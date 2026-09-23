@@ -32,6 +32,7 @@ Failure modes seen on past runs, grouped by the workflow step they bite. Read th
 
 - Verify a hook `if` filter against the binary, not the docs: `claude -p '<prompt forcing one Bash command>' --debug-file F`, then grep F for `Skipping hook due to if condition`. One line per skipped handler, none for handlers that ran. The filter strips leading `VAR=value` only; `timeout`, `nice`, `env`, `bash -c` and absolute paths never reach the hook.
 - Zero hook fires is a finding, not reassurance. Measure per hook over 30 days (`hook error: [$HOME/.claude/hooks/<name>.sh]` is the PreToolUse block signature), then probe it with harness-shaped payloads. `branch_protection.sh` had 0 fires for months because jj renders an ahead-of-remote bookmark as `master*`; `git_dangerous_flags.sh` had 0 because the workflow is jj. Same number, opposite conclusions.
+- Hook tests that build jj repos must set `JJ_CONFIG` to a throwaway file. The user config sets `remotes.origin.auto-track-bookmarks = "glob:*"`, which hid a `trunk=master,master` bug (`bookmarks` lists an untracked `master@origin` separately) that only CI's config-less runner caught. Also check every run for the SHA, not just one: Dependabot's `dynamic` runs attach to the same push.
 - Hook scripts that call `jj log` without `--ignore-working-copy` snapshot the working copy. `project-context.sh` keeps exactly one such call on purpose (per-prompt restore point, since `fileCheckpointingEnabled` is false); any other snapshotting call clutters `jj op log`.
 
 ## Plugins and skills

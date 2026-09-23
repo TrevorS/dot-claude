@@ -23,6 +23,10 @@ skip() { printf '  --   SKIP   %s\n' "$1"; }
 
 work=$(mktemp -d)
 trap 'rm -rf "$work"' EXIT
+# Ignore the user's jj config (auto-track-bookmarks and friends) so a local run
+# matches CI, where no jj config exists.
+export JJ_CONFIG="$work/jj-config.toml"
+printf '[user]\nname = "t"\nemail = "t@t"\n' >"$JJ_CONFIG"
 
 # Run the hook in <dir> with PATH=<bin>:/usr/bin:/bin; prints additionalContext.
 ctx_in() {

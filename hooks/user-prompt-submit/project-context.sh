@@ -41,8 +41,10 @@ ctx="vcs=$vcs"
 
 case $vcs in
 jj*)
-  # Bookmark names come from b.name(): the rendered `bookmarks` list decorates
-  # them (`master@origin`, `feat*`, `feat??`), which is noise in a key=value.
+  # Bookmark names come from b.name() over local_bookmarks: the rendered list
+  # decorates them (`master@origin`, `feat*`), and `bookmarks` also lists an
+  # untracked remote bookmark on its own, so names repeat (`master,master`).
+  # Trunk falls back to remote_bookmarks when no local bookmark points there.
   # Every jj call but the next passes --ignore-working-copy.
 
   # Snapshots on purpose: fileCheckpointingEnabled=false, so the per-prompt snapshot is the only restore point.
@@ -52,7 +54,8 @@ jj*)
   IFS=: read -r change dirty <<< "$at"
 
   trunk=$(jj log --ignore-working-copy -r 'trunk()' --no-graph \
-    -T 'bookmarks.map(|b| b.name()).join(",")' 2>/dev/null)
+    -T 'if(local_bookmarks, local_bookmarks.map(|b| b.name()).join(","), remote_bookmarks.map(|b| b.name()).join(","))' \
+    2>/dev/null | tr ',' '\n' | awk 'NF && !seen[$0]++' | paste -sd, -)
   [[ -n "$trunk" ]] && ctx+=" trunk=$trunk"
   [[ -n "$change" ]] && ctx+=" change=$change"
 
@@ -60,7 +63,7 @@ jj*)
   # already in trunk. A bookmark on @ itself is rare in jj (work usually sits
   # in a child of the bookmarked change), so reading only @ missed it.
   feature=$(jj log --ignore-working-copy -r 'heads((::@ & bookmarks()) ~ ::trunk())' \
-    --no-graph -T 'bookmarks.map(|b| b.name()).join(",") ++ "\n"' 2>/dev/null)
+    --no-graph -T 'local_bookmarks.map(|b| b.name()).join(",") ++ "\n"' 2>/dev/null)
   feature=${feature//$'\n'/,}
   [[ -n "$feature" ]] && ctx+=" bookmark=$feature"
   [[ -n "$dirty" ]] && ctx+=" dirty=$dirty"

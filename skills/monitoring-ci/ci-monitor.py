@@ -90,8 +90,14 @@ def head_sha(branch: str) -> str | None:
     return None
 
 
-def find_run(branch: str, max_wait: int = 180, expected_sha: str | None = None) -> str | None:
-    """Poll for a CI run on the branch matching expected_sha, return run ID or None.
+def find_runs(branch: str, max_wait: int = 180, expected_sha: str | None = None) -> list[str]:
+    """Poll for CI runs on the branch matching expected_sha; return every run ID found.
+
+    Skips runs with event `dynamic`: GitHub-managed workflows (Dependabot
+    Updates, default CodeQL) attach to the same push and SHA, and watching one
+    of those instead of the repo's own workflow reported a pass while the real
+    check failed (2026-09-23). A push can start several workflows, so once one
+    appears, re-list after a short pause to collect its siblings.
 
     NOTE: deliberately does NOT pass `--branch` to `gh run list`. As of
     `gh` 2.91.0 (released 2026-04-22), `gh run list --branch <name>
@@ -109,10 +115,12 @@ def find_run(branch: str, max_wait: int = 180, expected_sha: str | None = None) 
     # is a guaranteed miss.
     time.sleep(5)
 
+    found: list[str] = []
+    settled = False
     for attempt in range(1, iterations + 1):
         r = run(
             "gh run list --limit 30 "
-            "--json databaseId,status,headSha,headBranch --jq '.[]'"
+            "--json databaseId,status,headSha,headBranch,event --jq '.[]'"
         )
         if r.returncode != 0:
             print(f"  poll {attempt}/{iterations}: gh failed — {r.stderr.strip()}")
@@ -128,7 +136,7 @@ def find_run(branch: str, max_wait: int = 180, expected_sha: str | None = None) 
             seen += 1
             data = json.loads(line)
             run_id = str(data.get("databaseId", ""))
-            if data.get("headBranch", "") != branch:
+            if data.get("headBranch", "") != branch or data.get("event") == "dynamic":
                 continue
             branch_matches += 1
             run_sha = data.get("headSha", "")
@@ -138,8 +146,16 @@ def find_run(branch: str, max_wait: int = 180, expected_sha: str | None = None) 
             if expected_sha and not run_sha.startswith(expected_sha):
                 continue
             sha_matches += 1
-            if run_id:
-                return run_id
+            if run_id and run_id not in found:
+                found.append(run_id)
+
+        if found:
+            if settled or attempt == iterations:
+                return found
+            # One more listing to pick up sibling workflows from the same push.
+            settled = True
+            time.sleep(poll_interval)
+            continue
 
         # Only print when we couldn't match — keeps the happy path quiet.
         # Suppress duplicate summaries so a long stall produces one line,
@@ -155,7 +171,7 @@ def find_run(branch: str, max_wait: int = 180, expected_sha: str | None = None) 
             last_summary = summary
         if attempt < iterations:
             time.sleep(poll_interval)
-    return None
+    return found
 
 
 def watch_run(run_id: str, poll_interval: int = 10, timeout: int = 1800) -> int:
@@ -237,8 +253,8 @@ def main() -> int:
     try:
         print(f"Watching CI for {name} @ {branch} (sha: {sha or 'unknown'}) ...")
 
-        run_id = find_run(branch, max_wait=args.timeout, expected_sha=sha)
-        if not run_id:
+        run_ids = find_runs(branch, max_wait=args.timeout, expected_sha=sha)
+        if not run_ids:
             print(
                 f"INDETERMINATE: no CI run found for {branch}"
                 f"{f' @ {sha[:12]}' if sha else ''} after {args.timeout}s — "
@@ -246,23 +262,26 @@ def main() -> int:
             )
             return 2
 
-        print(f"Found run {run_id} — watching ...")
-        exit_code = watch_run(run_id, timeout=watch_timeout)
+        print(f"Found run(s) {', '.join(run_ids)} — watching ...")
+        deadline = time.time() + watch_timeout
+        results = {rid: watch_run(rid, timeout=max(1, int(deadline - time.time()))) for rid in run_ids}
 
-        if exit_code == 1:
-            print(f"\nCI FAILED (run {run_id})\n")
-            logs = fetch_failed_logs(run_id)
-            print(logs)
+        failed = [rid for rid, code in results.items() if code == 1]
+        if failed:
+            for rid in failed:
+                print(f"\nCI FAILED (run {rid})\n")
+                print(fetch_failed_logs(rid))
             return 1
 
-        if exit_code == 2:
+        pending = [rid for rid, code in results.items() if code == 2]
+        if pending:
             print(
-                f"\nINDETERMINATE: run {run_id} still not complete — "
-                f"check manually: gh run view {run_id}"
+                f"\nINDETERMINATE: run(s) {', '.join(pending)} still not complete — "
+                f"check manually: gh run view {pending[0]}"
             )
             return 2
 
-        print(f"\nCI PASSED (run {run_id})")
+        print(f"\nCI PASSED (run(s) {', '.join(run_ids)})")
         return 0
 
     finally:
