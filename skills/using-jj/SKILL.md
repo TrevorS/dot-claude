@@ -101,5 +101,6 @@ Pushed commits are protected by `immutable_heads()`. `jj squash --into <id> --ig
 ```bash
 jj log -r 'trunk()..@'              # everything between main and here
 jj log -r '::@ & ~::trunk()'         # my branch only
-jj log -r 'author("trevor")'         # my commits
+jj log -r 'mine()'                  # my commits
+jj log -r 'author(substring:"trevor")'  # bare strings in author()/description() are whole-string globs; say substring: for partial
 ```

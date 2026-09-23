@@ -12,7 +12,7 @@ Manage the custom starship fork at `~/Projects/starship` (origin: `TrevorS/stars
 - **Origin:** `TrevorS/starship` (the fork)
 - **Upstream:** `starship/starship`
 - **Feature branch:** `claude/add-jujutsu-support-JuqjU`
-- **Binary install path:** `~/.local/bin/starship`
+- **Binary install path:** `~/.cargo/bin/starship` (from `cargo install`). `~/.local/bin` precedes it on PATH, so keep no `starship` there.
 - **Config:** `~/.config/starship.toml` (stowed from `~/.claude/dotfiles/starship/`)
 
 ## Sync with Upstream and Rebuild
@@ -30,9 +30,8 @@ git push origin master
 git checkout claude/add-jujutsu-support-JuqjU
 git rebase master
 
-# Build and install
-cargo build --release
-cp target/release/starship ~/.local/bin/starship
+# Build and install to ~/.cargo/bin
+cargo install --path . --locked --force
 
 # Push rebased branch
 git push origin claude/add-jujutsu-support-JuqjU --force-with-lease
@@ -44,13 +43,13 @@ When you've made local changes and just want to rebuild:
 
 ```bash
 cd ~/Projects/starship
-cargo build --release
-cp target/release/starship ~/.local/bin/starship
+cargo install --path . --locked --force
 ```
 
 ## Verify
 
 ```bash
+command -v starship       # Should print ~/.cargo/bin/starship
 starship --version        # Should show branch name in output
 starship module jj_status # Test in a jj repo — should print change ID
 ```

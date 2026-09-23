@@ -1,7 +1,7 @@
 ---
 name: monitoring-ci
-description: Watch a GitHub Actions run after a push and report pass/fail with the failing job logs. Use after any `jj git push` or `git push`, or when the user asks whether CI passed. Not for writing or debugging workflow YAML.
-when_to_use: "Typed as 'did CI pass', 'is it green', 'watch the build', 'check the run', or immediately after a push lands."
+description: Watch a GitHub Actions run and report pass/fail with the failing job logs when the user asks whether CI passed. Post-push monitoring without being asked is rules/ci-monitoring.md, not this skill. Not for writing or debugging workflow YAML.
+when_to_use: "Typed as 'did CI pass', 'is it green', 'watch the build', or 'check the run'."
 context: fork
 model: sonnet
 effort: low

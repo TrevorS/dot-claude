@@ -14,8 +14,9 @@ Auto-stage, validate, and commit changes. Pass `--push` to also push and monitor
 ### 1. Run Validation
 
 Validate before committing; a failure stops the commit.
-Prefer the repo's own gate when it has one (`make validate` in `~/.claude`),
-otherwise load `validating-project`.
+Prefer the repo's own gate (`make validate` in `~/.claude`; else a check/lint/test
+script or pre-commit). Otherwise run format → lint → typecheck → test and stop at
+the first failure.
 
 **This step is mandatory on the jj path, not best-effort.** jj has no hook system
 and does not run git's hooks even in a colocated repo, so `.git/hooks/pre-commit`

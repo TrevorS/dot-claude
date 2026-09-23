@@ -115,7 +115,7 @@ The two surfaces validate very differently:
 A silent surface rots in both directions at once — a key you never added falls back to the built-in base, and a key that was renamed away just stops applying. Neither shows up anywhere.
 
 ```bash
-python3 ~/.claude/skills/syncing-claude-config/schema-completeness.py --strings "$SCRATCHPAD/bin-strings.txt"
+python3 ~/.claude/skills/syncing-claude-config/schema-completeness.py --strings "<scratchpad>/bin-strings.txt"
 ```
 
 It diffs each surface against the **installed binary** (source of truth #1) in both directions and exits non-zero on any finding:
@@ -125,7 +125,7 @@ It diffs each surface against the **installed binary** (source of truth #1) in b
 - `invalid` — value the surface's own validator rejects → silently dropped
 - `suspect` — present and valid but semantically wrong (see below)
 
-Reuse the strings dump from step 4 via `--strings` or it re-extracts; drop the flag if you haven't taken one yet.
+`<scratchpad>` is the literal session scratchpad path from the environment context; no env var holds it. Reuse a strings dump of the binary (source of truth #1) saved there via `--strings`, or drop the flag and the script re-extracts.
 
 **The `suspect` check.** Some palette keys are named like surfaces but are actually **accent foregrounds** — `background` is cyan in every built-in, not a fill. Assigning it a dark surface color yields valid, accepted, invisible text. The script tells the two apart without assuming a terminal background: **surfaces invert between the light and dark built-ins** (`userMessageBackground` 240→55), **accents keep their hue and brighten** (`background` 153→204). It then flags any accent sitting far from its own built-in value. This is what caught `background: #313244` at 6.3:1 off-target on 2026-08-26.
 
@@ -136,7 +136,7 @@ Two things the script deliberately does **not** flag: env vars without a Claude-
 **Doc-index cross-check** (breadth, for `settings.json` only). The docs key index is a faster enumerator than the binary when you want the whole surface at once:
 
 ```bash
-S="$SCRATCHPAD"   # session scratchpad directory, from the environment context
+S="<scratchpad>"   # literal session scratchpad path from the environment context; no env var holds it
 curl -sL https://code.claude.com/docs/en/settings-reference.md -o "$S/settings-ref.md"
 grep -oE '^#{3,4} `[^`]+`' "$S/settings-ref.md" | sed 's/^#* `//; s/`$//' | grep -v '\.' | sort -u > "$S/doc-keys.txt"
 jq -r 'keys[]' ~/.claude/settings.json | grep -v '^\$' | sort | comm -23 - "$S/doc-keys.txt"
@@ -179,6 +179,7 @@ Lead with a scannable table, risk-tiered, safest first:
 | --- | --- | --- | --- |
 
 Risk tiers:
+
 - **additive-safe** — new optional key/flag, no behavior change. Candidate for quick approval.
 - **behavioral** — changes how something already behaves. Propose; gate on Teej hitting the symptom.
 - **breaking** — renamed/removed key in use. Always preview the before/after diff; never auto-apply.

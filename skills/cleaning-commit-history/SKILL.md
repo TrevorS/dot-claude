@@ -14,7 +14,11 @@ The oplog is the safety net.
 
 ### Phase 0: Safety
 
-Note the current operation ID with `jj op log -n 1`.
+Note the current operation ID with `jj op log -n 1`, and the branch tip's commit ID (commit, not change: the change ID survives the rewrite, the commit ID pins the old tree):
+
+```bash
+jj log -r <tip> --no-graph -T 'commit_id ++ "\n"'
+```
 
 ### Phase 1: Inventory
 
@@ -75,7 +79,7 @@ jj op restore <before-surgery>
 
 ### Phase 6: Validation
 
-- `git diff $BASE..HEAD` equals the original sea (no loss of intent)
+- The rebuilt tip has the original tree (no loss of intent): `jj diff --from <old-tip-commit-id> --to <new-tip> --summary` prints nothing. (`--stat` still prints a `0 files changed` line when the trees match.)
 
 ## Commit Message Style
 

@@ -15,6 +15,7 @@ Every rule below encodes a bug that was actually found in this repo on
 Exits 0 when clean, 1 when any check fails.
 """
 
+import argparse
 import re
 import sys
 from pathlib import Path
@@ -44,6 +45,18 @@ BANNED = [
         "`jj split` has a non-interactive form (paths + -m), which "
         "hooks/jj_interactive_guard.sh explicitly allows. Claiming otherwise "
         "contradicts rules/version-control.md.",
+    ),
+    (
+        "jj-bare-string-pattern",
+        # Found 2026-09-23: using-jj taught `author("trevor")`, which matches
+        # nothing on jj 0.45 because a bare string is a whole-string glob.
+        re.compile(
+            r"\b(?:author|committer|description)(?:_name|_email)?\(\s*"
+            r"\"(?![a-z]+(?:-i)?:)"
+        ),
+        "A bare string in a jj revset string function is a whole-string glob "
+        '(`author("trevor")` matches nothing). Name the kind: '
+        '`substring:"..."`, `exact:"..."`, or `glob:"..."`, or use `mine()`.',
     ),
     (
         "gh-body-heredoc",
@@ -109,10 +122,7 @@ def frontmatter(text: str) -> dict[str, str]:
 def check_banned(path: Path, text: str) -> list[str]:
     failures = []
     name = rel(path)
-    in_fence = False
     for lineno, line in enumerate(text.splitlines(), 1):
-        if line.lstrip().startswith("```"):
-            in_fence = not in_fence
         for rule_id, pattern, message in BANNED:
             if name in EXEMPT.get(rule_id, set()):
                 continue
@@ -194,7 +204,15 @@ def check_evals(path: Path) -> list[str]:
 
 
 def main() -> int:
-    targets = iter_targets(sys.argv[1:])
+    parser = argparse.ArgumentParser(
+        description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
+    )
+    parser.add_argument(
+        "paths",
+        nargs="*",
+        help="files to check (default: every SKILL.md and rules/*.md in the repo)",
+    )
+    targets = iter_targets(parser.parse_args().paths)
     failures: list[str] = []
 
     for path in targets:

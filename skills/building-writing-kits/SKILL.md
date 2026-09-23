@@ -1,7 +1,7 @@
 ---
 name: building-writing-kits
-description: Build a writing kit, everything a person needs to write a doc themselves (sourced facts, verbatim quotes, the choices a draft made, reader objections, open questions, blanks only they can fill) without the finished prose. Use whenever the user wants material or "inspo" to write a brief, memo, RFC, PR/FAQ, proposal, review, or post in their own words, says they will write it themselves, asks for research or a packet to write from, wants an existing draft taken apart into what went into it, or wants their finished doc checked against the sources.
-when_to_use: "Typed as 'make me a kit', 'inspo doc', 'I want to write this myself', 'give me what I need to write the X', 'turn this draft into material I can write from', 'brief me for writing', or 'check my doc against the sources'. Not for docs the user wants written for them, and not for a Slack message, commit message, or status update; just write those."
+description: "Build a writing kit for a doc the user will write in their own words (brief, memo, RFC, PR/FAQ): sourced facts, verbatim quotes, objections, open questions, blanks only they can fill; no finished prose. Also takes a draft apart into that material, or checks a finished doc against its sources."
+when_to_use: "Typed as 'make me a kit', 'inspo doc', 'I want to write this myself', 'give me what I need to write the X', 'brief me for writing', or 'check my doc against the sources'. Not for docs to write for them, Slack messages, commit messages, or status updates."
 argument-hint: "<target doc> [from <draft or source files>] | check <written doc>"
 ---
 

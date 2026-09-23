@@ -18,13 +18,13 @@ Jina Reader (`r.jina.ai`) converts web pages to clean markdown. Use it as a fall
 
 Prepend `https://r.jina.ai/` to the target URL:
 
-```
+```text
 https://r.jina.ai/https://example.com/page
 ```
 
 Call this with `WebFetch`:
 
-```
+```text
 WebFetch url="https://r.jina.ai/https://example.com/page"
 ```
 

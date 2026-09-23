@@ -1,8 +1,8 @@
 ---
 name: specifying-and-planning
 description: Plan project implementation -- extract requirements from a spec, break them into tasks, create GitHub issues and project boards, or generate an agent team configuration from the task list.
-when_to_use: "Typed as 'break this down', 'turn this spec into issues', 'plan the work', 'what are the tasks', 'set up a board', or when handed a spec or design doc to decompose."
 argument-hint: "<mode> [file-or-args]"
+disable-model-invocation: true
 ---
 
 # Specifying and Planning
@@ -91,12 +91,11 @@ Target 3-5 teammates, 5-6 tasks per teammate. Prefer fewer focused teammates ove
 
 Guidance, not a rule:
 
-- `claude-fable-5-1` — the top tier: architectural decisions, gnarly debugging, cross-cutting refactors with high blast radius, anything where a single mistake cascades.
-- `claude-opus-5` — heavy implementation and review where Fable's cost isn't justified.
-- `claude-sonnet-5` — default for implementation work: writing code, refactoring, integration; reliable enough for parallel execution.
-- `claude-sonnet-5` + `effort: low` — the cheap tier for roles where the failure mode is obvious: shell-command runners, file movers, status reporters. Lower effort, not a lower model.
+- `fable` — the top tier: architectural decisions, gnarly debugging, cross-cutting refactors with high blast radius, anything where a single mistake cascades.
+- `opus` — heavy implementation and review where Fable's cost isn't justified.
+- `sonnet` — default for implementation work (writing code, refactoring, integration) and the floor for mechanical roles (shell-command runners, file movers, status reporters).
 
-Set `model:` explicitly in each teammate's frontmatter. Scale cost with `effort` rather than by dropping below Sonnet 5.
+Name the model per teammate, in the spawn prompt or the subagent definition's `model:`. Use the family aliases, not catalog IDs, so the plan follows new model versions. Teammates inherit the lead's effort level; a per-teammate `effort` is not applied, so scale cost through teammate count and task size.
 
 **Context discipline**: instruct each teammate to return a **≤1500-token summary** to the root agent, not raw tool output.
 

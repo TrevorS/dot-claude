@@ -63,6 +63,7 @@ Both work interchangeably:
 ## Categories
 
 Common categories for `--category`:
+
 - `"Secure Note"`
 - `"Login"`
 - `"API Credential"`

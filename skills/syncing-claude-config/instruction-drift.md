@@ -91,6 +91,7 @@ Any config line that restates one of these is DITCH. Any line that contradicts o
 ## Stale-pattern checklist (Claude 5 generation)
 
 Patterns that compensated for older models and now cost quality. Source: Anthropic's Claude 5 context-engineering guidance and the 2026-09 audit.
+
 - Verification loops ("double-check", "verify your work", "re-verify before responding").
 - "Be conservative" / severity filters on reviews.
 - Exhaustiveness demands ("be thorough", "comprehensive").
