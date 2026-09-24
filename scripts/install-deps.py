@@ -3,7 +3,8 @@
 
 Default mode reads package lists, skips already-installed packages, and only
 prints output when there's actual work to do. Pass --upgrade to bump every
-managed package to its latest version.
+managed package to its latest version; on brew machines that means a full
+`brew update && brew upgrade && brew cleanup -s`, not just the listed packages.
 
 apt is intentionally skipped in --upgrade mode: a system-wide `apt upgrade`
 is too broad to trigger from this script. Bump system packages with the OS's
@@ -52,21 +53,22 @@ def brew_install(packages: list[str]) -> None:
         print("Warning: some brew packages may have failed to install", file=sys.stderr)
 
 
-def brew_upgrade(packages: list[str]) -> None:
-    print(f"Upgrading brew packages: {', '.join(packages)}")
-    subprocess.run(["brew", "upgrade", *packages])
+def brew_upgrade() -> None:
+    for cmd in (["update"], ["upgrade", "-y"], ["cleanup", "-s"]):
+        print(f"Running brew {' '.join(cmd)}...")
+        if subprocess.run(["brew", *cmd]).returncode != 0:
+            print(f"Warning: brew {cmd[0]} failed", file=sys.stderr)
 
 
 def install_brew(upgrade: bool) -> None:
     if not shutil.which("brew"):
         print("brew not found — skipping brew packages")
         return
-    packages = read_package_list("brew.txt")
-    if not packages:
-        return
     if upgrade:
-        brew_upgrade(packages)
-    else:
+        brew_upgrade()
+        return
+    packages = read_package_list("brew.txt")
+    if packages:
         brew_install(packages)
 
 
@@ -219,6 +221,14 @@ def install_uv_tools(upgrade: bool) -> None:
         subprocess.run(["uv", "tool", "install", pkg])
 
 
+def upgrade_claude() -> None:
+    if not shutil.which("claude"):
+        print("claude not found — skipping claude update")
+        return
+    print("Running claude update...")
+    subprocess.run(["claude", "update"])
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
@@ -238,6 +248,8 @@ def main() -> None:
     install_luarocks(args.upgrade)
     install_cargo(args.upgrade)
     install_uv_tools(args.upgrade)
+    if args.upgrade:
+        upgrade_claude()
 
 
 if __name__ == "__main__":
