@@ -5,7 +5,7 @@ help:
 	@echo "Available targets:"
 	@echo "  install           - Install all dependencies and stow dotfiles"
 	@echo "  deps              - Install system packages from packages/*.txt"
-	@echo "  upgrade           - Upgrade brew, claude, managed cargo/luarocks/uv packages, Emacs/Neovim plugins"
+	@echo "  upgrade           - Upgrade brew, rustup, claude, managed cargo/luarocks/uv packages, Emacs/Neovim plugins"
 	@echo "  emacs-plugins     - Update Emacs packages (elpaca) headlessly; rebuilds only what changed"
 	@echo "  nvim-plugins      - Update Neovim plugins (vim.pack) headlessly"
 	@echo "  validate          - Format and lint all files (all-in-one)"

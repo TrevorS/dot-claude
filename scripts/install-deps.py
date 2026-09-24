@@ -5,6 +5,8 @@ Default mode reads package lists, skips already-installed packages, and only
 prints output when there's actual work to do. Pass --upgrade to bump every
 managed package to its latest version; on brew machines that means a full
 `brew update && brew upgrade && brew cleanup -s`, not just the listed packages.
+It also runs `rustup self update && rustup update` when rustup is on PATH,
+before the cargo step so crates rebuild on the new toolchain.
 
 apt is intentionally skipped in --upgrade mode: a system-wide `apt upgrade`
 is too broad to trigger from this script. Bump system packages with the OS's
@@ -141,6 +143,18 @@ def install_luarocks(upgrade: bool) -> None:
         subprocess.run(["luarocks", *flags, "install", pkg])
 
 
+def upgrade_rustup() -> None:
+    if not shutil.which("rustup"):
+        print("rustup not found — skipping toolchain update")
+        return
+    # A package-manager rustup (brew, distro) disables self-update and exits
+    # nonzero; warn and still update the toolchains.
+    for cmd in (["self", "update"], ["update"]):
+        print(f"Running rustup {' '.join(cmd)}...")
+        if subprocess.run(["rustup", *cmd]).returncode != 0:
+            print(f"Warning: rustup {' '.join(cmd)} failed", file=sys.stderr)
+
+
 def cargo_installed() -> set[str]:
     """Return the set of crate names currently installed via cargo."""
     result = run(["cargo", "install", "--list"])
@@ -246,6 +260,8 @@ def main() -> None:
         install_apt(args.upgrade)
 
     install_luarocks(args.upgrade)
+    if args.upgrade:
+        upgrade_rustup()
     install_cargo(args.upgrade)
     install_uv_tools(args.upgrade)
     if args.upgrade:
