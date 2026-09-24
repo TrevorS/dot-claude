@@ -319,6 +319,7 @@
       "brew *"
     ]
   },
+  "maxProseWidth": 100,
   "spellcheck": {
     "enabled": true,
     "color": "#eba0ac"
@@ -340,7 +341,6 @@
     }
   },
   "tui": "fullscreen",
-  "maxProseWidth": 100,
   "voice": {
     "enabled": true
   },
