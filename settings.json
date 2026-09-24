@@ -340,6 +340,7 @@
     }
   },
   "tui": "fullscreen",
+  "maxProseWidth": 100,
   "voice": {
     "enabled": true
   },

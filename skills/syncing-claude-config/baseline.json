@@ -1,6 +1,6 @@
 {
-  "claudeCodeVersion": "2.1.281",
-  "syncedDate": "2026-09-23",
+  "claudeCodeVersion": "2.1.282",
+  "syncedDate": "2026-09-24",
   "source": "https://api.github.com/repos/anthropics/claude-code/releases",
   "adopted": [
     {
@@ -735,6 +735,20 @@
       "adoptedDate": "2026-09-23",
       "value": null,
       "note": "The three targeted qwen3-tts-rs (not in ~/Projects) or an uninstalled whisper, with 0-1 lifetime uses; git history keeps them. building-swiftui kept its paths: **/*.swift, so as a user skill it loads only when a Swift file is touched. teej-skills plugin.json 0.4.1 -> 0.5.0. Supersedes the building-swiftui/testing-whisper mentions in the 2026-09-09 teej-skills entry."
+    },
+    {
+      "feature": "maxProseWidth",
+      "introducedVersion": "2.1.282",
+      "adoptedDate": "2026-09-24",
+      "value": 100,
+      "note": "New in 2.1.282: 'Added a `maxProseWidth` setting that caps the width of Claude's prose in wide terminals while tables and code blocks keep the full width'. Binary: top-level int, min 40, unset = full width; display wrap only, response text unchanged. Set beside tui=fullscreen; 100 is a readability pick, not measured."
+    },
+    {
+      "feature": "theme: removed dead autoAcceptShimmer override",
+      "introducedVersion": "2.1.282",
+      "adoptedDate": "2026-09-24",
+      "value": null,
+      "note": "2.1.282 dropped autoAcceptShimmer from the base palette (8 binary hits in 2.1.281, 0 in 2.1.282), tied to 'Changed the `ultracode` visuals in `/effort` and the prompt input to plain styling'. The loader silently ignored it. Added in b7f8a39 (palette parity). Theme is back to 71/71. Five other shimmer keys are accepted but unread in 2.1.282; kept on purpose, see gotchas.md step 6."
     }
   ],
   "declined": [
