@@ -94,7 +94,7 @@ gh pr create --head feature-x --title "..." --body "..."
 
 ## Immutable commits
 
-Pushed commits are protected by `immutable_heads()`. `jj squash --into <id> --ignore-immutable` is the approved way to fold a fix into a pushed commit.
+Pushed commits are protected by `immutable_heads()`. `jj squash --into <id> --ignore-immutable` is the approved way to fold a fix into a pushed commit; `rules/pr-safety.md` still gates it on a reviewed PR.
 
 ## Revsets
 

@@ -65,7 +65,7 @@ Technical strategy
 - Requires #<issue>
 ```
 
-Apply labels: component (frontend, backend), type (feature, refactor), complexity (small, medium, large).
+Apply labels: component (frontend, backend) and type (feature, refactor). Size goes in the body as the scope block from `rules/estimating.md`, not as a label.
 
 ### setup-github-project
 
@@ -97,6 +97,6 @@ Guidance, not a rule:
 
 Name the model per teammate, in the spawn prompt or the subagent definition's `model:`. Use the family aliases, not catalog IDs, so the plan follows new model versions. Teammates inherit the lead's effort level; a per-teammate `effort` is not applied, so scale cost through teammate count and task size.
 
-**Context discipline**: instruct each teammate to return a **≤1500-token summary** to the root agent, not raw tool output.
+**Context discipline**: instruct each teammate to return a summary of findings, decisions, and changed files to the root agent, not raw tool output.
 
 Use a TDD approach in task descriptions.

@@ -1,6 +1,6 @@
 ---
 name: maintaining-claude-code
-description: Audit and improve Claude Code hooks, rules, and settings.json. Use when adding/debugging a hook, organizing rules, auditing settings.json (permissions, env vars, stale flags), or deciding between hook vs skill vs rule vs CLAUDE.md. For SKILL.md authoring use the skill-creator plugin; for CLAUDE.md audits use the claude-md-improver plugin.
+description: Audit and improve Claude Code hooks, rules, and settings.json. Use when adding/debugging a hook, organizing rules, auditing settings.json (permissions, env vars, stale flags), or deciding between hook vs skill vs rule vs CLAUDE.md. For SKILL.md authoring use the skill-creator plugin; for CLAUDE.md prompt audits run `/doctor prompt-audit`.
 when_to_use: "Typed as 'my hook is not firing', 'audit settings.json', 'audit my Claude Code setup', 'my CLAUDE.md is too long, what should move to rules or skills', 'should this be a hook or a skill', 'why does this keep prompting', or when adding a hook event, permission rule, or rules/ file."
 ---
 
@@ -15,7 +15,7 @@ Pick the right home before writing anything:
 | Run automatically before/after a tool call | **Hook** |
 | Auto-detected capability for a recurring task | **Skill** (use skill-creator) |
 | Heavy isolated workflow, environment-driven | **Skill with `context: fork`** (see caveat) |
-| Always-on behavioral guidance | **CLAUDE.md** (use claude-md-improver) |
+| Always-on behavioral guidance | **CLAUDE.md** |
 | Path-specific rules | **rules/** with `paths:` frontmatter |
 
 **`context: fork` caveat:** a forked skill is isolated from the conversation **and** does not receive the user's message as `$ARGUMENTS` on auto-trigger (only an explicit `/skill <args>` invocation passes them). So use fork only for **environment-driven** work that reads everything from cwd/git/CI (validate, monitor CI, clean history). For any **input-dependent** skill — one that needs the user's words (a search query, an issue title, a plan path) — keep it **inline**, or it will fire with an empty query and bounce the question back. If a forked skill keeps asking "what would you like to search for?", this is why.
@@ -79,9 +79,9 @@ Additional output fields: `updatedToolOutput` (replace tool output, all tools), 
   array, system prompt, CLAUDE.md + eager rules + MEMORY.md, and the skill listing; only a change
   to *those* re-bills. `project-context.sh` emits a date rather than a clock for a different
   reason — a clock invites social commentary about the hour — not for caching.
-  The pairing that does matter: non-blocking MCP connection (the default since at least 2.1.260;
-  `MCP_CONNECTION_NONBLOCKING` is only read as an opt-*out* and was dropped from `env` on
-  2026-09-03) lets servers connect late, which would rewrite the tools array, except deferred
+  The pairing that does matter: non-blocking MCP connection (the default;
+  `MCP_CONNECTION_NONBLOCKING` is read only as an opt-*out*, so it stays out of `env`)
+  lets servers connect late, which would rewrite the tools array, except deferred
   tool loading keeps MCP tools out of it until `ToolSearch` pulls a schema into a tool result.
   Safe only while both hold.
 - Forgetting `set -euo pipefail` in bash — but only for **gate** hooks. A gate
@@ -89,7 +89,7 @@ Additional output fields: `updatedToolOutput` (replace tool output, all tools), 
   stops gating. An **output** hook (statusLine, UserPromptSubmit context injection,
   notifications) should stay fail-soft: under `set -e` one failing segment aborts
   the script before it prints anything, so a partial status line becomes no status
-  line. In this repo the three guards under `hooks/` set it; `hooks/status.sh`,
+  line. In this repo the three PreToolUse guards and `hooks/teammate-idle.sh` set it; `hooks/status.sh`,
   `hooks/user-prompt-submit/project-context.sh`, `hooks/session-title.sh`, and
   `hooks/stop-failure-notify.sh` deliberately do not.
   Don't "fix" those — the asymmetry is the design.
@@ -123,7 +123,7 @@ Default to frontmatter so the setting travels with the skill. **Exception — th
 
 That is why `syncing-claude-config`, `cleaning-commit-history`, and `executing-test-plans` are pinned in `settings.json` rather than in their own frontmatter.
 
-**Trigger evals and suppressed skills don't mix.** `user-invocable-only`, `name-only`, and `off` all stop a skill from auto-loading, so a trigger eval against one returns a flat 0.0 trigger rate — which reads as a broken description rather than a disabled skill. `scripts/run-trigger-eval.py` now refuses to run in that case (exit 2) and names the override; pass `--allow-disabled` to override. The three eval sets above are kept as-is on purpose: they describe what those skills *would* serve, so they become meaningful again the moment an override is dropped.
+**Trigger evals and suppressed skills don't mix.** `user-invocable-only`, `name-only`, and `off` all stop a skill from auto-loading, so a trigger eval against one returns a flat 0.0 trigger rate — which reads as a broken description rather than a disabled skill. `scripts/run-trigger-eval.py` refuses to run in that case (exit 2) and names the override; pass `--allow-disabled` to override. The three eval sets above are kept as-is on purpose: they describe what those skills *would* serve, so they become meaningful again the moment an override is dropped.
 
 ## Rules
 

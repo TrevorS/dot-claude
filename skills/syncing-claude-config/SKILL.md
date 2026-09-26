@@ -55,7 +55,7 @@ Also check whether the product's own prompt moved:
 python3 ~/.claude/skills/syncing-claude-config/prompt-drift.py   # exit 1 = a tracked system-prompt section changed
 ```
 
-If installed == baseline **and** `prompt-drift.py` is clean, report `❨✓❩ Config targets <version> — up to date` and stop. If only the prompt drifted (same version, different build is rare but possible), run step 7 alone.
+If installed == baseline **and** `prompt-drift.py` is clean, report "❨`✓`❩ Config targets <version> · up to date" and stop. If only the prompt drifted (same version, different build is rare but possible), run step 7 alone.
 
 A `gate off -> on` line with no text diff is a dormant section going live: treat it as a changed section. `--show <section>` prints the gate under the text.
 
@@ -104,7 +104,7 @@ Demote, never delete: changes that don't intersect go into a collapsed **"other 
 
 ### 6. Audit the silently-validating surfaces
 
-Steps 2–5 only find drift a release note *mentions*. That misses an entire failure class: config that no changelog line ever names, on surfaces that reject bad input **without saying so**. Run this every time — it is not conditional on the release window, and it is the step that catches four-month-old rot: the theme sat 4 keys behind with 1 dead key for four months while `settings.json` stayed clean.
+Steps 2–5 only find drift a release note *mentions*. That misses an entire failure class: config that no changelog line ever names, on surfaces that reject bad input **without saying so**. Run this every time — it is not conditional on the release window, and a silent surface can drift for months while `settings.json` stays clean.
 
 The two surfaces validate very differently:
 
@@ -163,7 +163,7 @@ python3 ~/.claude/skills/syncing-claude-config/prompt-drift.py --show delivering
 
 Then go file by file, line by line, over the always-loaded set — `~/.claude/CLAUDE.md`, the repo's `.claude/CLAUDE.md`, every unscoped `rules/*.md`, and every hook that injects text per turn — and, for skills, the frontmatter description plus body. Give each line one verdict from the rubric's vocabulary; pass the rubric path to any agent auditing skill files.
 
-Measure, don't guess: line and word counts per always-loaded file before and after, and for a hook, how often it actually fired (`grep -l` over the last 30 days of transcripts) and what it fired on. The 2026-09-09 audit found 284 always-loaded lines of which ~140 were redundant, three direct conflicts with the autonomous-posture block, one workaround for a bug fixed 180 releases earlier, and a slop-word hook that fired on ordinary technical vocabulary — none of it visible to steps 2–6.
+Measure, don't guess: line and word counts per always-loaded file before and after, and for a hook, how often it actually fired (`grep -l` over the last 30 days of transcripts) and what it fired on. Look for redundant lines, direct conflicts with the system prompt's posture, workarounds for long-fixed bugs, and hooks that fire on ordinary input — none of it is visible to steps 2–6.
 
 Findings feed the step 8 proposal as their own zone. CONFLICTs are **behavioral**; DITCH of a fixed-bug workaround is **additive-safe** once the changelog line is cited.
 
