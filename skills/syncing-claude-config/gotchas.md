@@ -13,6 +13,7 @@ Failure modes seen on past runs, grouped by the workflow step they bite. Read th
 
 - Tracked sections can be dormant. The prompt string sits behind `function X(e){if(!G(e))return null;return"..."}`; `prompt-drift.py` resolves `G` and stores `off`/`on`/the flag or model prefix beside the text. The "approval covers the task end to end" block sat at `off` through 2.1.269–2.1.272, so text-only diffing would have called the day it landed "unchanged".
 - For prompt changes outside the tracked anchors, `prose-diff.py OLD NEW` (runs of 22+ words, set-differenced between two installed versions in `~/.local/share/claude/versions/`) takes about 13 s. On 2.1.269→2.1.272 it surfaced the Agent tool rewrite no anchor covered; on 2.1.272→2.1.273, the Artifact tool's publishing wording and the bundled commit skills' git refusal list, neither in the release notes.
+- `/doctor prompt-audit` (2.1.283) is the product's version of step 7: `claude -p '/doctor prompt-audit' --no-session-persistence`, patch in `/tmp/prompt-audit/`. Verify each factual claim before applying: on 2026-09-26 it read a `# no set -euo pipefail` comment as the setting.
 
 ## Schema audit (step 6)
 
@@ -40,7 +41,7 @@ Failure modes seen on past runs, grouped by the workflow step they bite. Read th
 
 - LSP plugins can load as empty shells: cached artifacts from before `lspServers` moved into `marketplace.json` carry no server config, `claude plugin update` reports them current, and `claude plugin details` still shows the server (it reads the marketplace entry). Only the debug log tells the truth: grep `claude -p ... --debug-file F` output for `Total LSP servers loaded`. Fix with `claude plugin uninstall` then `install` (anthropics/claude-code#78604, #93474). Re-enabling a disabled LSP plugin needs the same reinstall.
 - Synced claude.ai skills come from whichever org you are logged into; `skills/synced/` holds one folder per org, and `/login` switches the set. `skillOverrides` applies to them by full name (`anthropic-skills:<name>`), so one entry covers every org that ships that name.
-- `/skill-doctor` runs headless (`claude -p '/skill-doctor' --no-session-persistence`); `/doctor` prints nothing under `-p`.
+- `/skill-doctor` runs headless (`claude -p '/skill-doctor' --no-session-persistence`); `/doctor` prints nothing under `-p`, but `/doctor prompt-audit` does.
 - Measure before proposing context-budget keys (`skillListingBudgetFraction`, `skillListingMaxDescChars`, `autoCompactWindow`). `/skill-doctor` gives per-skill usage and resident cost; paste its totals into the proposal row. The 2026-08-24 decline held only because the numbers were counted.
 
 ## Applying changes (step 9)

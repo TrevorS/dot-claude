@@ -1,6 +1,6 @@
 {
-  "claudeCodeVersion": "2.1.282",
-  "syncedDate": "2026-09-24",
+  "claudeCodeVersion": "2.1.283",
+  "syncedDate": "2026-09-26",
   "source": "https://api.github.com/repos/anthropics/claude-code/releases",
   "adopted": [
     {
@@ -749,6 +749,20 @@
       "adoptedDate": "2026-09-24",
       "value": null,
       "note": "2.1.282 dropped autoAcceptShimmer from the base palette (8 binary hits in 2.1.281, 0 in 2.1.282), tied to 'Changed the `ultracode` visuals in `/effort` and the prompt input to plain styling'. The loader silently ignored it. Added in b7f8a39 (palette parity). Theme is back to 71/71. Five other shimmer keys are accepted but unread in 2.1.282; kept on purpose, see gotchas.md step 6."
+    },
+    {
+      "feature": "model: opus (was opus[1m])",
+      "introducedVersion": "2.1.283",
+      "adoptedDate": "2026-09-26",
+      "value": "opus",
+      "note": "Written by /model after 2.1.283 'Changed the /model picker's Opus row ... to drop \"(1M context)\" where Opus already has a 1M context window; the window is unchanged'. Binary: claude-opus-5-5 context {window:1e6, native_1m:true}, so the suffix is redundant."
+    },
+    {
+      "feature": "/doctor prompt-audit fixes",
+      "introducedVersion": "2.1.283",
+      "adoptedDate": "2026-09-26",
+      "value": null,
+      "note": "Applied 13 of 14 findings plus flags F1-F5: nvim CLAUDE.md facts (smart-splits owns Ctrl-hjkl, missing modules and basedpyright) and its keymap list replaced by a pointer to init.lua; building-swiftui mode menus and scripts cut, REFERENCE.md rewritten 790 -> 131 lines on @Observable with the real Liquid Glass API (it taught .ultraThinMaterial); estimating.md-conflicting size labels and a token cap in specifying-and-planning; history narratives in this skill and maintaining-claude-code; dead claude-md-improver pointer now /doctor prompt-audit; using-jj --ignore-immutable line defers to pr-safety; teammate-idle.sh gained set -euo pipefail with jq fallbacks so it still fails open on bad input."
     }
   ],
   "declined": [
@@ -1211,6 +1225,11 @@
       "feature": ".github/dependabot.yml",
       "introducedVersion": "n/a (2026-09-23 deep audit)",
       "reason": "removed 2026-09-23 by Teej, one day after adding it. The repo has pull requests disabled (has_pull_requests=false), so Dependabot could only push update branches that nobody saw; its first two branches were landed as direct commits (actions v7/v13, ruff 0.16.8, ty 0.0.82). Bumps are manual: `make pre-commit-update` for hook revs, action majors and the ruff/ty pins by hand. Re-add only if pull requests are turned on."
+    },
+    {
+      "feature": "prompt-audit #1: stop-failure-notify.sh listed as setting set -euo pipefail",
+      "introducedVersion": "2.1.283",
+      "reason": "False positive 2026-09-26. The hook does not set it; line 23 is the comment 'Never gates: no `set -euo pipefail`', which the audit read as the setting. maintaining-claude-code's fail-soft list is correct."
     }
   ],
   "deferred": [
