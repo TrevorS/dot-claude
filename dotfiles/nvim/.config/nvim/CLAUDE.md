@@ -9,22 +9,24 @@ This is a **single-file Neovim 0.12.0 configuration** (`init.lua`) with zero ext
 - **`vim.pack` for plugin management** — Neovim 0.12 built-in. Plugins listed in `vim.pack.add()` call
 - **Everything in init.lua** — No split config files, no `lua/` directory, no complexity
 - **Neovim 0.12 built-in LSP** — Uses `vim.lsp.config()` and `vim.lsp.enable()` directly (no nvim-lspconfig)
-- **Mini.nvim for core features** — 18 modules handling text editing, completion, UI, navigation, and git
+- **Mini.nvim for core features** — modules handling text editing, UI, navigation, and git
 - **Explicit parser management** — nvim-treesitter with `ensure_installed` for only necessary languages
 
 ### Plugin Stack
 
-1. **mini.nvim** (18 modules) — Core editing and workflow tools
+1. **mini.nvim** — Core editing and workflow tools
 
-   - Text editing: basics, ai, surround, pairs, snippets, move
-   - UI: icons, indentscope, statusline, notify, trailspace, tabline, clue
-   - Navigation: pick (fuzzy finder), git, bracketed, extra, visits
+   - Text editing: basics, ai, surround, pairs, snippets, move, keymap
+   - UI: icons, indentscope, statusline, notify, trailspace, tabline, clue, cursorword
+   - Navigation: pick (fuzzy finder), git, bracketed, extra, visits, jump2d
 
 2. **oil.nvim** — File explorer (edit directories like buffers, `-` to open)
 
-3. **nvim-treesitter** — Syntax highlighting with explicit parsers
+3. **smart-splits.nvim** — `Ctrl-h/j/k/l` across Neovim windows and tmux panes
 
-4. **catppuccin** (mocha) — Theme with mini.nvim integration
+4. **nvim-treesitter** — Syntax highlighting with explicit parsers
+
+5. **catppuccin** (mocha) — Theme with mini.nvim integration
 
 ### LSP Configuration
 
@@ -45,6 +47,7 @@ vim.lsp.enable({'server_name'})
 - `lua_ls` — Lua (requires `lua-language-server` binary)
 - `rust_analyzer` — Rust (requires `rust-analyzer` binary, uses clippy for check)
 - `vtsls` — TypeScript/JavaScript (requires `vtsls` binary)
+- `basedpyright` — Python (requires `basedpyright-langserver` binary)
 
 **Note:** LSP binaries must be installed separately (e.g., via Homebrew, cargo, npm).
 
@@ -91,58 +94,9 @@ To add support for a new language:
 5. Add to format-on-save logic if custom formatter available
 6. Update `.luarc.json` and `.luacheckrc` as needed for new globals
 
-## Key Bindings Reference
+## Key Bindings
 
-**Leader key:** `<Space>`
-
-### Essential
-
-- `-` — Open file explorer (oil.nvim)
-- `<leader>p` — Find files (mini.pick)
-- `<leader>b` — Find buffers (mini.pick)
-- `<leader>gg` — Live grep (mini.pick)
-- `<leader>*` — Grep word under cursor (mini.pick)
-
-### Navigation
-
-- `Ctrl-h/j/k/l` — Move between windows
-- `<TAB>` / `<S-TAB>` — Next/previous buffer
-- `<leader>1-9` — Jump to buffer by position in tabline
-- `j/k` — Move down/up respecting line wrapping (gj/gk)
-
-### LSP (0.12 built-in defaults)
-
-- `gd` — Go to definition
-- `K` — Hover documentation
-- `grn` — Rename symbol
-- `gra` — Code action
-- `grr` — Show references
-- `gri` — Implementation
-- `gO` — Document symbols
-- `grx` — Codelens
-- `<leader>f` — Format buffer (custom)
-
-### Editing
-
-- `<leader>h` / `<leader>v` — Horizontal/vertical split
-- `<leader>q` — Close buffer (quit if last)
-- `<leader>d` — Toggle diagnostic float
-- `<leader>xx` — Show all diagnostics (mini.extra picker)
-- `<leader>l` — Redraw and clear highlights
-
-### Formatting
-
-- `<leader>jf` — Format JSON with jq
-- `<leader>sf` — Format SQL with sleek
-
-### Config Editing
-
-- `<leader>ev` — Edit vim config (init.lua)
-- `<leader>ez` — Edit zshrc
-
-### Utility
-
-- `<leader>y` — Yank selection to system clipboard (visual mode)
+Leader is `<Space>`. Mappings live in `init.lua`; grep `vim.keymap.set` there before adding one, and give each new mapping a `desc` so mini.clue shows it.
 
 ## Settings Overview
 
@@ -158,7 +112,7 @@ To add support for a new language:
 
 ## Important Implementation Notes
 
-- **mini.basics** provides window navigation (Ctrl-hjkl), so don't duplicate these
+- **Ctrl-hjkl** belongs to smart-splits.nvim (it overrides mini.basics' window mappings); don't map these keys again
 - **Built-in completion** with `vim.lsp.completion.enable()` — Tab confirms, no mini.completion
 - Buffer switching (`<leader>1-9`) matches tabline order (sorted by buffer number)
 - Tabline auto-hides when only one buffer exists
