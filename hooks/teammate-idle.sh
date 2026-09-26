@@ -6,10 +6,11 @@
 # TaskCompleted fires on every TaskUpdate and would run constantly. The event
 # supports no matchers, so scoping happens below: no validate or check target,
 # no opinion.
+set -euo pipefail
 
 input=$(cat)
 
-dir=$(jq -r '.cwd // ""' <<<"$input" 2>/dev/null)
+dir=$(jq -r '.cwd // ""' <<<"$input" 2>/dev/null) || exit 0
 [[ -n "$dir" && -d "$dir" ]] || exit 0
 cd "$dir" || exit 0
 
@@ -24,7 +25,7 @@ done
 [[ -n "$target" ]] || exit 0
 
 if ! out=$(make "$target" 2>&1); then
-  who=$(jq -r '.teammate_name // "teammate"' <<<"$input" 2>/dev/null)
+  who=$(jq -r '.teammate_name // "teammate"' <<<"$input" 2>/dev/null) || who=teammate
   {
     printf '%s: `make %s` is failing; fix it before going idle.\n\n' "$who" "$target"
     printf '%s\n' "$out" | tail -40
