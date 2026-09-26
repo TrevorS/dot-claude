@@ -9,7 +9,7 @@
       "src": "https://github.com/catppuccin/nvim"
     },
     "nvim-treesitter": {
-      "rev": "f603a2f4da48728f80257fb5fbb90145fd1dc173",
+      "rev": "25a9b06a09ea4e10712bec37e7b7d9f423262b91",
       "src": "https://github.com/nvim-treesitter/nvim-treesitter"
     },
     "oil.nvim": {
