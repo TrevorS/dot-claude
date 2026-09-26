@@ -139,7 +139,7 @@
     ],
     "defaultMode": "auto"
   },
-  "model": "opus[1m]",
+  "model": "opus",
   "fallbackModel": [
     "sonnet",
     "claude-opus-4-8"
