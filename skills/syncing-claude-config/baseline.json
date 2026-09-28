@@ -1,6 +1,6 @@
 {
-  "claudeCodeVersion": "2.1.283",
-  "syncedDate": "2026-09-26",
+  "claudeCodeVersion": "2.1.284",
+  "syncedDate": "2026-09-28",
   "source": "https://api.github.com/repos/anthropics/claude-code/releases",
   "adopted": [
     {
@@ -763,6 +763,13 @@
       "adoptedDate": "2026-09-26",
       "value": null,
       "note": "Applied 13 of 14 findings plus flags F1-F5: nvim CLAUDE.md facts (smart-splits owns Ctrl-hjkl, missing modules and basedpyright) and its keymap list replaced by a pointer to init.lua; building-swiftui mode menus and scripts cut, REFERENCE.md rewritten 790 -> 131 lines on @Observable with the real Liquid Glass API (it taught .ultraThinMaterial); estimating.md-conflicting size labels and a token cap in specifying-and-planning; history narratives in this skill and maintaining-claude-code; dead claude-md-improver pointer now /doctor prompt-audit; using-jj --ignore-immutable line defers to pr-safety; teammate-idle.sh gained set -euo pipefail with jq fallbacks so it still fails open on bad input."
+    },
+    {
+      "feature": "prompt-drift.py: resolve gates with any parameter name",
+      "introducedVersion": "2.1.284",
+      "adoptedDate": "2026-09-28",
+      "value": null,
+      "note": "Tooling fix, not a config change. 2.1.284 renamed the agreed-task gate's parameter (function qun(o){return!1}) and ended the module right after it, so the \\(e\\) call/def regex and the function|var|let|const|; lookahead missed it and reported 'gate unresolved'; the gate is still off. Committed in bf72054. Window 2.1.283-2.1.284 had nothing to adopt: the sonnet alias in fallbackModel hop 1 and two skills' model: now resolves to claude-sonnet-5-5 (binary catalog sonnet.default); permissions.defaultMode=auto is kept because 2.1.284's new auto-mode default covers only interactive terminal and VS Code sessions. Other bullets (effortSlider keybindings, ultracode toggle, spend_limit USD fields, out-of-workdir read prompt already answered via hasSeenAutoModeOutsideReadPrompt, MCP startup wait, Elicitation block, symlinked rules) have no surface here. Schema audit clean; no doc keys new in this build."
     }
   ],
   "declined": [
