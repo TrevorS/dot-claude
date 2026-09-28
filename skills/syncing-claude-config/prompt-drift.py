@@ -113,17 +113,18 @@ _MODEL = re.compile(rb'startsWith\("([^"]+)"\)|==="([^"]+)"')
 def gate_state(data: bytes, pos: int) -> str:
     """Summarise the guard on the prompt string starting at pos.
 
-    Handles the shape function X(e){if(!G(e))return null;return"..."} and
+    Handles the shape function X(e){if(!G(e))return null;return"..."} (any
+    parameter name; 2.1.284 renamed G's to `o` and ended the module after it) and
     resolves G to a stable summary: "off"/"on" for constant bodies, the flag or
     model-prefix names it tests otherwise. Minified helper names are dropped so
     only a change in what the gate tests counts as drift.
     """
     head = data[max(0, pos - 100) : pos]
-    m = re.search(rb'if\((!?)(\w+)\(e\)\)return null;return"$', head)
+    m = re.search(rb'if\((!?)(\w+)\(\w+\)\)return null;return"$', head)
     if not m:
         return "ungated"
     neg, g = m.group(1) == b"!", m.group(2)
-    b = re.search(rb"function " + re.escape(g) + rb"\(e\)\{(.{0,240}?)\}(?=function|var|let|const|;)", data, re.S)
+    b = re.search(rb"function " + re.escape(g) + rb"\(\w*\)\{(.{0,240}?)\}(?=function|var|let|const|export|;|\n)", data, re.S)
     if not b:
         return "gate unresolved"
     body = b.group(1)

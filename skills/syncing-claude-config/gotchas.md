@@ -12,6 +12,7 @@ Failure modes seen on past runs, grouped by the workflow step they bite. Read th
 ## Prompt drift (steps 1 and 7)
 
 - Tracked sections can be dormant. The prompt string sits behind `function X(e){if(!G(e))return null;return"..."}`; `prompt-drift.py` resolves `G` and stores `off`/`on`/the flag or model prefix beside the text. The "approval covers the task end to end" block sat at `off` through 2.1.269–2.1.272, so text-only diffing would have called the day it landed "unchanged".
+- `gate unresolved` is the script failing, not a change. On 2.1.284 the minifier renamed the gate's parameter (`function qun(o){return!1}`) and ended the module right after it, so the old `\(e\)` and lookahead regexes missed a gate that was still `off`. Look at the gate body in the binary before treating it as drift.
 - For prompt changes outside the tracked anchors, `prose-diff.py OLD NEW` (runs of 22+ words, set-differenced between two installed versions in `~/.local/share/claude/versions/`) takes about 13 s. On 2.1.269→2.1.272 it surfaced the Agent tool rewrite no anchor covered; on 2.1.272→2.1.273, the Artifact tool's publishing wording and the bundled commit skills' git refusal list, neither in the release notes.
 - `/doctor prompt-audit` (2.1.283) is the product's version of step 7: `claude -p '/doctor prompt-audit' --no-session-persistence`, patch in `/tmp/prompt-audit/`. Verify each factual claim before applying: on 2026-09-26 it read a `# no set -euo pipefail` comment as the setting.
 
