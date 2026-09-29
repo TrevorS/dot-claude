@@ -23,7 +23,7 @@ This skill is read-only: run `ci-monitor.py` and report its result. If you can't
 After a push, pass the branch and let the script resolve the SHA:
 
 ```bash
-uv run ~/.claude/skills/monitoring-ci/ci-monitor.py --branch <branch-name> --watch-timeout 480
+uv run ~/.claude/skills/monitoring-ci/ci-monitor.py --branch <branch-name> --watch-timeout 360
 ```
 
 **Run it in the FOREGROUND — do not pass `run_in_background` — and pass
@@ -31,8 +31,9 @@ uv run ~/.claude/skills/monitoring-ci/ci-monitor.py --branch <branch-name> --wat
 
 The two timeouts are a matched pair. A foreground command that hits its tool
 timeout is auto-backgrounded, so the watch budget must sit under the 600s
-ceiling. Bounding the script at 480s keeps it inside 600s so it always exits
-with a real code.
+ceiling. The script can spend 180s finding the run (`--timeout`) before the
+watch starts, plus ~30s fetching failed logs: 180 + 360 + 30 = 570s keeps it
+inside 600s so it always exits with a real code.
 
 If Bash backgrounds it anyway, report the verdict from the completion, never
 "monitor running".

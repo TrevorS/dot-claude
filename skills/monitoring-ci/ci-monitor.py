@@ -13,6 +13,7 @@ result is indeterminate (no run found, watch timeout, or gh API errors).
 import argparse
 import json
 import os
+import signal
 import subprocess
 import sys
 import time
@@ -213,6 +214,8 @@ def fetch_failed_logs(run_id: str) -> str:
 
 
 def main() -> int:
+    # A background-deadline kill sends SIGTERM; exit through `finally` so the sentinel is removed.
+    signal.signal(signal.SIGTERM, lambda *_: sys.exit(143))
     parser = argparse.ArgumentParser(description="Monitor GitHub Actions CI run")
     parser.add_argument("--branch", help="Branch to monitor (auto-detected if omitted)")
     parser.add_argument("--sha", help="Expected HEAD SHA to match (avoids watching stale runs)")
