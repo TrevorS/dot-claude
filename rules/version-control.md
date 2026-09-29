@@ -1,10 +1,10 @@
 # Version Control
 
-Use **jj (jujutsu)** for local work, **git** for the GitHub interface. Load the `using-jj` skill for anything past the basics (revsets, absorb, oplog recovery, conflicts, the split form).
+Use **jj (jujutsu)** for local work, **git** for the GitHub interface.
 
 ## jj
 
-- Pass `-m` to `describe`, `commit`, `new`, `squash`; a hook blocks the editor-opening forms.
+- Pass `-m` to `describe` and `commit`. For `squash --into`, pass `-u` to keep the destination's message or `-m` to replace it. A hook blocks the forms that open an editor.
 - Use change IDs (`kpqxywon`), not commit hashes; they survive rewrites.
 - Conflicts are state, not emergencies: jj records them in commits and rebase still succeeds.
 

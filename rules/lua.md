@@ -5,7 +5,7 @@ paths:
 
 # Lua / Neovim
 
-- **Format**: stylua -- **Lint**: luacheck -- run both via `make validate`
+- **Format**: stylua -- **Lint**: luacheck -- in `~/.claude`, run both via `make validate`
 
 ## vim.pack Plugin Management (Neovim 0.12)
 

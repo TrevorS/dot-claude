@@ -36,4 +36,4 @@ HTML tags (`<u>`, `<kbd>`, `<mark>`), ANSI escape codes, italic on the `⏱` sto
 
 ## When this applies
 
-Any per-item status list: validation reports, test results, CI summaries, plan completion, file-by-file results. Not for single-item results (plain prose) or inline sentences. The `→` glyph is the one deliberate exception to the no-arrows writing rule; separate a label from its detail with `·`, not an em-dash. Output bound for GitHub PRs and issues uses native task lists `[x]`/`[ ]` so they render as checklists there.
+Any per-item status list: validation reports, test results, CI summaries, plan completion, file-by-file results. Not for single-item results (plain prose) or inline sentences. Separate a label from its detail with `·`, not an em-dash. Output bound for GitHub PRs and issues uses native task lists `[x]`/`[ ]` so they render as checklists there.
