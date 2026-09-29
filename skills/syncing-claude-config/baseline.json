@@ -1,6 +1,6 @@
 {
-  "claudeCodeVersion": "2.1.284",
-  "syncedDate": "2026-09-28",
+  "claudeCodeVersion": "2.1.285",
+  "syncedDate": "2026-09-29",
   "source": "https://api.github.com/repos/anthropics/claude-code/releases",
   "adopted": [
     {
@@ -777,6 +777,70 @@
       "adoptedDate": "2026-09-28",
       "value": true,
       "note": "Carries out the 2026-09-23 decision to return to the default, which is already true. While the key is absent, the first safeguard flag shows a 'Switch automatically / Ask each time' prompt (behind a GrowthBook flag that is on for this account) and writes the answer into userSettings, which is this tracked file; the server-side fallback lane stays off while that prompt is pending. On Opus 5.5 the switch routes by refusal category: bio and frontier_llm go to claude-opus-5, cyber to claude-opus-4-8. reasoning_extraction is unmapped and not retried."
+    },
+    {
+      "feature": "background Bash timeout for ci-monitor",
+      "surface": "rule",
+      "introducedVersion": "2.1.285",
+      "adoptedDate": "2026-09-29",
+      "value": "rules/ci-monitoring.md: timeout 2400000",
+      "note": "2.1.285 stops background commands at their timeout (default 30 min, max 2 h). ci-monitor's worst case is 180 s find + 1800 s watch + ~30 s log fetch = 2010 s. 44 of 88 launches in 30 days also passed timeout: 600000 copied from the skill's foreground form, a 10-minute deadline under 2.1.285. Max observed run 404 s, so nothing was killed yet."
+    },
+    {
+      "feature": "ci-monitor SIGTERM handler",
+      "surface": "script",
+      "introducedVersion": "2.1.285",
+      "adoptedDate": "2026-09-29",
+      "value": "ci-monitor.py main(): SIGTERM -> sys.exit(143)",
+      "note": "The deadline kill sends SIGTERM to the process group; without a handler Python skipped the finally block and left /tmp/<repo>-ci-monitor-<sha12>, so a relaunch within stale_after (2100 s) printed 'already active' for a monitor that no longer existed."
+    },
+    {
+      "feature": "monitoring-ci foreground --watch-timeout 360",
+      "surface": "skill body",
+      "introducedVersion": "2.1.285",
+      "adoptedDate": "2026-09-29",
+      "value": "--watch-timeout 480 -> 360",
+      "note": "180 s find + 480 + 30 = 690 s overran the 600 s foreground tool timeout; 180 + 360 + 30 = 570 s fits."
+    },
+    {
+      "feature": "schema-completeness.py reads raw bytes",
+      "surface": "script",
+      "introducedVersion": "n/a (2026-09-29 deep scout)",
+      "adoptedDate": "2026-09-29",
+      "value": "printable-run regex over the binary instead of strings(1)",
+      "note": "macOS strings(1) skips the sections holding the embedded JS (dump 54.1 MB vs 55.3 MB from raw bytes). Audit still clean on 2.1.285 after the switch. SKILL.md and maintaining-claude-code advice updated to match."
+    },
+    {
+      "feature": "branch_protection marker at repo root + --help pass",
+      "surface": "hook",
+      "introducedVersion": "n/a (2026-09-29 deep scout)",
+      "adoptedDate": "2026-09-29",
+      "value": "root=$(jj root || git rev-parse --show-toplevel); skip -h/--help",
+      "note": "The marker was checked only relative to the session cwd, so a session in ~/.claude/skills/<x> blocked even `jj squash --help`. Applied by Teej via a hand-off script (classifier blocks guard-hook edits); 3 new test cases."
+    },
+    {
+      "feature": "CLAUDE_CODE_RETRY_WATCHDOG moved off shared settings",
+      "surface": "env var",
+      "introducedVersion": "2.1.199 (behavior confirmed in 2.1.285)",
+      "adoptedDate": "2026-09-29",
+      "value": "removed from settings.json env; set in the mini's ~/.local.zsh",
+      "note": "The watchdog gates the 5xx fallbackModel hop (`!sW()&&XLe(Bt)` in the retry loop and `D.fallbackModel&&!sW()` mid-stream), so interactive laptop sessions retried Opus for up to ~3 h on a 503 instead of hopping. 529 overload still hops after 3. 0 5xx in 30 days. Applied via hand-off script. Caveat: ~/.local.zsh reaches only shell-launched claude, not launchd."
+    },
+    {
+      "feature": "skillOverrides off: computer-use, built-in-browser, chrome-browser",
+      "surface": "settings.json key",
+      "introducedVersion": "n/a (2026-09-29 /skill-doctor)",
+      "adoptedDate": "2026-09-29",
+      "value": "off",
+      "note": "~870 tokens/turn of listing. The first two need desktop-app tools absent in the CLI; chrome-browser duplicates bundled claude-in-chrome. 0 invocations. Applied via hand-off script."
+    },
+    {
+      "feature": "rule trims (2026-09-29 instruction drift)",
+      "surface": "rules",
+      "introducedVersion": "n/a",
+      "adoptedDate": "2026-09-29",
+      "value": "version-control.md -m/-u line and using-jj pointer; status-marks.md no-arrows clause; lua.md make validate scope",
+      "note": "11 of 15 jj_interactive_guard blocks in 30 days were squash --into without -m/-u; `jj new` never opens an editor. The no-arrows rule ships only with Fable 5.1. lua.md loads for every project."
     }
   ],
   "declined": [
@@ -1239,6 +1303,18 @@
       "feature": "CLAUDE_CODE_REFUSAL_FALLBACK_CATCH_ALL",
       "introducedVersion": "present in 2.1.284",
       "reason": "not adopted 2026-09-28. Retries refusals that have no category route on the fallback model, which on Opus 5.5 means reasoning_extraction. Anthropic deliberately does not retry that category, so this would route around a safeguard."
+    },
+    {
+      "feature": "CLAUDE_CODE_DISABLE_WEB_FETCH",
+      "reason": "WebFetch is used; no reason to turn it off (2.1.285)"
+    },
+    {
+      "feature": "CLAUDE_CODE_NONSTREAMING_TIMEOUT_RETRIES",
+      "reason": "2.1.285; a no-op under CLAUDE_CODE_RETRY_WATCHDOG (binary: `En!==void 0&&...&&!sW()`), and the fallback now shares the request's retry budget"
+    },
+    {
+      "feature": "jj_interactive_guard: allow `jj describe --no-edit`",
+      "reason": "jj 0.45.1 describe has no --no-edit flag (only new/prev/next do); the block replaces a clap error with a better message"
     }
   ],
   "deferred": [

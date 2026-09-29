@@ -15,6 +15,7 @@ Failure modes seen on past runs, grouped by the workflow step they bite. Read th
 - `gate unresolved` is the script failing, not a change. On 2.1.284 the minifier renamed the gate's parameter (`function qun(o){return!1}`) and ended the module right after it, so the old `\(e\)` and lookahead regexes missed a gate that was still `off`. Look at the gate body in the binary before treating it as drift.
 - For prompt changes outside the tracked anchors, `prose-diff.py OLD NEW` (runs of 22+ words, set-differenced between two installed versions in `~/.local/share/claude/versions/`) takes about 13 s. On 2.1.269→2.1.272 it surfaced the Agent tool rewrite no anchor covered; on 2.1.272→2.1.273, the Artifact tool's publishing wording and the bundled commit skills' git refusal list, neither in the release notes.
 - `/doctor prompt-audit` (2.1.283) is the product's version of step 7: `claude -p '/doctor prompt-audit' --no-session-persistence`, patch in `/tmp/prompt-audit/`. Verify each factual claim before applying: on 2026-09-26 it read a `# no set -euo pipefail` comment as the setting.
+- `prose-diff.py` overstates removals: a run that differs only in its trailing byte lands in REMOVED while the same text is still in the new build. Confirm each candidate with a fixed-string count in both binaries before calling it gone (2.1.285: the rm-guard text was listed removed but appears twice in both).
 
 ## Schema audit (step 6)
 
@@ -30,6 +31,8 @@ Failure modes seen on past runs, grouped by the workflow step they bite. Read th
 
 - Steps 2–5 only propose what a release note in the window names, so a feature that predates the first sync stays invisible. Once per sync, diff the docs' hook handler fields, skill frontmatter table and settings key index against what the config actually uses. On 2026-09-15 the hooks reference surfaced the handler-level `if` filter (2.1.85, six months pre-baseline), worth a 13× cut in guard spawns.
 - A bullet can expose an older surface without introducing it: the 2.1.239 `voice.enabled` mention, when the nested object was already in 2.1.238. Before recording an `adopted` entry, check whether the anchor predates the baseline and say so in the note.
+- A release note can break config it never names. 2.1.285's 30-minute cap on background Bash made `rules/ci-monitoring.md`'s launch (no `timeout`) and every launch that copied the skill's `timeout: 600000` into a kill deadline. For any behavior change to a tool, grep the config for instructions that call that tool, not just for the anchor identifier.
+- Env vars interact. `CLAUDE_CODE_RETRY_WATCHDOG=1` silently disabled the 5xx `fallbackModel` hop and makes `CLAUDE_CODE_NONSTREAMING_TIMEOUT_RETRIES` a no-op; grep the binary for the reader function (`sW()` in 2.1.285) to see every path an env var gates.
 
 ## Hooks (steps 6 and 7)
 
@@ -37,6 +40,8 @@ Failure modes seen on past runs, grouped by the workflow step they bite. Read th
 - Zero hook fires is a finding, not reassurance. Measure per hook over 30 days (`hook error: [$HOME/.claude/hooks/<name>.sh]` is the PreToolUse block signature), then probe it with harness-shaped payloads. `branch_protection.sh` had 0 fires for months because jj renders an ahead-of-remote bookmark as `master*`; `git_dangerous_flags.sh` had 0 because the workflow is jj. Same number, opposite conclusions.
 - Hook tests that build jj repos must set `JJ_CONFIG` to a throwaway file. The user config sets `remotes.origin.auto-track-bookmarks = "glob:*"`, which hid a `trunk=master,master` bug (`bookmarks` lists an untracked `master@origin` separately) that only CI's config-less runner caught. Also check every run for the SHA, not just one: Dependabot's `dynamic` runs attach to the same push.
 - Hook scripts that call `jj log` without `--ignore-working-copy` snapshot the working copy. `project-context.sh` keeps exactly one such call on purpose (per-prompt restore point, since `fileCheckpointingEnabled` is false); any other snapshotting call clutters `jj op log`.
+- Guard hooks run in the session's cwd, not the repo root. `branch_protection.sh` looked for its marker in `./CLAUDE.md` only, so a session in `~/.claude/skills/<x>` blocked `jj squash --help` (fixed 2026-09-29). When a guard misfires, check what the environment update says the cwd is.
+- Check a scout's claim about a CLI flag against the installed tool. The 2026-09-29 audit called `jj describe --no-edit` a false positive, but jj 0.45.1's describe has no such flag.
 
 ## Plugins and skills
 
@@ -49,3 +54,4 @@ Failure modes seen on past runs, grouped by the workflow step they bite. Read th
 
 - The auto-mode classifier blocks some settings edits as [Self-Modification] and allows others. Blocked on 2026-09-23: removing deny rules, removing `switchModelsOnFlag`, editing guard hooks' logic, `.claude/settings.local.json`, and `prompt-drift.py --update` (which went through on 2026-09-24, so try it once before handing it off). Allowed: adding deny rules, removing or narrowing allow rules, `skillOverrides`, `enabledPlugins`, `fallbackModel`, `env` renames. For a blocked edit, write a script that anchors each change exactly once and hand Teej one command to run with `!`; don't retry through another tool.
 - Never propose `enforceAvailableModels`, `requiredMinimumVersion` or other managed/enterprise keys for this single-user config unless Teej asks.
+- 2026-09-29: one python edit that both removed an `env` key and added three `skillOverrides` entries in `settings.json` was blocked, although each kind had gone through alone before. Don't count on the allowed list above holding for combined edits; the hand-off script path works (`apply-guarded.py`, validated first against a copy with `HOME=<scratch>`).
