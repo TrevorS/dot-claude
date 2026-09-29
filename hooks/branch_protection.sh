@@ -1,7 +1,7 @@
 #!/bin/bash
 # Hook: PreToolUse (Bash) — Block git/jj commits to protected branches (main,
 # master, dev). Per-project override: "direct-commits-allowed: true" in
-# ./CLAUDE.md or ./.claude/CLAUDE.md.
+# CLAUDE.md or .claude/CLAUDE.md, in the cwd or at the repo root.
 #
 # jj has no current branch. A protected bookmark is committed to when:
 #   * the change it points at is rewritten in place
@@ -32,8 +32,11 @@ input=$(cat)
 command=$(echo "$input" | jq -r '.tool_input.command // empty' 2>/dev/null || echo "")
 [ -z "$command" ] && exit 0
 
-# Project-level override (root CLAUDE.md or .claude/CLAUDE.md).
-for f in ./CLAUDE.md ./.claude/CLAUDE.md; do
+# Project-level override (CLAUDE.md or .claude/CLAUDE.md), in the cwd or at
+# the repo root. The hook runs in the session's cwd, so a session started in
+# a subdirectory missed the root's marker and blocked even `jj squash --help`.
+root=$(jj root --ignore-working-copy 2>/dev/null || git rev-parse --show-toplevel 2>/dev/null || true)
+for f in ./CLAUDE.md ./.claude/CLAUDE.md ${root:+"$root/CLAUDE.md" "$root/.claude/CLAUDE.md"}; do
   if [ -f "$f" ] && grep -qi "direct-commits-allowed: true" "$f" 2>/dev/null; then
     exit 0
   fi
@@ -43,7 +46,7 @@ block() {
   cat >&2 <<MSG
 $1
 
-Per-project override: add "direct-commits-allowed: true" to ./CLAUDE.md.
+Per-project override: add "direct-commits-allowed: true" to the repo's CLAUDE.md.
 MSG
   exit 2
 }
@@ -127,6 +130,8 @@ for seg in "${segments[@]}"; do
 
   tokenize "$seg"
   (( ${#toks[@]} )) || continue
+  # --help / -h only prints usage.
+  [[ " ${toks[*]} " =~ [[:space:]](-h|--help)[[:space:]] ]] && continue
   name=""
 
   if [ "${toks[0]}" = "jj" ]; then

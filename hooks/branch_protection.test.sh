@@ -86,6 +86,18 @@ run BLOCK master no 'git fetch & git commit -m x'            'background job, th
 run BLOCK master no 'for f in a; do git add "$f"; done'      'loop body add on master'
 run PASS  feature no '(git commit -m x) | cat'               'subshell commit on feature branch'
 run PASS  master no 'git log 2>&1 | head'                    'redirect + pipe on master'
+run PASS  master no 'git commit --help'                      'git commit --help on master'
+
+# Marker at the repo root, hook run from a subdirectory (the session's cwd).
+run_sub() { # <want> <command> <label>
+  local dir="$tmp/sub$RANDOM$RANDOM" rc
+  mkdir -p "$dir/.claude" "$dir/a/b"
+  git -C "$dir" init -q -b master 2>/dev/null
+  printf 'direct-commits-allowed: true\n' > "$dir/.claude/CLAUDE.md"
+  ( cd "$dir/a/b" && printf '%s' "$(payload "$2")" | "$GUARD" >/dev/null 2>&1 ); rc=$?
+  verdict "$1" "$rc" "$3"
+}
+run_sub PASS 'git commit -m x' 'root .claude/CLAUDE.md marker, cwd in a subdirectory'
 
 # ---------------------------------------------------------------------------
 # jj: colocated repo with a remote. master@origin = init commit; @ = empty
@@ -154,6 +166,7 @@ run_jj BLOCK "$FEATURE"          no 'jj squash --from @ --into master -u' 'jj sq
 run_jj BLOCK "$ON_MASTER"        no 'jj squash -m x'             'jj squash FROM master* (empties it)'
 run_jj PASS  "$FEATURE"          no 'jj squash -m x'             'jj squash into @- = feat'
 run_jj PASS  "$FEATURE"          no 'jj squash --into feat -m x' 'jj squash --into feat'
+run_jj PASS  "$OFF_MASTER"       no 'jj squash --help'           'jj squash --help into @- = master'
 run_jj BLOCK "$OFF_MASTER_AHEAD" no 'git commit -m x'            'git commit in colocated repo, @- = master*'
 
 echo

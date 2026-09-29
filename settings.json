@@ -5,7 +5,6 @@
     "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1",
     "CLAUDE_CODE_FORCE_STRIKETHROUGH": "1",
     "CLAUDE_CODE_NEW_INIT": "1",
-    "CLAUDE_CODE_RETRY_WATCHDOG": "1",
     "CLAUDE_CODE_TMUX_TRUECOLOR": "1",
     "DISABLE_COST_WARNINGS": "1",
     "DISABLE_ERROR_REPORTING": "1",
@@ -161,7 +160,10 @@
     "anthropic-skills:prep-for-data-extraction-call": "off",
     "anthropic-skills:release-digest": "off",
     "anthropic-skills:stable-data-routing": "off",
-    "anthropic-skills:team-plan-metrics": "off"
+    "anthropic-skills:team-plan-metrics": "off",
+    "anthropic-skills:computer-use": "off",
+    "anthropic-skills:built-in-browser": "off",
+    "anthropic-skills:chrome-browser": "off"
   },
   "hooks": {
     "PreToolUse": [
