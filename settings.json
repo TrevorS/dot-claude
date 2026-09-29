@@ -144,6 +144,7 @@
     "sonnet",
     "claude-opus-4-8"
   ],
+  "switchModelsOnFlag": true,
   "skillOverrides": {
     "syncing-claude-config": "user-invocable-only",
     "cleaning-commit-history": "user-invocable-only",
@@ -327,7 +328,7 @@
   "effortLevel": "xhigh",
   "modelSettings": {
     "claude-opus-5-5": {
-      "effortLevel": "xhigh"
+      "effortLevel": "high"
     }
   },
   "fastModePerSessionOptIn": true,

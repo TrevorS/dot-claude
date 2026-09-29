@@ -607,9 +607,9 @@
     {
       "feature": "modelSettings.claude-opus-5-5.effortLevel",
       "introducedVersion": "2.1.280 (behavior change; modelSettings itself is 2.1.251)",
-      "adoptedDate": "2026-09-22",
-      "value": "xhigh",
-      "note": "2.1.280 stopped applying a pre-per-model top-level effortLevel to newly released models, so the top-level xhigh no longer reached Opus 5.5. Pinned per model to keep xhigh."
+      "adoptedDate": "2026-09-28",
+      "value": "high",
+      "note": "Was xhigh from 2026-09-22, carried over when 2.1.280 stopped applying the top-level effortLevel to new models. Lowered 2026-09-28: the Opus 5.5 default is medium, and the Opus 5.5 prompting guide says medium matches Opus 5 at high and that it thinks more per turn at xhigh/max. Transcripts agreed: at xhigh, Opus 5.5 averaged ~25% more output and thinking per main-thread request than Opus 5 (653 vs 2,559 requests). The top-level effortLevel is legacy and only reaches the binary's legacy set (Fable 5.1, Opus 4.8, Sonnet 5 and older), not Opus 5.5 or Sonnet 5.5. For a hard session use /effort max or the effort slider's s key (both session-only); /effort xhigh rewrites this entry. A skill's effort: frontmatter raises effort for that turn only. /effort run while a fallback model is active pins that model instead."
     },
     {
       "feature": "prompt-drift.py prefers JS-source copy over constant-pool copy",
@@ -770,6 +770,13 @@
       "adoptedDate": "2026-09-28",
       "value": null,
       "note": "Tooling fix, not a config change. 2.1.284 renamed the agreed-task gate's parameter (function qun(o){return!1}) and ended the module right after it, so the \\(e\\) call/def regex and the function|var|let|const|; lookahead missed it and reported 'gate unresolved'; the gate is still off. Committed in bf72054. Window 2.1.283-2.1.284 had nothing to adopt: the sonnet alias in fallbackModel hop 1 and two skills' model: now resolves to claude-sonnet-5-5 (binary catalog sonnet.default); permissions.defaultMode=auto is kept because 2.1.284's new auto-mode default covers only interactive terminal and VS Code sessions. Other bullets (effortSlider keybindings, ultracode toggle, spend_limit USD fields, out-of-workdir read prompt already answered via hasSeenAutoModeOutsideReadPrompt, MCP startup wait, Elicitation block, symlinked rules) have no surface here. Schema audit clean; no doc keys new in this build."
+    },
+    {
+      "feature": "switchModelsOnFlag: true (explicit)",
+      "introducedVersion": "n/a (2026-09-28 Opus 5.5 audit)",
+      "adoptedDate": "2026-09-28",
+      "value": true,
+      "note": "Carries out the 2026-09-23 decision to return to the default, which is already true. While the key is absent, the first safeguard flag shows a 'Switch automatically / Ask each time' prompt (behind a GrowthBook flag that is on for this account) and writes the answer into userSettings, which is this tracked file; the server-side fallback lane stays off while that prompt is pending. On Opus 5.5 the switch routes by refusal category: bio and frontier_llm go to claude-opus-5, cyber to claude-opus-4-8. reasoning_extraction is unmapped and not retried."
     }
   ],
   "declined": [
@@ -1041,11 +1048,6 @@
       "reason": "nothing to consume 2026-08-28. 'SessionStart resume hooks now receive session staleness and the estimated re-cache cost.' hooks/session-title.sh is the only SessionStart hook and reads exactly two fields (.session_title to avoid clobbering an existing title, .cwd to derive the name). Staleness has no bearing on titling. Noted only so the grown payload is on record."
     },
     {
-      "feature": "modelSettings",
-      "introducedVersion": "surfaced by the 2.1.251 /effort change",
-      "reason": "not adopted 2026-08-28. Real settings.json key -- zod: per-model object keyed by canonical model name carrying effortLevel, 'Per-model settings keyed by canonical model name'. Undocumented in the settings-reference key index (159 top-level keys). Written by /effort, which 2.1.251 changed to save per model. GOTCHA WORTH REMEMBERING: running /effort while on a fallback model writes a per-model entry that then wins over the global effortLevel: xhigh for that model only. Absent from settings.json today and best left /effort-managed."
-    },
-    {
       "feature": "rate_limits.spend_limit",
       "introducedVersion": "2.1.251",
       "reason": "not applicable 2026-08-28. New statusLine field (sits alongside five_hour / seven_day / overage) plus a Spend limit bar in /usage, scoped to developers behind a Claude apps gateway with spend limits. forceLoginMethod is 'claudeai' -- first-party, no gateway. hooks/status.sh already consumes five_hour and seven_day."
@@ -1214,11 +1216,6 @@
       "reason": "deferred to a trial 2026-09-23. 30 days: 34.1% of input tokens processed were above 400K context (13.3% of calls, 28 sessions); docs say quality degrades as the window fills but nobody measured it here, and devmoment.dev calls 500K folklore. Teej to try /autocompact 500k in long sessions before any settings.json value."
     },
     {
-      "feature": "switchModelsOnFlag removal (return to default true)",
-      "introducedVersion": "n/a (2026-09-23 deep audit)",
-      "reason": "approved by Teej 2026-09-23, blocked for the agent by the auto-mode classifier [Self-Modification]; Teej to remove the key. false pauses on a safeguard flag with no timeout (fired twice in 30 days); true keeps going but moves the whole session to Opus 4.8 until /model (#87938, open). Set to false by /config on 2026-07-06 (commit 622a96d)."
-    },
-    {
       "feature": "skillOverrides pins moved to frontmatter",
       "introducedVersion": "n/a (2026-09-23 deep audit)",
       "reason": "declined 2026-09-23. Equivalent per the docs table; the evals now read both skillOverrides and frontmatter, so either works. Not worth the churn."
@@ -1237,6 +1234,11 @@
       "feature": "prompt-audit #1: stop-failure-notify.sh listed as setting set -euo pipefail",
       "introducedVersion": "2.1.283",
       "reason": "False positive 2026-09-26. The hook does not set it; line 23 is the comment 'Never gates: no `set -euo pipefail`', which the audit read as the setting. maintaining-claude-code's fail-soft list is correct."
+    },
+    {
+      "feature": "CLAUDE_CODE_REFUSAL_FALLBACK_CATCH_ALL",
+      "introducedVersion": "present in 2.1.284",
+      "reason": "not adopted 2026-09-28. Retries refusals that have no category route on the fallback model, which on Opus 5.5 means reasoning_extraction. Anthropic deliberately does not retry that category, so this would route around a safeguard."
     }
   ],
   "deferred": [

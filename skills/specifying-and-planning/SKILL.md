@@ -92,10 +92,10 @@ Target 3-5 teammates, 5-6 tasks per teammate. Prefer fewer focused teammates ove
 Guidance, not a rule:
 
 - `fable` — the top tier: architectural decisions, gnarly debugging, cross-cutting refactors with high blast radius, anything where a single mistake cascades.
-- `opus` — heavy implementation and review where Fable's cost isn't justified.
-- `sonnet` — default for implementation work (writing code, refactoring, integration) and the floor for mechanical roles (shell-command runners, file movers, status reporters).
+- `opus` — default for implementation and review (writing code, refactoring, integration).
+- `sonnet` — mechanical roles: shell-command runners, file movers, status reporters.
 
-Name the model per teammate, in the spawn prompt or the subagent definition's `model:`. Use the family aliases, not catalog IDs, so the plan follows new model versions. Teammates inherit the lead's effort level; a per-teammate `effort` is not applied, so scale cost through teammate count and task size.
+Name the model per teammate, in the spawn prompt or the subagent definition's `model:`. Use the family aliases, not catalog IDs, so the plan follows new model versions. Teammates run at the lead's session effort when `/effort` set one, otherwise at their own model's `modelSettings` level, so scale cost through teammate count and task size.
 
 **Context discipline**: instruct each teammate to return a summary of findings, decisions, and changed files to the root agent, not raw tool output.
 
