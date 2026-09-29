@@ -135,7 +135,7 @@ When to keep something in CLAUDE.md instead: cross-cutting interaction style, pr
 
 Audit checklist:
 
-- **Env vars**: verify each is referenced in the current claude binary (`strings ~/.local/share/claude/versions/<v> | grep VAR`). Undocumented does not mean dead — many flags are intentionally unlisted.
+- **Env vars**: verify each is referenced in the current claude binary (search the raw bytes of `~/.local/share/claude/versions/<v>` with Python; `strings(1)` misses the embedded JS). Undocumented does not mean dead — many flags are intentionally unlisted.
 - **Permissions**: `Bash(<cmd>:*)` allows every invocation; `Bash(<cmd> <safe-args>)` is tighter. Carry a deny list for secrets (`~/.ssh/**`, `**/*.pem`, `~/.env*`).
 - **Plugin allow rules**: `Skill(<plugin-name>)` must match the actual plugin/skill identifier; typos silently fail.
 - **Hook wiring**: matcher *syntax* is uniform, but **the field it matches against varies by

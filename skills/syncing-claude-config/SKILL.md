@@ -31,7 +31,7 @@ Hand any "is this edit correct / sensibly structured" question to the `maintaini
 
 Four sources describe the same settings surface and they **routinely disagree**. In descending authority:
 
-1. **The installed binary** — the only source that decides what actually runs. `strings "$(readlink -f "$(which claude)")"` then grep for the identifier. Zod shapes carry `.describe()` prose, so grepping `<key>:` usually yields the type, default, and a sentence.
+1. **The installed binary** — the only source that decides what actually runs. Search the raw bytes with Python (`open(os.path.realpath(shutil.which("claude")),"rb").read().find(b"<key>:")`), not `strings(1)`, which skips the sections holding the embedded JS. Zod shapes carry `.describe()` prose, so grepping `<key>:` usually yields the type, default, and a sentence.
 2. **The docs key index** — `https://code.claude.com/docs/en/settings-reference.md` (~210 keys, with type / default / scope / example each). The best *breadth* source; use it to enumerate, then confirm anything surprising against the binary.
 3. **schemastore** — `https://www.schemastore.org/claude-code-settings.json`. Useful for spotting `"Legacy alias for …"` wording, but drifts both ahead of and behind the binary.
 4. **Release notes** — accurate about the *change*, often loose about the *identifier*.

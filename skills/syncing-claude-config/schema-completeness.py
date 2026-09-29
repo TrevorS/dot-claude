@@ -36,7 +36,6 @@ import json
 import os
 import re
 import shutil
-import subprocess
 import sys
 from pathlib import Path
 
@@ -58,9 +57,9 @@ def binary_strings(cache: Path | None) -> str:
     """Extract (or reuse) the printable strings of the installed binary."""
     if cache and cache.exists():
         return cache.read_text(encoding="utf-8", errors="replace")
-    out = subprocess.run(
-        ["strings", str(find_binary())], capture_output=True, text=True, errors="replace"
-    ).stdout
+    # Printable runs over the raw bytes: strings(1) skips sections that hold the embedded JS.
+    raw = find_binary().read_bytes()
+    out = "\n".join(m.group().decode("ascii") for m in re.finditer(rb"[\t\x20-\x7e]{4,}", raw))
     if cache:
         cache.write_text(out, encoding="utf-8")
     return out
