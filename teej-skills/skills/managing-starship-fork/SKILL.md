@@ -33,7 +33,8 @@ git rebase master
 # Build and install to ~/.cargo/bin
 cargo install --path . --locked --force
 
-# Push rebased branch
+# Push rebased branch. The git_dangerous_flags hook blocks force pushes for the
+# agent: hand Teej this command to run with the ! prefix.
 git push origin claude/add-jujutsu-support-JuqjU --force-with-lease
 ```
 

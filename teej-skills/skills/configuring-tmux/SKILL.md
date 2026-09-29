@@ -33,8 +33,8 @@ These are near-universal best practices. Start here:
 ```bash
 # -- Prefix --
 unbind C-b
-set -g prefix C-a
-bind C-a send-prefix
+set -g prefix C-Space
+bind C-Space send-prefix
 
 # -- General --
 set -g mouse on

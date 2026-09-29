@@ -63,7 +63,7 @@ git fetch origin
 
 ```bash
 jj squash -m "feat: final commit message"
-jj bookmark set <branch> -r @
+jj bookmark set <branch> -r @-   # squash leaves @ empty; the work is in @-
 jj git push --bookmark <branch>
 ```
 

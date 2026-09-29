@@ -116,7 +116,6 @@ Leader is `<Space>`. Mappings live in `init.lua`; grep `vim.keymap.set` there be
 - **Built-in completion** with `vim.lsp.completion.enable()` — Tab confirms, no mini.completion
 - Buffer switching (`<leader>1-9`) matches tabline order (sorted by buffer number)
 - Tabline auto-hides when only one buffer exists
-- Diagnostic float state persists across line changes but resets on text modification
 - Format-on-save hooks into `BufWritePre` — stylua for Lua, LSP format for others
 - LSP servers use Neovim 0.12 built-in APIs — do NOT add nvim-lspconfig
 - Plugin management uses `vim.pack` (0.12 built-in) — do NOT add lazy.nvim or other plugin managers
