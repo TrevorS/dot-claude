@@ -1,6 +1,6 @@
 {
-  "claudeCodeVersion": "2.1.285",
-  "syncedDate": "2026-09-29",
+  "claudeCodeVersion": "2.1.286",
+  "syncedDate": "2026-09-30",
   "source": "https://api.github.com/repos/anthropics/claude-code/releases",
   "adopted": [
     {
@@ -1315,6 +1315,11 @@
     {
       "feature": "jj_interactive_guard: allow `jj describe --no-edit`",
       "reason": "jj 0.45.1 describe has no --no-edit flag (only new/prev/next do); the block replaces a clap error with a better message"
+    },
+    {
+      "feature": "user/project skill named verify (pre-commit guidance)",
+      "introducedVersion": "2.1.286",
+      "reason": "declined 2026-09-30. 2.1.286 tells Claude to run a skill named verify before non-docs/tests commits when one exists. committing-changes already runs make validate, so a verify skill would duplicate it. The binary also bundles a verify skill that bootstraps a per-repo one (end-to-end exercise, not lint); it was not in the session skill list, likely gated. Revisit if it ships enabled."
     }
   ],
   "deferred": [
