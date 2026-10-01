@@ -143,7 +143,6 @@
     "sonnet",
     "claude-opus-4-8"
   ],
-  "switchModelsOnFlag": true,
   "skillOverrides": {
     "syncing-claude-config": "user-invocable-only",
     "cleaning-commit-history": "user-invocable-only",
@@ -257,7 +256,8 @@
     "teej-skills@teej-skills": false,
     "typescript-lsp@claude-plugins-official": true,
     "pyright-lsp@claude-plugins-official": true,
-    "swift-lsp@claude-plugins-official": true
+    "swift-lsp@claude-plugins-official": true,
+    "cc-plugin-you-should-know@builtin": true
   },
   "extraKnownMarketplaces": {
     "teej-skills": {
@@ -353,6 +353,7 @@
   "skipWorkflowUsageWarning": true,
   "theme": "custom:catppuccin-mocha",
   "preferredNotifChannel": "ghostty",
+  "switchModelsOnFlag": true,
   "fileCheckpointingEnabled": false,
   "teammateMode": "tmux",
   "remoteControlAtStartup": false,

@@ -1,6 +1,6 @@
 {
-  "claudeCodeVersion": "2.1.286",
-  "syncedDate": "2026-09-30",
+  "claudeCodeVersion": "2.1.287",
+  "syncedDate": "2026-10-01",
   "source": "https://api.github.com/repos/anthropics/claude-code/releases",
   "adopted": [
     {
@@ -841,6 +841,14 @@
       "adoptedDate": "2026-09-29",
       "value": "version-control.md -m/-u line and using-jj pointer; status-marks.md no-arrows clause; lua.md make validate scope",
       "note": "11 of 15 jj_interactive_guard blocks in 30 days were squash --into without -m/-u; `jj new` never opens an editor. The no-arrows rule ships only with Fable 5.1. lua.md loads for every project."
+    },
+    {
+      "feature": "enabledPlugins cc-plugin-you-should-know@builtin",
+      "surface": "settings.json",
+      "introducedVersion": "2.1.287",
+      "adoptedDate": "2026-10-01",
+      "value": true,
+      "note": "Built-in mod: forks the main model over the full conversation every few steps of a turn and shows a card when it finds something worth knowing. Gated on GrowthBook flag tengu_jolly_dewdrop (cached true) and non-HIPAA/ZDR/LDR orgs; reads no settings, only env CLAUDE_CODE_YOU_SHOULD_KNOW_DEBUG and USER_TYPE. Enabling via /plugin also reordered switchModelsOnFlag in settings.json (no value change)."
     }
   ],
   "declined": [
@@ -1320,6 +1328,21 @@
       "feature": "user/project skill named verify (pre-commit guidance)",
       "introducedVersion": "2.1.286",
       "reason": "declined 2026-09-30. 2.1.286 tells Claude to run a skill named verify before non-docs/tests commits when one exists. committing-changes already runs make validate, so a verify skill would duplicate it. The binary also bundles a verify skill that bootstraps a per-repo one (end-to-end exercise, not lint); it was not in the session skill list, likely gated. Revisit if it ships enabled."
+    },
+    {
+      "feature": "CLAUDE_CODE_YOU_SHOULD_KNOW_DEBUG",
+      "introducedVersion": "n/a (2026-10-01 docs/issues/forums sweep)",
+      "reason": "declined 2026-10-01. Debug readout of the mod's check count, outcome and latency; not needed to keep the mod on."
+    },
+    {
+      "feature": "PostToolUse classifierContext hook for Redshift MCP results",
+      "introducedVersion": "n/a (2026-10-01 docs/issues/forums sweep)",
+      "reason": "declined 2026-10-01. classifierContext (2.1.236) would tell the auto-mode classifier a Redshift result holds cleartext PII. Not adopted this run."
+    },
+    {
+      "feature": "PermissionDenied hook logging auto-mode denials",
+      "introducedVersion": "n/a (2026-10-01 docs/issues/forums sweep)",
+      "reason": "declined 2026-10-01. Would log classifier denials to a file instead of tracking them in memory. Not adopted this run."
     }
   ],
   "deferred": [
