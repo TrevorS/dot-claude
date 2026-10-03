@@ -1,6 +1,6 @@
 {
-  "claudeCodeVersion": "2.1.287",
-  "syncedDate": "2026-10-01",
+  "claudeCodeVersion": "2.1.288",
+  "syncedDate": "2026-10-02",
   "source": "https://api.github.com/repos/anthropics/claude-code/releases",
   "adopted": [
     {
@@ -849,6 +849,22 @@
       "adoptedDate": "2026-10-01",
       "value": true,
       "note": "Built-in mod: forks the main model over the full conversation every few steps of a turn and shows a card when it finds something worth knowing. Gated on GrowthBook flag tengu_jolly_dewdrop (cached true) and non-HIPAA/ZDR/LDR orgs; reads no settings, only env CLAUDE_CODE_YOU_SHOULD_KNOW_DEBUG and USER_TYPE. Enabling via /plugin also reordered switchModelsOnFlag in settings.json (no value change)."
+    },
+    {
+      "feature": "themes/catppuccin-mocha.json autoAcceptShimmer",
+      "surface": "theme palette key",
+      "introducedVersion": "2.1.288 (not in release notes)",
+      "adoptedDate": "2026-10-02",
+      "value": "#dbc1f9",
+      "note": "New key in all six built-in palettes, absent in 2.1.287; zero reads outside the palette definitions, like the other *Shimmer keys. Added so schema-completeness stays clean. Value is mauve #cba6f7 tinted 30% toward white, the same tint warningShimmer uses over yellow."
+    },
+    {
+      "feature": "ci-monitoring rule rationale",
+      "surface": "rule",
+      "introducedVersion": "2.1.288",
+      "adoptedDate": "2026-10-02",
+      "value": "rules/ci-monitoring.md: 'unattended sessions cap background commands at 30 minutes'",
+      "note": "2.1.288: 'Changed the background command time limit to apply only in unattended sessions (-p, Agent SDK, CI, cloud); terminal, desktop app and VS Code sessions have no limit'. timeout: 2400000 kept for the unattended case."
     }
   ],
   "declined": [
